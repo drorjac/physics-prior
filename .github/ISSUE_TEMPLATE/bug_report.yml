@@ -1,0 +1,38 @@
+name: Bug report
+description: Something does not work, or a number looks wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If you are reporting a **number** rather than a crash, please say which
+        result and where you read it — `results/<problem>/…`, a figure, or a
+        line in the README.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the full error, or the number you got and the number you expected.
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      placeholder: |
+        physprior run gravity
+        physprior report
+    validations: { required: true }
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Output of `physprior info` and `python -VV`, plus how you installed.
+      render: shell
+    validations: { required: true }
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: "`pytest -m 'not slow and not network'` passes on my checkout"
+        - label: If this is a numerical disagreement, I checked it is not a convergence issue (see `docs/METHOD.md`)

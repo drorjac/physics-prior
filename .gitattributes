@@ -1,0 +1,10 @@
+* text=auto eol=lf
+
+# Generated artefacts: keep them out of diffs and language statistics.
+notebooks/*.ipynb linguist-generated=true
+results/**/*.csv  linguist-generated=true
+docs/RESULTS.md   linguist-generated=true
+
+*.png binary
+*.gif binary
+*.hdf5 binary

@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "physprior: what does a physics prior buy you?"
+abstract: >-
+  A controlled comparison of physics-informed machine learning (PINNs and
+  symbolic regression) against a purely data-driven neural network, on real
+  measured data from LIGO, COBE/FIRAS, NIST and JPL, and on simulations where
+  the governing law is known exactly.
+type: software
+version: 0.1.0
+date-released: "2026-09-21"
+license: MIT
+repository-code: "https://github.com/drorjacoby/physics-prior"
+keywords:
+  - physics-informed machine learning
+  - symbolic regression
+  - scientific machine learning
+  - gravitational waves
+  - benchmark
+authors:
+  - family-names: Jacoby
+    given-names: Dror
+references:
+  - type: data
+    title: "GWTC-1 strain data for GW150914"
+    institution: { name: "Gravitational Wave Open Science Center" }
+    url: "https://gwosc.org"
+  - type: article
+    title: "The Cosmic Microwave Background Spectrum from the Full COBE FIRAS Data Set"
+    authors:
+      - family-names: Fixsen
+        given-names: D. J.
+    journal: "The Astrophysical Journal"
+    volume: 473
+    start: 576
+    year: 1996
+  - type: database
+    title: "NIST Atomic Spectra Database (version 5.12)"
+    institution: { name: "National Institute of Standards and Technology" }
+    url: "https://physics.nist.gov/asd"
+  - type: data
+    title: "JPL Horizons / DE441 planetary ephemeris"
+    institution: { name: "NASA Jet Propulsion Laboratory" }
+    url: "https://ssd.jpl.nasa.gov"

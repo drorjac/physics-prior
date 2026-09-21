@@ -1,0 +1,133 @@
+{
+  "a_au": [
+    0.3870976597108074,
+    0.7233232702585717,
+    1.0003738366513,
+    1.523627165612307,
+    5.202552139804575,
+    9.581741765353282,
+    19.17348241286732,
+    30.18233899026752
+  ],
+  "ecc": [
+    0.2056502795645833,
+    0.006744611959625731,
+    0.01712127709447231,
+    0.09350045597307294,
+    0.04875573251855351,
+    0.0509247768271679,
+    0.04665342370199091,
+    0.009680879820285553
+  ],
+  "headline": {
+    "physics": {
+      "expression": "P = 2*pi*sqrt(a**3/(G*M))",
+      "params": {
+        "GM": 1.3272031097626434e+20
+      },
+      "seconds": 0.007971048355102539,
+      "sigma": {
+        "GM": 3377370899344405.5
+      }
+    },
+    "pinn": {
+      "expression": "P = 2*pi*sqrt(a**3/(G*M))  + NN(x)",
+      "params": {
+        "GM": 1.3272024696022709e+20
+      },
+      "seconds": 9.136061191558838,
+      "sigma": {}
+    },
+    "sr": {
+      "expression": "(0.3651406*sqrt(a) + 0.00123135648862424)*(a - 0.010904807) + 0.0025760839",
+      "law_check": {
+        "deviation": -0.0013945223753693003,
+        "exponent": 1.4986054776246307,
+        "expression": "(0.3651406*sqrt(a) + 0.00123135648862424)*(a - 0.010904807) + 0.0025760839",
+        "kepler_exponent": 1.5
+      },
+      "params": {},
+      "seconds": 16.202605962753296,
+      "sigma": {}
+    }
+  },
+  "period_d": [
+    87.96890971556971,
+    224.6966259274418,
+    365.4611882628869,
+    686.9362229007676,
+    4332.273840525596,
+    10831.8606688296,
+    30664.82185535012,
+    60564.28329132849
+  ],
+  "planets": [
+    "Mercury",
+    "Venus",
+    "Earth",
+    "Mars",
+    "Jupiter",
+    "Saturn",
+    "Uranus",
+    "Neptune"
+  ],
+  "provenance": [
+    {
+      "bytes": 5758,
+      "file": "horizons_elements_mercury_2020-01-01.txt",
+      "note": "DE441 elements Mercury @2020-01-01",
+      "sha256": "0482540506400f172b3c751b9968e087448fd44d6ca66c2ca175cfcb988744cc",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+    },
+    {
+      "bytes": 5758,
+      "file": "horizons_elements_venus_2020-01-01.txt",
+      "note": "DE441 elements Venus @2020-01-01",
+      "sha256": "af86d96ce03541110f6eb3c6b7d35b564d4dbe65dd009e0ebb9100f011b3cab8",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+    },
+    {
+      "bytes": 5758,
+      "file": "horizons_elements_earth_2020-01-01.txt",
+      "note": "DE441 elements Earth @2020-01-01",
+      "sha256": "1e739426a20dab7584b5a2d20c3cc4a19066173549f095ae93124c151e751907",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+    },
+    {
+      "bytes": 5759,
+      "file": "horizons_elements_mars_2020-01-01.txt",
+      "note": "DE441 elements Mars @2020-01-01",
+      "sha256": "29bd47695e4ba1ccc49ca91c472871c49c3aa25da649781f034daa8a5ec344a9",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+    },
+    {
+      "bytes": 5774,
+      "file": "horizons_elements_jupiter_2020-01-01.txt",
+      "note": "DE441 elements Jupiter @2020-01-01",
+      "sha256": "b04ad9b7c5f4175379f3283b003c909d86c74d24177b36b4c9573bc0a4173936",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+    },
+    {
+      "bytes": 5760,
+      "file": "horizons_elements_saturn_2020-01-01.txt",
+      "note": "DE441 elements Saturn @2020-01-01",
+      "sha256": "d1ce65150dcd30ffff7550efdb68818669441db3662bc3b46d38f6f288d0526a",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+    },
+    {
+      "bytes": 5766,
+      "file": "horizons_elements_uranus_2020-01-01.txt",
+      "note": "DE441 elements Uranus @2020-01-01",
+      "sha256": "a73ef5eaca41d1e8e4133326fa90dc0d05b707641963fcfc3f37bd5358db1440",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+    },
+    {
+      "bytes": 5774,
+      "file": "horizons_elements_neptune_2020-01-01.txt",
+      "note": "DE441 elements Neptune @2020-01-01",
+      "sha256": "a40182e00c034ebcc413bd92e2ae6481fcbb80542150d769d17e89c93b0cd85a",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+    }
+  ],
+  "published_GM_sun": 1.32712440018e+20
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "x_min": 1.2,
+    "x_max": 11.26,
+    "nu_min_ghz": 68.1477464258962,
+    "decades_below_peak": 0.3712218401077415,
+    "expression": "(nu + 0.14973529)**4*(-0.00133529599972181*nu**3 - 2.7590983)**2/(exp(nu) - 0.6328149)**2",
+    "max_rel_dev_in_band": 0.004066719656503136,
+    "max_rel_dev_below": 32.44255019106807,
+    "max_rel_dev_above": 0.0382985706030519,
+    "is_planck_form": false,
+    "max_rel_dev_outside": 32.44255019106807
+  },
+  {
+    "x_min": 0.6,
+    "x_max": 11.26,
+    "nu_min_ghz": 34.0738732129481,
+    "decades_below_peak": 0.6722518357717227,
+    "expression": "-exp(nu*(-0.6782127)) + exp(-nu - exp(1.5058783 - 0.92674744*nu) + 4.0687566) - 0.054077897",
+    "max_rel_dev_in_band": 0.3390442362807624,
+    "max_rel_dev_below": 354.8534137281191,
+    "max_rel_dev_above": 17.323716100189305,
+    "is_planck_form": false,
+    "max_rel_dev_outside": 354.8534137281191
+  },
+  {
+    "x_min": 0.3,
+    "x_max": 11.26,
+    "nu_min_ghz": 17.03693660647405,
+    "decades_below_peak": 0.9732818314357039,
+    "expression": "(8.710331060929/(0.89194995 - exp(nu))**2)*(nu - 1*(-0.039180122))**4 - 1*(-0.01857848)",
+    "max_rel_dev_in_band": 0.18666081066315307,
+    "max_rel_dev_below": 20.094066613910783,
+    "max_rel_dev_above": 6.332159325490352,
+    "is_planck_form": false,
+    "max_rel_dev_outside": 20.094066613910783
+  },
+  {
+    "x_min": 0.1,
+    "x_max": 11.26,
+    "nu_min_ghz": 5.678978868824684,
+    "decades_below_peak": 1.4504030861553663,
+    "expression": "(nu**2*3.0212657/(-exp(nu) + nu/nu) + 0.034155454/exp(nu**2))**2 + 0.0123673035",
+    "max_rel_dev_in_band": 0.09242589090116751,
+    "max_rel_dev_below": 10.564047449972964,
+    "max_rel_dev_above": 4.123786290418891,
+    "is_planck_form": false,
+    "max_rel_dev_outside": 10.564047449972964
+  },
+  {
+    "x_min": 0.03,
+    "x_max": 11.26,
+    "nu_min_ghz": 1.7036936606474051,
+    "decades_below_peak": 1.973281831435704,
+    "expression": "nu*(nu + 0.0076127504)*(nu + 2.3796372)**2*(nu + 2.602723)/exp((nu + 0.31237352)*1.9859093)",
+    "max_rel_dev_in_band": 0.05895677381365696,
+    "max_rel_dev_below": 0.5830204387255545,
+    "max_rel_dev_above": 0.16762133135069515,
+    "is_planck_form": false,
+    "max_rel_dev_outside": 0.5830204387255545
+  }
+]

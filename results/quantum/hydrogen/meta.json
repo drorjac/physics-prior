@@ -1,0 +1,49 @@
+{
+  "bohr_rydberg_H_icm": 109677.58340277294,
+  "headline": {
+    "physics": {
+      "expression": "R*(1 - 1/n**2)",
+      "params": {
+        "R": 109678.77737030847
+      },
+      "seconds": 0.0034439563751220703,
+      "sigma": {
+        "R": 0.00015337698488376286
+      }
+    },
+    "pinn": {
+      "expression": "R*(1 - 1/n**2)  + NN(x)",
+      "params": {
+        "R": 109678.8573825054
+      },
+      "seconds": 6.859770059585571,
+      "sigma": {}
+    },
+    "sr": {
+      "expression": "-0.22825128 - 1*(-1.3250389) + (-1*(-2.9354997e-6) - 1.0967906/n)/n",
+      "law_check": {
+        "coeff": 109682.4992639643,
+        "expression": "-0.22825128 - 1*(-1.3250389) + (-1*(-2.9354997e-6) - 1.0967906/n)/n",
+        "is_bohr_form": true,
+        "limit": 109678.76200007167,
+        "loglog_resid": 1.0138360298006038e-05,
+        "power": 2.000030023865405
+      },
+      "params": {},
+      "seconds": 13.805134057998657,
+      "sigma": {}
+    }
+  },
+  "ionisation_limit_icm": 109678.77174307,
+  "ionisation_limit_sigma_icm": 1e-07,
+  "limit_minus_bohr_icm": 1.1883402970561292,
+  "limit_minus_bohr_ppm": 10.834851208310676,
+  "n_levels": 40,
+  "provenance": {
+    "bytes": 5226,
+    "file": "nist_h_levels.tsv",
+    "note": "NIST ASD v5.12, H I levels, Kramida et al.",
+    "sha256": "0cd9883876dbc394d4c1d4e5311ceaad68553ba2945d991a4cfd2ca30d77fd4d",
+    "url": "https://physics.nist.gov/cgi-bin/ASD/energy1.pl"
+  }
+}

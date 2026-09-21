@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+.ipynb_checkpoints/
+
+# Symbolic-search cache. Keyed by data + configuration; deleting it costs
+# only time, because the searches are deterministic and reproduce.
+.cache/
+
+# Downloaded once, never edited, ~20 MB. Re-fetchable with `physprior data
+# fetch`, and the SHA-256 of every file is recorded in the problem's meta.json.
+data/raw/
+
+# Run logs
+*.log

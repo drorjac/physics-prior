@@ -1,0 +1,335 @@
+{
+  "parameter_recovery": [
+    {
+      "track": "relativity",
+      "quantity": "chirp mass Mc [0PN (Newtonian)]",
+      "published": 31.174000000000003,
+      "recovered": 40.07495004791107,
+      "sigma": 4.057243007215495,
+      "deviation": "+8.90 Msun (+2.19 sigma)"
+    },
+    {
+      "track": "relativity",
+      "quantity": "chirp mass Mc [1PN]",
+      "published": 31.174000000000003,
+      "recovered": null,
+      "sigma": null,
+      "deviation": "fit pinned to bound (did not converge)"
+    },
+    {
+      "track": "relativity",
+      "quantity": "chirp mass Mc [1.5PN (+tail)]",
+      "published": 31.174000000000003,
+      "recovered": 31.965577755223226,
+      "sigma": 2.7799497615002355,
+      "deviation": "+0.79 Msun (+0.28 sigma)"
+    },
+    {
+      "track": "relativity",
+      "quantity": "chirp mass Mc [2PN]",
+      "published": 31.174000000000003,
+      "recovered": 30.754712982047742,
+      "sigma": 2.6346204561826223,
+      "deviation": "-0.42 Msun (-0.16 sigma)"
+    },
+    {
+      "track": "quantum",
+      "quantity": "CMB temperature T [K]",
+      "published": 2.72548,
+      "recovered": 2.7250153321687423,
+      "sigma": 7.577835488055166e-06,
+      "deviation": "-170 ppm (partly by construction - see caveat)"
+    },
+    {
+      "track": "quantum",
+      "quantity": "Rydberg R vs NIST ionisation limit [cm^-1]",
+      "published": 109678.77174307,
+      "recovered": 109678.77737030847,
+      "sigma": 0.00015337698488376286,
+      "deviation": "+51 ppb"
+    },
+    {
+      "track": "quantum",
+      "quantity": "Rydberg R vs Bohr prediction [cm^-1]",
+      "published": 109677.58340277294,
+      "recovered": 109678.77737030847,
+      "sigma": 0.00015337698488376286,
+      "deviation": "+10.89 ppm = QED + relativistic"
+    },
+    {
+      "track": "gravity",
+      "quantity": "GM_sun from Kepler [m^3/s^2]",
+      "published": 1.32712440018e+20,
+      "recovered": 1.3272031097626434e+20,
+      "sigma": 3377370899344405.5,
+      "deviation": "+59.3 ppm"
+    },
+    {
+      "track": "relativity",
+      "quantity": "GR coefficient alpha (Mercury)",
+      "published": 1.0,
+      "recovered": 1.0001206219588945,
+      "sigma": 1.6548172055609812e-05,
+      "deviation": "+1.21e-04"
+    },
+    {
+      "track": "relativity",
+      "quantity": "perihelion advance [arcsec/century]",
+      "published": 42.98,
+      "recovered": 42.985184331793285,
+      "sigma": null,
+      "deviation": "+0.005"
+    }
+  ],
+  "extrapolation_summary": [
+    {
+      "track": "gravity/kepler",
+      "arm": "oracle",
+      "nrmse_in": 1.5374005048383638e-08,
+      "nrmse_out": 7.615129140148809e-05,
+      "out/in": 4953.250058252995
+    },
+    {
+      "track": "gravity/kepler",
+      "arm": "physics",
+      "nrmse_in": 1.1449042397983121e-08,
+      "nrmse_out": 7.558059678160736e-05,
+      "out/in": 6601.477586887244
+    },
+    {
+      "track": "gravity/kepler",
+      "arm": "pinn",
+      "nrmse_in": 5.724521198875805e-09,
+      "nrmse_out": 0.0003278231882061,
+      "out/in": 57266.48165273258
+    },
+    {
+      "track": "gravity/kepler",
+      "arm": "sr",
+      "nrmse_in": 8.926246566395165e-09,
+      "nrmse_out": 7.781676959889877e-05,
+      "out/in": 8717.748162128666
+    },
+    {
+      "track": "gravity/kepler",
+      "arm": "nn",
+      "nrmse_in": 2.1237694142118283e-05,
+      "nrmse_out": 1.6604745240059169,
+      "out/in": 78185.25461824446
+    },
+    {
+      "track": "relativity/gw150914",
+      "arm": "oracle",
+      "nrmse_in": 0.3151804216662234,
+      "nrmse_out": 0.0858234919729638,
+      "out/in": 0.2722995658145639
+    },
+    {
+      "track": "relativity/gw150914",
+      "arm": "physics",
+      "nrmse_in": 0.2679322403501336,
+      "nrmse_out": 13.44701081907792,
+      "out/in": 50.18810278862066
+    },
+    {
+      "track": "relativity/gw150914",
+      "arm": "pinn",
+      "nrmse_in": 0.1933512064024478,
+      "nrmse_out": 0.4567960772338185,
+      "out/in": 2.362519922854929
+    },
+    {
+      "track": "relativity/gw150914",
+      "arm": "sr",
+      "nrmse_in": 0.1288187171609058,
+      "nrmse_out": 6.364212883959831,
+      "out/in": 49.40441128605849
+    },
+    {
+      "track": "relativity/gw150914",
+      "arm": "nn",
+      "nrmse_in": 0.0013105986396342,
+      "nrmse_out": 0.682003743116237,
+      "out/in": 520.3757447105168
+    },
+    {
+      "track": "quantum/hydrogen",
+      "arm": "oracle",
+      "nrmse_in": 6.258366204448807e-05,
+      "nrmse_out": 6.79481539897619e-05,
+      "out/in": 1.085717130797818
+    },
+    {
+      "track": "quantum/hydrogen",
+      "arm": "physics",
+      "nrmse_in": 1.7110220973732362e-06,
+      "nrmse_out": 8.122348419479725e-07,
+      "out/in": 0.4747073946005237
+    },
+    {
+      "track": "quantum/hydrogen",
+      "arm": "pinn",
+      "nrmse_in": 3.277580453046784e-05,
+      "nrmse_out": 0.0141560521454516,
+      "out/in": 431.90555802504775
+    },
+    {
+      "track": "quantum/hydrogen",
+      "arm": "sr",
+      "nrmse_in": 2.2475982659079133e-07,
+      "nrmse_out": 5.033930028119612e-07,
+      "out/in": 2.239692966699351
+    },
+    {
+      "track": "quantum/hydrogen",
+      "arm": "nn",
+      "nrmse_in": 0.0075756174425166,
+      "nrmse_out": 0.3360001256503673,
+      "out/in": 44.352837006345574
+    },
+    {
+      "track": "quantum/cmb",
+      "arm": "oracle",
+      "nrmse_in": 0.0010043509729475,
+      "nrmse_out": 0.0011486431883597,
+      "out/in": 1.143667123643781
+    },
+    {
+      "track": "quantum/cmb",
+      "arm": "physics",
+      "nrmse_in": 0.0001344234061072,
+      "nrmse_out": 0.0005723611270448,
+      "out/in": 4.257897814227035
+    },
+    {
+      "track": "quantum/cmb",
+      "arm": "pinn",
+      "nrmse_in": 8.195418496851339e-05,
+      "nrmse_out": 0.0086334710331773,
+      "out/in": 105.3450905099509
+    },
+    {
+      "track": "quantum/cmb",
+      "arm": "sr",
+      "nrmse_in": 0.0004847254804315,
+      "nrmse_out": 16.195415871347734,
+      "out/in": 33411.5216244268
+    },
+    {
+      "track": "quantum/cmb",
+      "arm": "nn",
+      "nrmse_in": 0.0014610120673244,
+      "nrmse_out": 2.081732701585671,
+      "out/in": 1424.8566101154915
+    }
+  ],
+  "capability_matrix": [
+    {
+      "arm": "oracle",
+      "returns a physical constant": "4/4 tracks",
+      "returns a closed form": "4/4 tracks",
+      "needs the law in advance": true,
+      "can be wrong in a new way": "no - it is the reference"
+    },
+    {
+      "arm": "physics",
+      "returns a physical constant": "4/4 tracks",
+      "returns a closed form": "4/4 tracks",
+      "needs the law in advance": true,
+      "can be wrong in a new way": "yes - a truncated law gives a confident wrong constant"
+    },
+    {
+      "arm": "pinn",
+      "returns a physical constant": "4/4 tracks",
+      "returns a closed form": "4/4 tracks (law + correction)",
+      "needs the law in advance": true,
+      "can be wrong in a new way": "yes - the network can absorb the physics if w_phys is too small"
+    },
+    {
+      "arm": "sr",
+      "returns a physical constant": "0/4 tracks",
+      "returns a closed form": "4/4 tracks",
+      "needs the law in advance": false,
+      "can be wrong in a new way": "yes - fits the band, misses the law"
+    },
+    {
+      "arm": "nn",
+      "returns a physical constant": "0/4 tracks",
+      "returns a closed form": "0/4 tracks",
+      "needs the law in advance": false,
+      "can be wrong in a new way": "no law to be wrong about; fails outside the range instead"
+    }
+  ],
+  "budget_crossover": [
+    {
+      "track": "gravity/kepler",
+      "budgets swept": "3-6",
+      "budgets where nn beats physics": "none",
+      "nn wins at largest budget": false,
+      "nn nRMSE at max budget": 0.0306473583141459,
+      "physics nRMSE at max budget": 4.383007620243623e-05,
+      "physics advantage": 699.2312350221835
+    },
+    {
+      "track": "relativity/gw150914",
+      "budgets swept": "2-4",
+      "budgets where nn beats physics": "2",
+      "nn wins at largest budget": false,
+      "nn nRMSE at max budget": 0.5032324539270503,
+      "physics nRMSE at max budget": 0.3959721565245392,
+      "physics advantage": 1.2708783828235255
+    },
+    {
+      "track": "quantum/hydrogen",
+      "budgets swept": "4-30",
+      "budgets where nn beats physics": "none",
+      "nn wins at largest budget": false,
+      "nn nRMSE at max budget": 0.0087356676519678,
+      "physics nRMSE at max budget": 7.270834934023263e-07,
+      "physics advantage": 12014.669197192161
+    },
+    {
+      "track": "quantum/cmb",
+      "budgets swept": "5-30",
+      "budgets where nn beats physics": "none",
+      "nn wins at largest budget": false,
+      "nn nRMSE at max budget": 0.0036660686136266,
+      "physics nRMSE at max budget": 0.0002080255222198,
+      "physics advantage": 17.623167458044055
+    }
+  ],
+  "oracle_sanity": [
+    {
+      "track": "gravity/kepler",
+      "oracle nRMSE in": 1.5374005048383638e-08,
+      "oracle nRMSE out": 7.615129140148809e-05,
+      "beat oracle in-range": "physics, pinn, sr",
+      "beat oracle out-of-range": "physics",
+      "explanation": "the oracle carries the IAU nominal GM_sun; a fitted GM absorbs the planet masses and the osculating-vs-mean semi-major axis, both omitted from P = 2 pi sqrt(a^3/GM)."
+    },
+    {
+      "track": "relativity/gw150914",
+      "oracle nRMSE in": 0.3151804216662234,
+      "oracle nRMSE out": 0.0858234919729638,
+      "beat oracle in-range": "nn, physics, pinn, sr",
+      "beat oracle out-of-range": "none",
+      "explanation": "in-range: 4-5 training points against 2+ free parameters is an overfit, as expected. Out-of-range nothing beats it, which is the honest test."
+    },
+    {
+      "track": "quantum/hydrogen",
+      "oracle nRMSE in": 6.258366204448807e-05,
+      "oracle nRMSE out": 6.79481539897619e-05,
+      "beat oracle in-range": "physics, pinn, sr",
+      "beat oracle out-of-range": "physics, sr",
+      "explanation": "the oracle carries Bohr's R_H, which the data says is 10.8 ppm low. Beating it is the QED result, not overfitting."
+    },
+    {
+      "track": "quantum/cmb",
+      "oracle nRMSE in": 0.0010043509729475,
+      "oracle nRMSE out": 0.0011486431883597,
+      "beat oracle in-range": "physics, pinn, sr",
+      "beat oracle out-of-range": "physics",
+      "explanation": "the oracle carries T = 2.72548 K (Fixsen 2009) while the distributed FIRAS monopole is built on a 2.725 K blackbody, so a fitted T is closer to THIS dataset by construction."
+    }
+  ]
+}

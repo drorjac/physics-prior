@@ -1,0 +1,29 @@
+name: New physics problem
+description: Propose a problem, dataset or simulation to add
+labels: [enhancement]
+body:
+  - type: input
+    id: problem
+    attributes:
+      label: The physics
+      placeholder: e.g. Hulse-Taylor binary pulsar orbital decay
+    validations: { required: true }
+  - type: input
+    id: law
+    attributes:
+      label: The law to recover, and the constant
+      placeholder: e.g. dP/dt from the quadrupole formula; the component masses
+    validations: { required: true }
+  - type: textarea
+    id: data
+    attributes:
+      label: The data
+      description: Where it comes from, whether it is openly downloadable, and the published value the result can be checked against.
+    validations: { required: true }
+  - type: textarea
+    id: control
+    attributes:
+      label: The control
+      description: >
+        What simulation gives the method's own error floor here? A problem
+        without one can still be added, but say so.

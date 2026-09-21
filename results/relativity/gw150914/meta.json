@@ -1,0 +1,139 @@
+{
+  "eta": 0.24857385383485,
+  "f_hz": [
+    50.64704310732726,
+    43.6230343258081,
+    53.82232952097183,
+    69.05198935802267,
+    74.84081792802544,
+    91.40224952670535
+  ],
+  "headline": {
+    "nn": {
+      "expression": null,
+      "params": {},
+      "seconds": 3.3678719997406006,
+      "sigma": {}
+    },
+    "physics": {
+      "expression": "df/dt = (96/5) pi^(8/3) (G Mc/c^3)^(5/3) f^(11/3)  [PN order 3]",
+      "params": {
+        "Mc": 30.754713111684552,
+        "tc": 0.019414153870475563
+      },
+      "seconds": 0.024321794509887695,
+      "sigma": {
+        "Mc": 2.634609806772891,
+        "tc": 0.001690677277652296
+      }
+    },
+    "pinn": {
+      "expression": "df/dt = (96/5) pi^(8/3) (G Mc/c^3)^(5/3) f^(11/3)  [PN order 3]  [as an ODE residual, network = f(t)]",
+      "params": {
+        "Mc": 30.381814161350036
+      },
+      "seconds": 22.24372887611389,
+      "sigma": {}
+    },
+    "sr": {
+      "expression": "3.3703194/(tau - 1*(-0.033252917))",
+      "law_check": {
+        "deviation": null,
+        "exponent": null,
+        "expression": "3.3703194/(tau - 1*(-0.033252917))",
+        "newtonian_exponent": -0.375
+      },
+      "params": {},
+      "seconds": 13.35741400718689,
+      "sigma": {}
+    }
+  },
+  "n_cycles": 6,
+  "oracle_tc_s": 0.01919893761184235,
+  "pn_ablation": [
+    {
+      "Mc": 40.07495004791107,
+      "Mc_sigma": 4.057243007215495,
+      "bias_Msun": 8.900950047911063,
+      "bias_sigma": 2.193841983849971,
+      "converged": true,
+      "label": "0PN (Newtonian)",
+      "note": "",
+      "pn_order": 0,
+      "rmse_hz": 4.0866284340493015,
+      "tc_ms": 21.89842605253705
+    },
+    {
+      "Mc": 199.9999999999998,
+      "Mc_sigma": 710.2121718295334,
+      "bias_Msun": 168.8259999999998,
+      "bias_sigma": 0.23771206224908484,
+      "converged": false,
+      "label": "1PN",
+      "note": "parameter pinned to bound",
+      "pn_order": 1,
+      "rmse_hz": 114.3421262775054,
+      "tc_ms": 79.99999999999999
+    },
+    {
+      "Mc": 31.965577755223226,
+      "Mc_sigma": 2.7799497615002355,
+      "bias_Msun": 0.7915777552232228,
+      "bias_sigma": 0.2847453454684151,
+      "converged": true,
+      "label": "1.5PN (+tail)",
+      "note": "",
+      "pn_order": 2,
+      "rmse_hz": 4.230163153654104,
+      "tc_ms": 19.627665786291548
+    },
+    {
+      "Mc": 30.754712982047742,
+      "Mc_sigma": 2.6346204561826223,
+      "bias_Msun": -0.41928701795226075,
+      "bias_sigma": -0.15914513112062367,
+      "converged": true,
+      "label": "2PN",
+      "note": "",
+      "pn_order": 3,
+      "rmse_hz": 4.253696410481016,
+      "tc_ms": 19.414153940659375
+    }
+  ],
+  "pn_order": 3,
+  "provenance": [
+    {
+      "bytes": 1040781,
+      "file": "H-H1_GWOSC_4KHZ_R1-1126259447-32.hdf5",
+      "note": "GWOSC GW150914-v3 H1 4 kHz 32 s",
+      "sha256": "c5ea87beced5094b56b4d694f3a36e6d59f74d3a46e546b980a6a199d1f252a9",
+      "url": "https://gwosc.org/eventapi/json/GWTC-1-confident/GW150914/v3/H-H1_GWOSC_4KHZ_R1-1126259447-32.hdf5"
+    },
+    {
+      "bytes": 1007262,
+      "file": "L-L1_GWOSC_4KHZ_R1-1126259447-32.hdf5",
+      "note": "GWOSC GW150914-v3 L1 4 kHz 32 s",
+      "sha256": "9d65bde82f7ec035bea4c02228bce4acb3dcaae774c047edce71ef2ad64f1cc4",
+      "url": "https://gwosc.org/eventapi/json/GWTC-1-confident/GW150914/v3/L-L1_GWOSC_4KHZ_R1-1126259447-32.hdf5"
+    }
+  ],
+  "published_Mc_detector": 31.174000000000003,
+  "published_Mc_source": 28.6,
+  "snr": [
+    3.47426881592833,
+    3.928590789088904,
+    3.763167027553813,
+    4.4957603710361145,
+    5.998463770953741,
+    7.775849308920623
+  ],
+  "t_ms": [
+    -28.266485665393073,
+    -17.599446091948217,
+    -7.223616547557126,
+    1.041756246088052,
+    8.00263988697663,
+    14.078225468449109
+  ],
+  "t_peak_s": 0.01821279525756836
+}

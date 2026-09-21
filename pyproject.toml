@@ -1,0 +1,141 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "physprior"
+version = "0.1.0"
+description = "What does a physics prior buy you? Physics-informed ML and symbolic regression against a black box, on real LIGO/COBE/NIST/JPL data and on simulations."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "Dror Jacoby" }]
+keywords = [
+    "physics-informed machine learning", "symbolic regression", "PINN",
+    "scientific machine learning", "gravitational waves", "benchmark",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+    "requests>=2.28",
+    "h5py>=3.8",
+    "sympy>=1.12",
+]
+
+[project.optional-dependencies]
+# The neural arms. Everything except `nn` and `pinn` runs without torch.
+nn = ["torch>=2.0"]
+# Symbolic regression. Pulls a Julia runtime on first use.
+sr = ["pysr>=2.0"]
+# Notebooks and the report pipeline.
+notebooks = ["jupyter", "ipykernel", "nbclient", "nbformat"]
+dev = [
+    "physprior[nn,sr,notebooks]",
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.5",
+    "mypy>=1.8",
+    "pre-commit>=3.5",
+]
+all = ["physprior[nn,sr,notebooks]"]
+
+[project.urls]
+Homepage = "https://github.com/drorjacoby/physics-prior"
+Repository = "https://github.com/drorjacoby/physics-prior"
+Issues = "https://github.com/drorjacoby/physics-prior/issues"
+Changelog = "https://github.com/drorjacoby/physics-prior/blob/main/CHANGELOG.md"
+
+[project.scripts]
+physprior = "physprior.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+physprior = ["py.typed"]
+
+# --------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "slow: long-running (injection studies, convergence sweeps)",
+    "network: needs the internet on a cold cache",
+    "sr: needs PySR and its Julia runtime",
+]
+filterwarnings = ["ignore::UserWarning:juliacall.*"]
+
+[tool.coverage.run]
+source = ["physprior"]
+branch = true
+
+# --------------------------------------------------------------------------
+[tool.ruff]
+src = ["src", "tests"]
+extend-exclude = ["notebooks", "results", "figures", "*.ipynb"]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "RUF", "SIM", "PTH", "RET"]
+ignore = [
+    "E501",    # docstring prose is wrapped by hand
+    "B008",    # call in a default argument: used deliberately for configs
+    "RUF001", "RUF002", "RUF003",  # prose uses real minus and times signs
+    "SIM108",  # ternaries are not always clearer
+    "RET504",  # a named return value often IS the documentation
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Physics code. `l` is the angular-momentum quantum number; renaming it to
+# `ell` makes the Schrodinger solver harder to read, not easier. dict(name=...)
+# records read as records; a literal with quoted keys reads as punctuation.
+"src/physprior/problems/**" = ["C408", "E741", "B905", "RUF046", "RUF007", "PTH"]
+"src/physprior/numerics/**" = ["C408", "B905"]
+"src/physprior/viz/**"      = ["C408", "B905", "E702"]
+"src/physprior/reporting/**" = ["C408", "B905", "UP031", "PTH"]
+"tests/**"                  = ["B905", "PTH"]
+"scripts/**"                = ["B905", "E702", "PTH"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["physprior"]
+
+# --------------------------------------------------------------------------
+[tool.mypy]
+# The ANALYSIS target, not the supported floor -- `requires-python` is 3.11 and
+# CI tests 3.11/3.12/3.13. numpy's bundled stubs use `type` statements, which
+# mypy only parses at 3.12+, so analysing at 3.11 fails before it reaches any
+# of this package's code.
+python_version = "3.12"
+files = ["src/physprior"]
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = "src"
+# The scientific stack is largely untyped; this package is typed at its own
+# boundaries and does not pretend numpy/scipy/pysr are.
+ignore_missing_imports = true
+warn_unused_configs = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = false
+
+[[tool.mypy.overrides]]
+# The numerical modules were carried over from the runs that produced the
+# committed results. They are held to import and name correctness, not to
+# full annotation, so that restyling them cannot silently change a number.
+module = ["physprior.problems.*", "physprior.viz.*", "physprior.reporting.*"]
+disallow_untyped_defs = false

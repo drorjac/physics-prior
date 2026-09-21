@@ -1,0 +1,62 @@
+{
+  "caveat": "the distributed monopole = 2.725 K blackbody + measured residual, so T recovery is partly by construction",
+  "extrapolation_train_frac": 0.16279069767441862,
+  "headline": {
+    "physics": {
+      "expression": "2*h*nu**3/c**2 / (exp(h*nu/(k*T)) - 1)",
+      "params": {
+        "T": 2.7250153321687423
+      },
+      "seconds": 0.0013761520385742188,
+      "sigma": {
+        "T": 7.577835488055166e-06
+      }
+    },
+    "pinn": {
+      "expression": "2*h*nu**3/c**2 / (exp(h*nu/(k*T)) - 1)  + NN(x)",
+      "params": {
+        "T": 2.725012460862133
+      },
+      "seconds": 3.821254014968872,
+      "sigma": {}
+    },
+    "planck_constant": {
+      "h_published": 6.62607015e-34,
+      "h_recovered": 6.627560638919535e-34,
+      "h_sigma": 2.43946815716892e-39,
+      "n_sigma": 61.09892909053622,
+      "rel_error_ppm": 224.94312402274355
+    },
+    "sr": {
+      "expression": "(nu + 0.07698194291844*(1.3383667 - nu)**2)**3*exp((1.5615451 - nu)/0.5149329)",
+      "law_check": {
+        "expression": "(nu + 0.07698194291844*(1.3383667 - nu)**2)**3*exp((1.5615451 - nu)/0.5149329)",
+        "is_planck_form": false,
+        "max_rel_dev_above": 0.05242956778421266,
+        "max_rel_dev_below": 59.186767300453674,
+        "max_rel_dev_in_band": 0.0106532495131973,
+        "max_rel_dev_outside": 59.186767300453674
+      },
+      "params": {},
+      "seconds": 10.564424991607666,
+      "sigma": {}
+    }
+  },
+  "n_channels": 43,
+  "nu_ghz_range": [
+    68.052887966,
+    639.457312914
+  ],
+  "provenance": {
+    "bytes": 2388,
+    "file": "firas_monopole_spec_v1.txt",
+    "note": "Fixsen et al. 1996 ApJ 473,576 Table 4",
+    "sha256": "df793c3dca09ebfa7dbc5aa0ec1951daa8884431bc30eff28a710d7516cf50fa",
+    "url": "https://lambda.gsfc.nasa.gov/data/cobe/firas/monopole_spec/firas_monopole_spec_v1.txt"
+  },
+  "published_T_K": 2.72548,
+  "published_T_err_K": 0.00057,
+  "published_h": 6.62607015e-34,
+  "published_h_over_k": 4.799243073366221e-11,
+  "turnover_ghz": 160.0
+}
