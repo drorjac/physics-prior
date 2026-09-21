@@ -1,7 +1,7 @@
 """The narrative must not drift from the results.
 
 The results TABLES in the README and docs/RESULTS.md are generated from
-`results/` by `project0.report`, so they cannot drift. The handful of numbers
+`results/` by `physprior report`, so they cannot drift. The handful of numbers
 quoted in the prose -- "+9 Msun", "10.8 ppm", "1.13 +- 0.002" -- are written
 by hand, and this file is what stops them going stale: each one is recomputed
 from `results/` and checked to still appear in the README.

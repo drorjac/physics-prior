@@ -70,7 +70,7 @@ def nb_overview():
     return _nb(
         [
             md("""
-# project_0 — What does physics buy you?
+# physprior — what does a physics prior buy you?
 
 A neural network can fit almost any curve. A physicist writes a law with two
 constants in it. On **real measured data** — and on **simulations where the
@@ -137,7 +137,7 @@ See [`docs/TOOLING.md`](../docs/TOOLING.md) for which package does what and
 exactly how a formula comes out of symbolic regression.
 """),
         ],
-        "project_0 overview",
+        "physprior overview",
     )
 
 
