@@ -13,6 +13,7 @@ the README is what must change.
 from __future__ import annotations
 
 import json
+import re
 
 import pytest
 
@@ -56,19 +57,48 @@ def test_qed_gap_ppm(readme):
 
 
 def test_false_gr_violation(readme):
-    """README: the 4th-order/3-hour run gives alpha = 1.13 +- 0.002."""
+    """README: the 4th-order/3-hour run gives alpha = 1.1343 +- 0.0024."""
     rows = {
         (r["step"], r["fd_order"]): r
         for r in _meta("relativity/mercury")["gr_convergence"]
         if "alpha_GR" in r
     }
     bad = rows[("180m", 4)]
-    assert f"{bad['alpha_GR']:.2f}" in readme, (
-        f"the coarse alpha drifted to {bad['alpha_GR']:.4f}"
+    assert f"{bad['alpha_GR']:.4f}" in readme, (
+        f"the coarse alpha drifted to {bad['alpha_GR']:.6f}"
+    )
+    assert f"{bad['alpha_sigma']:.4f}" in readme, (
+        f"the coarse alpha's sigma drifted to {bad['alpha_sigma']:.6f}"
+    )
+    assert f"{100 * (bad['alpha_GR'] - 1.0):.1f}%" in readme, (
+        f"the quoted deviation drifted to {100 * (bad['alpha_GR'] - 1.0):.2f}%"
     )
     n_sigma = abs(bad["alpha_GR"] - 1.0) / bad["alpha_sigma"]
     assert f"{n_sigma:.0f} formal sigma" in readme or f"{n_sigma:.0f}σ" in readme, (
         f"the false-violation significance drifted to {n_sigma:.1f} sigma"
+    )
+
+
+def test_quoted_gr_numbers_reproduce_their_own_sigma_count(readme):
+    """The numbers AS PRINTED must reproduce the significance AS PRINTED.
+
+    Quoting `alpha = 1.13 +- 0.002` next to `56 formal sigma` is internally
+    inconsistent -- a reader who divides gets 65 -- even though both came from
+    a correct result, because alpha was rounded to 2 dp and sigma to one
+    significant figure. Enough digits must survive the rounding that the
+    arithmetic a reader can do is the arithmetic the pipeline did.
+    """
+    plain = readme.replace("**", "")
+    m = re.search(r"\u03b1 = ([\d.]+) \u00b1 ([\d.]+)", plain)
+    assert m, "the README no longer quotes alpha as 'alpha = X \u00b1 Y'"
+    alpha_q, sigma_q = float(m.group(1)), float(m.group(2))
+    quoted = re.search(r"(\d+) formal sigma", plain)
+    assert quoted, "the README no longer quotes a formal sigma count"
+    implied = abs(alpha_q - 1.0) / sigma_q
+    assert abs(implied - int(quoted.group(1))) < 1.0, (
+        f"the printed alpha = {alpha_q} \u00b1 {sigma_q} implies "
+        f"{implied:.0f} sigma but the README claims {quoted.group(1)}: "
+        "the quoted numbers are rounded too hard to reproduce their own claim"
     )
 
 

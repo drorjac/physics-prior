@@ -79,12 +79,12 @@ lands almost entirely in `α`:
 |---|---|---|
 | 2nd order | 3 h | ~10³ |
 | 4th order | 6 h | 3.15 |
-| 4th order | 3 h | 1.134 ± 0.002 |
+| 4th order | 3 h | 1.1343 ± 0.0024 |
 | 4th order | 1.5 h | 1.008 |
 | 6th order | 3 h | 1.00012 ± 0.00002 |
 
-Run once at the third row and stopped, this project would have reported a 13%
-violation of general relativity at 56 formal sigma. The error bar was never
+Run once at the third row and stopped, this project would have reported a
+13.4% violation of general relativity at 56 formal sigma. The error bar was never
 the problem; it was correct, and it was answering a question about the
 *statistics* of a model that was *systematically* wrong.
 

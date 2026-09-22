@@ -174,8 +174,8 @@ And three times the argument was worth having:
   1.5PN tail and 2PN terms removes the bias while the RMSE barely moves.
   *Goodness of fit does not diagnose a wrong law.*
 - **Mercury** — the acceleration differentiated out of the ephemeris at a
-  plausible step size gives a GR coefficient of **α = 1.13 ± 0.002**: a 13%
-  violation of general relativity at **56 formal sigma**. It is entirely
+  plausible step size gives a GR coefficient of **α = 1.1343 ± 0.0024**: a
+  13.4% violation of general relativity at **56 formal sigma**. It is entirely
   finite-difference truncation error. With a 6th-order stencil α agrees with
   Einstein to one part in **10⁴**. *The result is not α; it is α once it has
   stopped moving.*
