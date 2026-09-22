@@ -99,9 +99,9 @@
     {
       "track": "gravity/kepler",
       "arm": "pinn",
-      "nrmse_in": 5.724521198875805e-09,
-      "nrmse_out": 0.0003278231882061,
-      "out/in": 57266.48165273258
+      "nrmse_in": 1.1632038672433649e-08,
+      "nrmse_out": 6.208668163480986e-05,
+      "out/in": 5337.558048353713
     },
     {
       "track": "gravity/kepler",
@@ -169,9 +169,9 @@
     {
       "track": "quantum/hydrogen",
       "arm": "pinn",
-      "nrmse_in": 3.277580453046784e-05,
-      "nrmse_out": 0.0141560521454516,
-      "out/in": 431.90555802504775
+      "nrmse_in": 1.82390772960882e-06,
+      "nrmse_out": 0.0001623999321367,
+      "out/in": 89.03955474300803
     },
     {
       "track": "quantum/hydrogen",
@@ -204,9 +204,9 @@
     {
       "track": "quantum/cmb",
       "arm": "pinn",
-      "nrmse_in": 8.195418496851339e-05,
-      "nrmse_out": 0.0086334710331773,
-      "out/in": 105.3450905099509
+      "nrmse_in": 0.0001337118724277,
+      "nrmse_out": 0.0006356725484862,
+      "out/in": 4.754047168323947
     },
     {
       "track": "quantum/cmb",
@@ -304,7 +304,7 @@
       "oracle nRMSE in": 1.5374005048383638e-08,
       "oracle nRMSE out": 7.615129140148809e-05,
       "beat oracle in-range": "physics, pinn, sr",
-      "beat oracle out-of-range": "physics",
+      "beat oracle out-of-range": "physics, pinn",
       "explanation": "the oracle carries the IAU nominal GM_sun; a fitted GM absorbs the planet masses and the osculating-vs-mean semi-major axis, both omitted from P = 2 pi sqrt(a^3/GM)."
     },
     {
@@ -328,7 +328,7 @@
       "oracle nRMSE in": 0.0010043509729475,
       "oracle nRMSE out": 0.0011486431883597,
       "beat oracle in-range": "physics, pinn, sr",
-      "beat oracle out-of-range": "physics",
+      "beat oracle out-of-range": "physics, pinn",
       "explanation": "the oracle carries T = 2.72548 K (Fixsen 2009) while the distributed FIRAS monopole is built on a 2.725 K blackbody, so a fitted T is closer to THIS dataset by construction."
     }
   ]

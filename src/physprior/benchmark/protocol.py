@@ -130,7 +130,7 @@ def fit_arm(
     w_phys: float = 1.0,
     sr_seed: int | None = None,
     sr_fast: bool = False,
-    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> Fit:
     """`pinn_options` is how an ablation turns one switch on without
     touching the arm every other track uses; it defaults to the
@@ -270,7 +270,7 @@ def sweep_budget(
     arms=ARMS,
     w_phys: float = 1.0,
     progress: bool = True,
-    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> pd.DataFrame:
     rows = []
     for nb in budgets:
@@ -303,7 +303,7 @@ def sweep_noise(
     n_train: int | None = None,
     w_phys: float = 1.0,
     progress: bool = True,
-    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> pd.DataFrame:
     """Noise is added as a fraction of the spread of y, on top of whatever
     measurement noise the real data already carries."""
@@ -351,7 +351,7 @@ def study_extrapolation(
     seeds=REPORT_SEEDS,
     arms=ARMS,
     w_phys: float = 1.0,
-    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> pd.DataFrame:
     itr, ite = split_extrapolate(prob.x[:, 0], train_frac)
     rows = []
@@ -378,7 +378,7 @@ def sweep_physics_weight(
     weights,
     seeds=REPORT_SEEDS,
     n_train: int | None = None,
-    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> pd.DataFrame:
     """The dial: how much is the physics term in the loss actually worth?
 

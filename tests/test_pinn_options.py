@@ -14,6 +14,7 @@ torch = pytest.importorskip("torch")
 
 from physprior.methods.pinn import (  # noqa: E402
     DEFAULT_PINN,
+    FROZEN_PINN,
     MIN_POINTS_FOR_EARLY_STOPPING,
     PhysParam,
     PinnOptions,
@@ -173,5 +174,10 @@ def test_options_reach_the_arm_through_fit_arm():
     idx = np.arange(20)
     fit = fit_arm("pinn", prob, idx, seed=11, pinn_options=PinnOptions(ensemble=3))
     assert fit.extra["ensemble"] == 3
+    # With no options passed the arm runs the FROZEN configuration -- the one
+    # the reported results are produced with -- not the unswitched baseline.
+    # The ablation asks for `PinnOptions()` explicitly when it wants that.
     base = fit_arm("pinn", prob, idx, seed=11)
-    assert base.extra.get("options") == "baseline"
+    assert base.extra.get("options") == FROZEN_PINN.tag
+    plain = fit_arm("pinn", prob, idx, seed=11, pinn_options=PinnOptions())
+    assert plain.extra.get("options") == "baseline"

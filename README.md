@@ -122,7 +122,7 @@ Extrapolation — error outside the training range relative to inside:
 | --- | --- | --- | --- | --- |
 | gravity/kepler | oracle | 1.537401e-08 | 7.615129e-05 | 4953.250058 |
 | gravity/kepler | physics | 1.144904e-08 | 7.558060e-05 | 6601.477587 |
-| gravity/kepler | pinn | 5.724521e-09 | 0.000327823 | 57266.48165 |
+| gravity/kepler | pinn | 1.163204e-08 | 6.208668e-05 | 5337.558048 |
 | gravity/kepler | sr | 8.926247e-09 | 7.781677e-05 | 8717.748162 |
 | gravity/kepler | nn | 2.123769e-05 | 1.66047 | 78185.25462 |
 | relativity/gw150914 | oracle | 0.31518 | 0.0858235 | 0.2723 |
@@ -132,12 +132,12 @@ Extrapolation — error outside the training range relative to inside:
 | relativity/gw150914 | nn | 0.0013106 | 0.682004 | 520.376 |
 | quantum/hydrogen | oracle | 6.258366e-05 | 6.794815e-05 | 1.08572 |
 | quantum/hydrogen | physics | 1.711022e-06 | 8.122348e-07 | 0.474707 |
-| quantum/hydrogen | pinn | 3.277580e-05 | 0.0141561 | 431.906 |
+| quantum/hydrogen | pinn | 1.823908e-06 | 0.0001624 | 89.0396 |
 | quantum/hydrogen | sr | 2.247598e-07 | 5.033930e-07 | 2.23969 |
 | quantum/hydrogen | nn | 0.00757562 | 0.336 | 44.3528 |
 | quantum/cmb | oracle | 0.00100435 | 0.00114864 | 1.14367 |
 | quantum/cmb | physics | 0.000134423 | 0.000572361 | 4.2579 |
-| quantum/cmb | pinn | 8.195418e-05 | 0.00863347 | 105.345 |
+| quantum/cmb | pinn | 0.000133712 | 0.000635673 | 4.75405 |
 | quantum/cmb | sr | 0.000484725 | 16.1954 | 33411.52162 |
 | quantum/cmb | nn | 0.00146101 | 2.08173 | 1424.85661 |
 

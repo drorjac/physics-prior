@@ -251,6 +251,58 @@ it is a one-line change I have not made without asking, since it affects CI.
 
 ---
 
+## 5A · Phase 2 outcome — what shipped, and what it bought
+
+Decided on the tuning seeds (3/7/19) by `physprior tune`, then measured on the
+reporting seeds (11/23/42) by re-running the full pipeline.
+
+### The ablation
+
+| option | tracks helped | tracks hurt | shipped | why |
+|---|---|---|---|---|
+| **`balance`** (Wang et al. 2021 gradient-norm annealing) | 5 | 0 | **yes** | the largest effect on the board, and the recovered constants move by under 2% |
+| `ens5` (5-member deep ensemble) | 5 | 0 | no | real, but weaker than `balance` alone on every cell, and it multiplies all 210 pinn fits per reporting run by five — 1.5 h against 7.3 |
+| `balance+ens5` | 5 | 0 | no | best numbers, 1.3–1.4× beyond `balance` alone, for that same 5× cost |
+| `early` (early stopping) | 0 | 4 | no | **hurt**: cmb and hydrogen up to 2.9× worse |
+| `fourier16` (Fourier features) | 1 | 5 | no | hydrogen interpolation **98× worse** |
+| `lbfgs` | 0 | 0 | no | ran on every track; the proposal never lowered the loss, so the revert guard discarded it every time |
+
+Two of the brief's seven items were already implemented and left alone:
+inputs and targets are standardised by `Standardiser`, and positive constants
+are optimised in log space by `ParamSet`.
+
+### What the shipped change bought, on the reporting seeds
+
+`results/phase2_before_after.csv`, generated:
+
+| track | interpolation | extrapolation | noise (max) |
+|---|---|---|---|
+| `gravity/kepler` | 2.9× | 5.0× | 5.5× |
+| `relativity/gw150914` | 1.0× | 1.0× | 1.0× |
+| `quantum/hydrogen` | 9.7× | **100.9×** | 28.6× |
+| `quantum/cmb` | 1.2× | 10.9× | 3.7× |
+
+Median 4.35×, best 100.9×. The PINN's scorecard moves from **7 decisive
+losses to 2** (both to `sr` on hydrogen); it now ties `physics` on kepler
+noise and beats it on hydrogen noise and kepler extrapolation, though inside
+the seed spread.
+
+`relativity/gw150914` is unchanged by construction, and that is the honest
+outcome rather than a gap: its arm is the ODE-residual PINN, a different
+model, and it reports the option as **not engaged** instead of returning a
+baseline number under the option's name.
+
+### `w_phys` was not re-frozen
+
+The tune-seed sweep confirmed the direction but milder than the reporting
+sweep suggested — kepler 3.3×, hydrogen 2.3×, cmb and gw150914 ~1.1×. Since
+`balance` makes the weight adaptive, a fixed per-track constant and the
+balancing rule are alternatives rather than a stack, and `w_phys = 1.0`
+survives as the balancing rule's starting value. The published `w_phys`
+sweep, which is a reported measurement on 11/23/42, is untouched.
+
+---
+
 ## 6 · Decisions needed before Phase 2 starts
 
 1. **α error bar (§1.4)** — report the converged α with a step-size systematic,

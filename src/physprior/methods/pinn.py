@@ -201,6 +201,33 @@ class PinnOptions:
 
 DEFAULT_PINN = PinnOptions()
 
+# The configuration the REPORTED results are produced with, frozen on the
+# tuning seeds (3/7/19) by `physprior tune`, 2026-09-23. See docs/METHOD.md.
+#
+# Measured, median ratio to the unswitched arm, lower is better:
+#
+#     track / question          balance   ens5   balance+ens5
+#     kepler       interp        0.073    0.157      0.052
+#     kepler       extrap        0.244    0.260      0.227
+#     hydrogen     interp        0.098    0.744      0.092
+#     hydrogen     extrap        0.071    0.264      0.050
+#     cmb          extrap        0.151    0.565      0.129
+#
+# and the recovered constants move by under 2% in every cell, so the gain is
+# not bought out of the physics.
+#
+# `balance` alone takes the bulk of it; adding a 5-member ensemble buys a
+# further 1.3-1.4x for five times the compute on every fit in every sweep --
+# 210 pinn fits per reporting run, so 1.5 hours against 7.3. The ensemble
+# stays available through PinnOptions for the places an uncertainty on the
+# recovered constant is the point, and out of the sweeps.
+#
+# Early stopping and Fourier features were measured and REJECTED: early
+# stopping hurt four cells and helped none, Fourier features made hydrogen
+# interpolation 98x worse. L-BFGS ran on every track and its proposal never
+# lowered the loss, so the revert guard discarded it every time.
+FROZEN_PINN = PinnOptions(balance=True)
+
 # Below this many training points a validation split cannot be carved without
 # leaving the fit with too little to fit -- track G trains on as few as two.
 MIN_POINTS_FOR_EARLY_STOPPING = 6

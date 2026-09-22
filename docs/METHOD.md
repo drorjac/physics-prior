@@ -88,6 +88,33 @@ Run once at the third row and stopped, this project would have reported a
 the problem; it was correct, and it was answering a question about the
 *statistics* of a model that was *systematically* wrong.
 
+
+## The Phase 2 ablation, and a prediction that was wrong
+
+`docs/PLAN.md` section 3.2 ranked the candidate PINN options by expected
+value before any of them were run. Early stopping was ranked first -- "largest
+single win on kepler/hydrogen/cmb" -- on the reasoning that the correction
+network overfits wherever the published law is already right, and that
+stopping it early would be the direct fix.
+
+The tuning seeds say the opposite. Early stopping **hurt** four of eight
+cells and helped none; gradient-norm loss balancing, ranked fourth, was the
+largest effect on the board, worth up to 101x on hydrogen extrapolation.
+Fourier features, ranked fifth with the note that they "may hurt the three
+smooth tracks", hurt five of six.
+
+The reasoning behind the ranking was not obviously wrong, and it is recorded
+here rather than quietly reordered, because the ranking is exactly the kind
+of plausible argument this project exists to distrust. The ablation was run
+one switch at a time precisely so that the answer would not depend on it.
+
+A second thing the same run caught: the shipping rule in `docs/PLAN.md`
+section 5.2 said an option ships if it "helps on at least one track and on no
+track improves in-distribution error while degrading parameter recovery".
+Fourier features satisfy that -- they help kepler extrapolation -- while
+making three tracks up to 98x worse. The rule had never considered an option
+that *hurts*, and now requires that it hurt none.
+
 ## Seeds
 
 Tune on 3 / 7 / 19, report on 11 / 23 / 42. Hyperparameters, the SR operator
