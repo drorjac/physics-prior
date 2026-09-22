@@ -17,6 +17,7 @@ and any arm that "beats" it in-sample is fitting noise.
 
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, TypeVar
@@ -129,9 +130,23 @@ def fit_arm(
     w_phys: float = 1.0,
     sr_seed: int | None = None,
     sr_fast: bool = False,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
 ) -> Fit:
+    """`pinn_options` is how an ablation turns one switch on without
+    touching the arm every other track uses; it defaults to the
+    configuration the committed results were produced with."""
     if arm in prob.arm_impl:
-        return prob.arm_impl[arm](prob, idx, seed, w_phys)
+        impl = prob.arm_impl[arm]
+        # An override that has not opted into the options must not silently
+        # return a baseline fit labelled as an ablation, so the options are
+        # passed only where the signature accepts them and the fit says so.
+        if "options" in inspect.signature(impl).parameters:
+            return impl(prob, idx, seed, w_phys, options=pinn_options)
+        fit = impl(prob, idx, seed, w_phys)
+        if pinn_options is not pinn_mod.DEFAULT_PINN:
+            fit.extra["options"] = pinn_options.tag
+            fit.extra["engaged"] = False
+        return fit
 
     xtr, ytr = prob.sub(idx)
     sig = prob.sigma[idx] if prob.sigma is not None else None
@@ -151,6 +166,7 @@ def fit_arm(
             w_phys=w_phys,
             seed=seed,
             epochs=prob.pinn_epochs,
+            options=pinn_options,
         )
         # The arm IS the law plus a learned correction, so it does return a
         # closed form -- an incomplete one. Recording None here made the
@@ -254,6 +270,7 @@ def sweep_budget(
     arms=ARMS,
     w_phys: float = 1.0,
     progress: bool = True,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
 ) -> pd.DataFrame:
     rows = []
     for nb in budgets:
@@ -261,7 +278,15 @@ def sweep_budget(
         for seed in seeds:
             itr, ite = split_random(len(prob), nb, seed)
             for arm in arms:
-                f = fit_arm(arm, prob, itr, seed, w_phys=w_phys, sr_fast=True)
+                f = fit_arm(
+                    arm,
+                    prob,
+                    itr,
+                    seed,
+                    w_phys=w_phys,
+                    sr_fast=True,
+                    pinn_options=pinn_options,
+                )
                 rows.append(
                     score(prob, f, itr, ite, sweep="budget", n_train=nb, seed=seed)
                 )
@@ -278,6 +303,7 @@ def sweep_noise(
     n_train: int | None = None,
     w_phys: float = 1.0,
     progress: bool = True,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
 ) -> pd.DataFrame:
     """Noise is added as a fraction of the spread of y, on top of whatever
     measurement noise the real data already carries."""
@@ -291,7 +317,15 @@ def sweep_noise(
             prob.y = base_y + rng.normal(0.0, frac * scale, len(base_y))
             itr, ite = split_random(len(prob), n_train, seed)
             for arm in arms:
-                f = fit_arm(arm, prob, itr, seed, w_phys=w_phys, sr_fast=True)
+                f = fit_arm(
+                    arm,
+                    prob,
+                    itr,
+                    seed,
+                    w_phys=w_phys,
+                    sr_fast=True,
+                    pinn_options=pinn_options,
+                )
                 rows.append(
                     score(
                         prob,
@@ -317,12 +351,13 @@ def study_extrapolation(
     seeds=REPORT_SEEDS,
     arms=ARMS,
     w_phys: float = 1.0,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
 ) -> pd.DataFrame:
     itr, ite = split_extrapolate(prob.x[:, 0], train_frac)
     rows = []
     for seed in seeds:
         for arm in arms:
-            f = fit_arm(arm, prob, itr, seed, w_phys=w_phys)
+            f = fit_arm(arm, prob, itr, seed, w_phys=w_phys, pinn_options=pinn_options)
             rows.append(
                 score(
                     prob,
@@ -339,15 +374,25 @@ def study_extrapolation(
 
 
 def sweep_physics_weight(
-    prob: Problem, weights, seeds=REPORT_SEEDS, n_train: int | None = None
+    prob: Problem,
+    weights,
+    seeds=REPORT_SEEDS,
+    n_train: int | None = None,
+    pinn_options: pinn_mod.PinnOptions = pinn_mod.DEFAULT_PINN,
 ) -> pd.DataFrame:
-    """The dial: how much is the physics term in the loss actually worth?"""
+    """The dial: how much is the physics term in the loss actually worth?
+
+    Defaults to the REPORTING seeds because the published finding is a
+    measurement. Choosing a default `w_phys` from it would be selection on a
+    reporting seed (invariant 6) -- pass `seeds=TUNE_SEEDS` for that, which
+    is what `physprior tune` does.
+    """
     rows = []
     n_train = n_train or max(int(0.7 * len(prob)), 4)
     for w in weights:
         for seed in seeds:
             itr, ite = split_random(len(prob), n_train, seed)
-            f = fit_arm("pinn", prob, itr, seed, w_phys=w)
+            f = fit_arm("pinn", prob, itr, seed, w_phys=w, pinn_options=pinn_options)
             rows.append(
                 score(
                     prob,

@@ -140,6 +140,109 @@ def fit_physics(
 # ---------------------------------------------------------------------------
 
 
+@dataclass(frozen=True)
+class PinnOptions:
+    """Switches for the `pinn` arm. Every one of them defaults to OFF.
+
+    The arm that produced the committed results is `PinnOptions()`, so an
+    option can only change a published number by being turned on deliberately
+    and shown, on the TUNING seeds, to earn it (invariant 6). `tag` names the
+    configuration in an ablation table.
+
+    early_stopping  carve a validation split out of the TRAINING data and
+                    keep the epoch that minimised its data loss. The
+                    correction network is what overfits -- where the law is
+                    already right the ideal correction is zero, which a
+                    network cannot represent, so it fits noise instead and
+                    the damage only shows up off the training range.
+    lbfgs           a second-order refinement after Adam. Adam gets close on
+                    a badly scaled problem; L-BFGS is what finishes.
+    ensemble        train N members from consecutive seeds and average them.
+                    Gives the arm a spread over seeds, which is the only
+                    uncertainty it has to set against `curve_fit`'s sigma.
+    fourier         random Fourier features on the correction's input, for
+                    spectral bias. A prior in its own right: it assumes the
+                    residual has structure at the scale it encodes.
+    balance         learning-rate annealing (Wang et al. 2021): rescale the
+                    physics weight from the ratio of gradient norms, so the
+                    two loss terms contribute comparably. Note this makes
+                    w_phys adaptive, which is exactly what the w_phys sweep
+                    holds fixed -- the two are alternatives, not a stack.
+    """
+
+    early_stopping: bool = False
+    val_frac: float = 0.25
+    patience: int = 400
+    check_every: int = 25
+    lbfgs: bool = False
+    lbfgs_steps: int = 250
+    ensemble: int = 1
+    fourier: int = 0
+    fourier_scale: float = 1.0
+    balance: bool = False
+    balance_every: int = 100
+    balance_alpha: float = 0.9
+
+    @property
+    def tag(self) -> str:
+        on = []
+        if self.early_stopping:
+            on.append("early")
+        if self.lbfgs:
+            on.append("lbfgs")
+        if self.ensemble > 1:
+            on.append(f"ens{self.ensemble}")
+        if self.fourier:
+            on.append(f"fourier{self.fourier}")
+        if self.balance:
+            on.append("balance")
+        return "+".join(on) if on else "baseline"
+
+
+DEFAULT_PINN = PinnOptions()
+
+# Below this many training points a validation split cannot be carved without
+# leaving the fit with too little to fit -- track G trains on as few as two.
+MIN_POINTS_FOR_EARLY_STOPPING = 6
+
+
+class FourierFeatures(torch.nn.Module):
+    """x -> [sin(2 pi B x), cos(2 pi B x)], B fixed random.
+
+    The frequencies are drawn once and frozen: they are part of the model's
+    prior, not something the optimiser gets to choose.
+    """
+
+    def __init__(self, d_in: int, n: int, scale: float, generator):
+        super().__init__()
+        b = torch.randn(d_in, n, generator=generator, dtype=DTYPE) * scale
+        self.register_buffer("freqs", b)
+
+    def forward(self, x):
+        proj = 2.0 * np.pi * (x @ self.freqs)
+        return torch.cat([torch.sin(proj), torch.cos(proj)], dim=-1)
+
+
+def _correction_net(d_in: int, width: int, depth: int, opts: PinnOptions, seed: int):
+    if not opts.fourier:
+        return mlp(d_in, width, depth)
+    gen = torch.Generator().manual_seed(seed)
+    ff = FourierFeatures(d_in, opts.fourier, opts.fourier_scale, gen)
+    return torch.nn.Sequential(ff, mlp(2 * opts.fourier, width, depth))
+
+
+def _split_validation(n: int, frac: float, seed: int):
+    """A validation split carved from the TRAINING data only.
+
+    Never from the held-out set: selecting an epoch on the data the arm is
+    scored against is the same error as tuning on a reporting seed.
+    """
+    rng = np.random.default_rng(seed)
+    perm = rng.permutation(n)
+    n_val = max(1, round(frac * n))
+    return perm[n_val:], perm[:n_val]
+
+
 def fit_pinn(
     x: np.ndarray,
     y: np.ndarray,
@@ -156,11 +259,100 @@ def fit_pinn(
     name: str = "pinn",
     record_every: int = 0,
     record_grid: np.ndarray | None = None,
+    options: PinnOptions = DEFAULT_PINN,
 ) -> Fit:
     """`record_every > 0` keeps the history: the two loss terms separately,
     every trainable constant, and the prediction on `record_grid`. Watching the
     constant walk toward its published value is the clearest picture in this
-    project of what the physics term in the loss is doing."""
+    project of what the physics term in the loss is doing.
+
+    With `options.ensemble > 1` the members are trained from consecutive
+    seeds and averaged; the spread of the recovered constants across members
+    is reported as `param_sigma`, which is the arm's only error bar.
+    """
+    if options.ensemble <= 1:
+        return _fit_pinn_once(
+            x,
+            y,
+            law_t,
+            params,
+            w_phys=w_phys,
+            width=width,
+            depth=depth,
+            epochs=epochs,
+            lr=lr,
+            seed=seed,
+            weight_decay=weight_decay,
+            name=name,
+            record_every=record_every,
+            record_grid=record_grid,
+            options=options,
+        )
+
+    t0 = time.time()
+    members = [
+        _fit_pinn_once(
+            x,
+            y,
+            law_t,
+            params,
+            w_phys=w_phys,
+            width=width,
+            depth=depth,
+            epochs=epochs,
+            lr=lr,
+            seed=seed + k,
+            weight_decay=weight_decay,
+            name=name,
+            record_every=record_every if k == 0 else 0,
+            record_grid=record_grid,
+            options=options,
+        )
+        for k in range(options.ensemble)
+    ]
+
+    def predict(xq: np.ndarray) -> np.ndarray:
+        return np.mean([m.predict(xq) for m in members], axis=0)
+
+    names = members[0].params.keys()
+    theta = {k: float(np.mean([m.params[k] for m in members])) for k in names}
+    sigma = {k: float(np.std([m.params[k] for m in members], ddof=1)) for k in names}
+    return Fit(
+        name=name,
+        predict=predict,
+        params=theta,
+        param_sigma=sigma,
+        n_free=sum(m.n_free for m in members),
+        seconds=time.time() - t0,
+        history=members[0].history,
+        extra={
+            "w_phys": w_phys,
+            "options": options.tag,
+            "ensemble": options.ensemble,
+            "engaged": all(m.extra.get("engaged", True) for m in members),
+            "members": [m.params for m in members],
+        },
+    )
+
+
+def _fit_pinn_once(
+    x: np.ndarray,
+    y: np.ndarray,
+    law_t,
+    params: list[PhysParam],
+    *,
+    w_phys: float,
+    width: int,
+    depth: int,
+    epochs: int,
+    lr: float,
+    seed: int,
+    weight_decay: float,
+    name: str,
+    record_every: int,
+    record_grid: np.ndarray | None,
+    options: PinnOptions,
+) -> Fit:
     t0 = time.time()
     set_seed(seed)
     std = Standardiser.fit(x, y)
@@ -170,7 +362,16 @@ def fit_pinn(
     )
     yt = torch.tensor(np.asarray(y, float).ravel(), dtype=DTYPE)
 
-    net = mlp(xs.shape[1], width, depth)
+    use_early = options.early_stopping and len(y) >= MIN_POINTS_FOR_EARLY_STOPPING
+    if use_early:
+        i_fit, i_val = _split_validation(len(y), options.val_frac, seed)
+        fit_idx = torch.tensor(i_fit, dtype=torch.long)
+        val_idx = torch.tensor(i_val, dtype=torch.long)
+    else:
+        fit_idx = torch.arange(len(y))
+        val_idx = None
+
+    net = _correction_net(xs.shape[1], width, depth, options, seed)
     ps = ParamSet(params)
     opt = torch.optim.Adam(
         [
@@ -180,6 +381,12 @@ def fit_pinn(
         lr=lr,
     )
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
+
+    def losses(idx):
+        corr = net(xs[idx]).squeeze(-1)
+        pred = law_t(xt[idx], **ps.values()).squeeze() + std.sd_y * corr
+        data = torch.mean(((pred - yt[idx]) / std.sd_y) ** 2)
+        return data, torch.mean(corr**2)
 
     history: dict[str, list] = {
         "epoch": [],
@@ -195,22 +402,34 @@ def fit_pinn(
         g = np.asarray(record_grid, float)
         grid_np = g.reshape(-1, 1) if g.ndim == 1 else g
 
+    weight = float(w_phys)
+    best = None  # (val_loss, epoch, state)
+    stopped_at = epochs
     for ep in range(epochs):
         opt.zero_grad()
-        corr = net(xs).squeeze(-1)
-        pred = law_t(xt, **ps.values()).squeeze() + std.sd_y * corr
-        data = torch.mean(((pred - yt) / std.sd_y) ** 2)
-        phys = torch.mean(corr**2)
-        (data + w_phys * phys).backward()
+        data, phys = losses(fit_idx)
+        if options.balance and weight > 0 and ep % options.balance_every == 0:
+            weight = _annealed_weight(net, data, phys, weight, options.balance_alpha)
+        (data + weight * phys).backward()
         opt.step()
         sched.step()
+
+        if use_early and ep % options.check_every == 0:
+            with torch.no_grad():
+                v = float(losses(val_idx)[0])
+            if best is None or v < best[0] - 1e-12:
+                best = (v, ep, _snapshot(net, ps))
+            elif ep - best[1] >= options.patience:
+                stopped_at = ep
+                break
+
         if record_every and (ep % record_every == 0 or ep == epochs - 1):
             history["epoch"].append(ep)
             history["data_loss"].append(float(data.detach()))
             history["phys_loss"].append(float(phys.detach()))
-            history["loss"].append(float((data + w_phys * phys).detach()))
-            for k, v in ps.numpy().items():
-                history[k].append(v)
+            history["loss"].append(float((data + weight * phys).detach()))
+            for k, v_ in ps.numpy().items():
+                history[k].append(v_)
             if grid_np is not None:
                 with torch.no_grad():
                     c = net(torch.tensor(std.x(grid_np), dtype=DTYPE)).squeeze(-1)
@@ -218,6 +437,15 @@ def fit_pinn(
                         torch.tensor(grid_np, dtype=DTYPE), **ps.values()
                     ).squeeze()
                     history["pred"].append((pq + std.sd_y * c).numpy().ravel())
+
+    if use_early and best is not None:
+        _restore(net, ps, best[2])
+
+    lbfgs_kept = None
+    if options.lbfgs:
+        lbfgs_kept = _refine_lbfgs(
+            net, ps, losses, fit_idx, weight, options.lbfgs_steps
+        )
 
     theta = ps.numpy()
 
@@ -230,6 +458,8 @@ def fit_pinn(
             p = law_t(torch.tensor(xq2, dtype=DTYPE), **ps.values()).squeeze()
             return (p + std.sd_y * c).numpy().ravel()
 
+    with torch.no_grad():
+        final_data, _ = losses(fit_idx)
     return Fit(
         name=name,
         predict=predict,
@@ -239,12 +469,97 @@ def fit_pinn(
         history=history if record_every else None,
         extra={
             "w_phys": w_phys,
+            "w_phys_final": weight,
+            "options": options.tag,
+            "early_stopped_at": stopped_at if use_early else None,
+            "early_stopping_used": use_early,
+            "lbfgs_kept": lbfgs_kept,
+            # Did the switch that was turned on actually do anything? An
+            # option that cannot engage on a track must be reported as
+            # inapplicable, not as an option that failed to help.
+            "engaged": _engaged(options, use_early, lbfgs_kept),
             "correction_rms_frac": float(
                 torch.sqrt(torch.mean(net(xs).squeeze(-1) ** 2)).detach()
             ),
-            "data_mse_std_units": float(data.detach()),
+            "data_mse_std_units": float(final_data),
         },
     )
+
+
+def _engaged(options: PinnOptions, use_early: bool, lbfgs_kept) -> bool:
+    if options.early_stopping and not use_early:
+        return False
+    return not (options.lbfgs and not lbfgs_kept)
+
+
+def _snapshot(net, ps):
+    return (
+        {k: v.detach().clone() for k, v in net.state_dict().items()},
+        {k: v.detach().clone() for k, v in ps.state_dict().items()},
+    )
+
+
+def _restore(net, ps, snap) -> None:
+    net.load_state_dict(snap[0])
+    ps.load_state_dict(snap[1])
+
+
+def _annealed_weight(net, data, phys, weight: float, alpha: float) -> float:
+    """Wang et al. (2021) learning-rate annealing.
+
+    The physics weight is set from the ratio of gradient norms so neither
+    term is invisible to the optimiser, then smoothed. Returns the old
+    weight unchanged if either gradient vanishes -- a zero denominator here
+    would otherwise send the weight to infinity on the first flat step.
+    """
+    shared = [p for p in net.parameters() if p.requires_grad]
+    gd = torch.autograd.grad(data, shared, retain_graph=True, allow_unused=True)
+    gp = torch.autograd.grad(phys, shared, retain_graph=True, allow_unused=True)
+    dmax = max((float(g.abs().max()) for g in gd if g is not None), default=0.0)
+    pmean = float(
+        np.mean([float(g.abs().mean()) for g in gp if g is not None] or [0.0])
+    )
+    if not np.isfinite(dmax) or not np.isfinite(pmean) or pmean <= 0 or dmax <= 0:
+        return weight
+    return alpha * weight + (1.0 - alpha) * (dmax / pmean)
+
+
+def _refine_lbfgs(net, ps, losses, idx, weight: float, steps: int) -> bool:
+    """A second-order polish, reverted if it does not help.
+
+    L-BFGS on a loss this stiff can diverge outright; the fit it would
+    return then is worse than the one Adam already had, so the step is
+    treated as a proposal and kept only on the evidence.
+    """
+    before = _snapshot(net, ps)
+    with torch.no_grad():
+        d0, p0 = losses(idx)
+        start = float(d0 + weight * p0)
+    opt = torch.optim.LBFGS(
+        list(net.parameters()) + list(ps.parameters()),
+        max_iter=steps,
+        line_search_fn="strong_wolfe",
+    )
+
+    def closure():
+        opt.zero_grad()
+        data, phys = losses(idx)
+        loss = data + weight * phys
+        loss.backward()
+        return loss
+
+    try:
+        opt.step(closure)
+    except (RuntimeError, ValueError):
+        _restore(net, ps, before)
+        return False
+    with torch.no_grad():
+        d1, p1 = losses(idx)
+        end = float(d1 + weight * p1)
+    if not np.isfinite(end) or end > start:
+        _restore(net, ps, before)
+        return False
+    return True
 
 
 # ---------------------------------------------------------------------------

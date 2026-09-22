@@ -78,8 +78,50 @@ def build_parser() -> argparse.ArgumentParser:
     fetch = data_sub.add_parser("fetch", help="download one dataset now")
     fetch.add_argument("name")
 
+    tune = sub.add_parser(
+        "tune",
+        help="choose the pinn arm's defaults on the TUNING seeds (3/7/19)",
+    )
+    tune.add_argument(
+        "track",
+        nargs="?",
+        default=None,
+        help="one track, e.g. gravity/kepler (default: all four)",
+    )
+    tune.add_argument(
+        "--quick", action="store_true", help="shorter training, for a smoke test"
+    )
+    tune.add_argument(
+        "--what",
+        choices=("ablation", "w_phys", "both"),
+        default="both",
+        help="which study to run (default: both)",
+    )
+
     sub.add_parser("info", help="show resolved paths and configuration")
     return parser
+
+
+def _tune(track: str | None, quick: bool, what: str) -> int:
+    """Everything here runs on the tuning seeds and writes under
+    results/<track>/tune/, so no default is ever chosen by looking at a
+    reported number (invariant 6)."""
+    from physprior.benchmark import ablation
+
+    tracks = [track] if track else None
+    if what in ("ablation", "both"):
+        log.info("ablating the pinn options on the tuning seeds")
+        df = ablation.run(tracks=tracks, quick=quick)
+        ablation.save(df, "ablation")
+        summary = ablation.summarise(df)
+        ablation.save(summary, "ablation_summary")
+        print("\n" + summary.to_string(index=False))
+        print("\n" + ablation.decide(summary).to_string(index=False))
+    if what in ("w_phys", "both"):
+        log.info("sweeping w_phys on the tuning seeds")
+        w = ablation.tune_physics_weight(tracks=tracks, quick=quick)
+        ablation.save(w, "sweep_physics_weight")
+    return 0
 
 
 def _run(problem: str, quick: bool) -> int:
@@ -151,6 +193,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
             build_notebooks(execute=args.execute, only=args.name)
             return 0
+        if args.command == "tune":
+            return _tune(args.track, args.quick, args.what)
         if args.command == "data":
             return _data(args)
         if args.command == "info":

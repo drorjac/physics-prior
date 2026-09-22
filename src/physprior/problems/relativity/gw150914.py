@@ -42,7 +42,7 @@ from physprior.benchmark.protocol import (
 from physprior.constants import GW150914_MCHIRP_DETECTOR, T_SUN_S
 from physprior.data.sources import gwosc as gw
 from physprior.io import save_json, save_table
-from physprior.methods.pinn import PhysParam, fit_pinn_ode
+from physprior.methods.pinn import DEFAULT_PINN, PhysParam, fit_pinn_ode
 from physprior.util import first_column
 
 TRACK = "relativity/gw150914"
@@ -120,9 +120,16 @@ def make_law(order=DEFAULT_PN):
     return law_np
 
 
-def _pinn_ode_arm(prob, idx, seed, w_phys):
-    """Track G's `pinn` is the textbook PINN: the network is f(t) and the
-    residual of the inspiral ODE, with Mc trainable, is the physics loss."""
+# The options `fit_pinn` grew are switches on the `law + sd_y * NN(x)` loop.
+# This track's arm is a different model -- the network IS the solution and the
+# ODE residual is the physics term -- so only the ones that wrap a fit rather
+# than modify its loop carry over. Ensembling does; the rest would have to be
+# implemented against this loop, and until they are the arm reports that they
+# did not engage rather than returning a baseline fit under their name.
+_ODE_SUPPORTS = ("ensemble",)
+
+
+def _pinn_ode_once(prob, idx, seed, w_phys):
     x, y = prob.sub(idx)
     t = x[:, 0]
 
@@ -145,6 +152,42 @@ def _pinn_ode_arm(prob, idx, seed, w_phys):
         + "  [as an ODE residual, network = f(t)]"
     )
     return f
+
+
+def _pinn_ode_arm(prob, idx, seed, w_phys, options=DEFAULT_PINN):
+    """Track G's `pinn` is the textbook PINN: the network is f(t) and the
+    residual of the inspiral ODE, with Mc trainable, is the physics loss."""
+    unsupported = [
+        name
+        for name, on in (
+            ("early_stopping", options.early_stopping),
+            ("lbfgs", options.lbfgs),
+            ("fourier", bool(options.fourier)),
+            ("balance", options.balance),
+        )
+        if on and name not in _ODE_SUPPORTS
+    ]
+    if options.ensemble > 1:
+        members = [
+            _pinn_ode_once(prob, idx, seed + k, w_phys) for k in range(options.ensemble)
+        ]
+        first = members[0]
+        keys = first.params.keys()
+        first.params = {k: float(np.mean([m.params[k] for m in members])) for k in keys}
+        first.param_sigma = {
+            k: float(np.std([m.params[k] for m in members], ddof=1)) for k in keys
+        }
+        preds = [m.predict for m in members]
+        first.predict = lambda xq, _p=preds: np.mean([f(xq) for f in _p], axis=0)
+        first.extra["ensemble"] = options.ensemble
+        fit = first
+    else:
+        fit = _pinn_ode_once(prob, idx, seed, w_phys)
+    fit.extra["options"] = options.tag
+    fit.extra["engaged"] = not unsupported
+    if unsupported:
+        fit.extra["unsupported_options"] = unsupported
+    return fit
 
 
 def problem(order: int = DEFAULT_PN) -> tuple[Problem, dict]:
