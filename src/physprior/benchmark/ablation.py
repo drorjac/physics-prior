@@ -41,6 +41,11 @@ ABLATIONS: dict[str, PinnOptions] = {
     "ens5": PinnOptions(ensemble=5),
     "fourier": PinnOptions(fourier=16),
     "balance": PinnOptions(balance=True),
+    # The stack. Two options that each earn their place separately are still
+    # a configuration nobody measured; gradient-norm balancing changes the
+    # loss every member of an ensemble is trained on, so the two are not
+    # obviously independent and the combination is ablated in its own right.
+    "balance+ens5": PinnOptions(balance=True, ensemble=5),
 }
 
 
@@ -213,7 +218,12 @@ def decide(summary: pd.DataFrame) -> pd.DataFrame:
         helped = sub[sub.ratio < HELP]
         hurt = sub[sub.ratio > HURT]
         bought = sub[(sub.ratio < HELP) & (sub.param_ratio > HURT)]
-        ship = bool(len(helped)) and not len(bought)
+        # An option that helps one track and hurts five is not a default.
+        # PLAN.md 5.2 only said "helps on at least one track", which the
+        # Fourier-feature run then satisfied while making three tracks up to
+        # 98x worse -- the rule had simply never considered an option that
+        # hurts. A default has to be safe everywhere it is on.
+        ship = bool(len(helped)) and not len(bought) and not len(hurt)
         why = []
         if len(helped):
             why.append(
