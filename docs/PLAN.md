@@ -78,17 +78,31 @@ published number and needs your call.
 ## 2 · Where the PINN actually stands
 
 Reporting seeds, mean ± std over 11/23/42, against the best **non-oracle**
-arm. "TIE" means the gap is inside the pooled seed-to-seed spread.
+arm, on **held-out** error (`nrmse_out`; see the note below). "TIE" means the
+gap is inside the pooled seed-to-seed spread.
 
 | track | interpolation | extrapolation | noise (max) | parameter recovery |
 |---|---|---|---|---|
-| `gravity/kepler` | TIE vs `sr` (2.1×) | **LOSES** vs `physics` 3.9× | TIE vs `physics` (1.4×) | ties `physics` (0.00586 % vs 0.00575 %) |
-| `relativity/gw150914` | **LOSES** vs `nn` 41× | **WINS** vs `nn` (0.75×) | TIE vs `nn` (1.2×) | ties `physics` (−5.64 % vs −5.02 %) |
-| `quantum/hydrogen` | **LOSES** vs `sr` 118× | **LOSES** vs `sr` 3.4e4× | **LOSES** vs `physics` 2.5× | ties `physics` (0.00117 % vs 0.00109 %) |
-| `quantum/cmb` | **WINS** vs `physics` (0.78×) | **LOSES** vs `physics` 12.5× | **LOSES** vs `physics` 1.9× | ties `physics` (−0.0172 % vs −0.0171 %) |
+| `gravity/kepler` | TIE vs `physics` (4.0×) | **LOSES** vs `physics` 3.9× | **LOSES** vs `physics` 5.5× | ties `physics` (0.00586 % vs 0.00575 %) |
+| `relativity/gw150914` | TIE vs `physics` (1.1×) | **WINS** vs `nn` (0.75×) | TIE vs `physics` (1.3×) | ties `physics` (−5.64 % vs −5.02 %) |
+| `quantum/hydrogen` | **LOSES** vs `sr` 80× | **LOSES** vs `sr` 3.4e4× | **LOSES** vs `physics` 3.3× | ties `physics` (0.00117 % vs 0.00109 %) |
+| `quantum/cmb` | TIE vs `physics` (1.3×) | **LOSES** vs `physics` 12.5× | **LOSES** vs `physics` 3.4× | ties `physics` (−0.0172 % vs −0.0171 %) |
 
-**Score: 2 wins, 7 losses, 3 ties out of 12 cells, and not one parameter
-recovered better than `curve_fit`.**
+**Score: 1 win, 7 losses, 4 ties out of 12 cells, and not one parameter
+recovered better than `curve_fit`.** The single win is `gw150914`
+extrapolation — the one track whose law is a truncated expansion.
+
+> **Correction, recorded because it is the project's own failure mode.** The
+> first version of this table scored interpolation and noise on `nrmse_in`.
+> In `sweep_budget` and `sweep_noise`, `score()` is called with the *training*
+> indices as `idx_in`, so `nrmse_in` is the fit to the data the arm was
+> handed, not a held-out result. On that metric `physics` "beat" `sr` by
+> **4.7e6×** on `gw150914` data efficiency — which is one parameter fitted
+> through two points, i.e. exact interpolation, not a win. It also promoted
+> the PINN's `cmb` interpolation tie into a win. `report.py:221` already used
+> `nrmse_out` for the budget sweep; the conclusions module and
+> `scripts/audit_pinn.py` now do too. A plausible-looking criterion that
+> measures the wrong thing, caught by the number being absurd.
 
 ### 2.1 Diagnosis — this is not a tuning problem
 
@@ -104,7 +118,8 @@ Three patterns, all consistent:
 2. **It pays exactly where the law is incomplete.** `gw150914` is the one
    track whose law is a *truncated expansion*, and it is the one track where
    the PINN is the best non-oracle arm out-of-range (0.496 vs `nn` 0.66,
-   `sr` 6.89, `physics` 13.4). The correction has something real to absorb.
+   `sr` 6.89, `physics` 13.4) — and its **only** decisive win anywhere in the
+   table. The correction has something real to absorb.
 3. **Parameter recovery is a dead heat by construction.** The PINN tracks
    `physics` to three significant figures on every track. At `w_phys = 1` the
    physics term dominates, the correction is small, and θ converges to the

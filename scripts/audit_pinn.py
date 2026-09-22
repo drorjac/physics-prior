@@ -83,9 +83,12 @@ def main() -> int:
     rows = []
     for track in TRACKS:
         for fname, metric, label in (
-            ("sweep_budget", "nrmse_in", "interpolation"),
+            # nrmse_out is the HELD-OUT error in the budget and noise sweeps:
+            # score() is called with the training indices as idx_in, so
+            # nrmse_in there is the fit to the data the arm was handed.
+            ("sweep_budget", "nrmse_out", "interpolation"),
             ("extrapolation", "nrmse_out", "extrapolation"),
-            ("sweep_noise", "nrmse_in", "noise (max)"),
+            ("sweep_noise", "nrmse_out", "noise (max)"),
         ):
             r = compare(results, track, fname, metric, label)
             if r:

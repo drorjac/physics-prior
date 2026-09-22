@@ -66,6 +66,49 @@ def _nb(cells, title):
 # ---------------------------------------------------------------------------
 
 
+def conclusion_cells(scope: str):
+    """The closing section every notebook ends in.
+
+    Generated, not written: the verdict table, the prose and the
+    falsification list are all rendered from `results/` by
+    `physprior.reporting.conclusions`, so a notebook cannot keep claiming a
+    win after the numbers stop supporting it. A question whose arms are
+    separated by less than the seed-to-seed spread is reported as a tie, and
+    if nothing is decisive the conclusion says exactly that.
+    """
+    return [
+        md("""
+---
+
+## Conclusion
+
+Everything below is rendered from `results/` at execution time by
+`physprior.reporting.conclusions` — the verdicts, the margins and the prose.
+A gap smaller than the seed-to-seed spread on the reporting seeds
+(11 / 23 / 42) is reported as a **tie**, not rounded into a win.
+"""),
+        code(f"""
+from physprior.reporting import conclusions as C
+verdicts = C.verdict_frame({scope!r})
+display(verdicts)
+"""),
+        code(
+            """
+from IPython.display import Markdown
+display(Markdown(C.conclusion_markdown(%r)))
+"""
+            % scope
+        ),
+        code(
+            r"""
+lines = ["- " + line for line in C.what_would_change_this(%r)]
+display(Markdown("**What would change this conclusion**\n\n" + "\n".join(lines)))
+"""
+            % scope
+        ),
+    ]
+
+
 def nb_overview():
     return _nb(
         [
@@ -136,6 +179,7 @@ pd.DataFrame(h["oracle_sanity"])
 See [`docs/TOOLING.md`](../docs/TOOLING.md) for which package does what and
 exactly how a formula comes out of symbolic regression.
 """),
+            *conclusion_cells("all"),
         ],
         "physprior overview",
     )
@@ -292,6 +336,7 @@ and `GM` to sub-ppb when the law is exactly right. The ephemeris then returns
 two-body formula `P = 2π√(a³/GM)` neglects the planets' own masses and uses
 the osculating rather than the mean semi-major axis.
 """),
+            *conclusion_cells("gravity"),
         ],
         "Problem: gravity",
     )
@@ -457,6 +502,7 @@ tc = load_table("relativity","threshold_calibration")
 display(tc)
 print("the value adopted is the smallest whose injection bias is under 1%")
 """),
+            *conclusion_cells("relativity"),
         ],
         "Problem: relativity",
     )
@@ -616,6 +662,7 @@ FIRAS-coverage run has the *best* in-band fit of the five and one of the worst
 extrapolations. Fit quality on the observed range is not evidence that you
 have discovered anything.
 """),
+            *conclusion_cells("quantum"),
         ],
         "Problem: quantum",
     )
