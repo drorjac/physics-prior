@@ -475,3 +475,115 @@ def fig_parameter_recovery(rows, title="Physical constants recovered from real d
     _style(ax, title, "recovered / published   (dashed line = published value)", None)
     ax.grid(axis="y", visible=False)
     return fig
+
+
+def fig_phase2_improvement(df, title=None):
+    """What freezing the balanced loss bought the `pinn` arm, per track.
+
+    Form: a dumbbell, not bars. The measure spans four decades so the axis
+    must be logarithmic, and a bar encodes length from a zero baseline that a
+    log axis does not have. Two dots joined by a line also put the reader on
+    the quantity that matters -- how far each cell moved.
+
+    One hue throughout, because every row is the same arm; the row labels
+    carry identity, so there is nothing for a second colour to say.
+    `relativity/gw150914` shows as a point rather than a dumbbell, which is
+    the honest picture: its arm is the ODE-residual PINN, the option does not
+    apply to it, and it reports itself not engaged rather than moving.
+    """
+    use_style()
+    rows = list(df.itertuples())
+    fig, ax = plt.subplots(figsize=(8.2, 0.42 * len(rows) + 2.0))
+    colour = ARM_COLOR["pinn"]
+
+    labels = []
+    for i, r in enumerate(rows):
+        y = len(rows) - 1 - i
+        labels.append((y, f"{r.track.split('/')[-1]}  ·  {r.question}"))
+        moved = r.factor > 1.05
+        ax.plot(
+            [r.before, r.after],
+            [y, y],
+            color=colour,
+            lw=2.4,
+            alpha=0.45,
+            zorder=2,
+            solid_capstyle="round",
+        )
+        ax.plot(
+            [r.before],
+            [y],
+            "o",
+            markersize=7,
+            markerfacecolor=SURFACE,
+            markeredgecolor=colour,
+            markeredgewidth=2.2,
+            zorder=3,
+        )
+        ax.plot(
+            [r.after],
+            [y],
+            "o",
+            markersize=9,
+            color=colour,
+            markeredgecolor=SURFACE,
+            markeredgewidth=1.6,
+            zorder=3,
+        )
+        # The label goes to the RIGHT of the worse end, which is always the
+        # free side. Left of the better end it collided with the tick labels
+        # on exactly the rows that improved most.
+        ax.annotate(
+            (
+                f"  {r.factor:.0f}× better"
+                if r.factor >= 10
+                else f"  {r.factor:.1f}× better"
+            )
+            if moved
+            else "  not engaged",
+            xy=(max(r.before, r.after), y),
+            xytext=(9, 0),
+            textcoords="offset points",
+            ha="left",
+            va="center",
+            fontsize=8,
+            color=colour if moved else INK_MUTED,
+        )
+
+    ax.set_yticks([y for y, _ in labels], [t for _, t in labels])
+    ax.set_xscale("log")
+    ax.set_xlabel("held-out nRMSE (log scale) — lower is better")
+    ax.set_xlim(right=ax.get_xlim()[1] * 40)
+    ax.set_ylim(-1.15, len(rows) - 0.3)
+    ax.grid(axis="y", visible=False)
+    ax.set_title(title or "What the frozen default bought the PINN arm")
+    ax.plot(
+        [],
+        [],
+        "o",
+        markerfacecolor=SURFACE,
+        markeredgecolor=INK_MUTED,
+        markeredgewidth=2.2,
+        markersize=7,
+        linestyle="none",
+        label="before (w_phys = 1, unswitched)",
+    )
+    ax.plot(
+        [],
+        [],
+        "o",
+        color=INK_MUTED,
+        markersize=9,
+        linestyle="none",
+        label="after (gradient-norm balancing)",
+    )
+    ax.legend(loc="lower right", ncols=2)
+    fig.text(
+        0.0,
+        -0.02,
+        "Decided on the tuning seeds (3/7/19), measured on the reporting "
+        "seeds (11/23/42).",
+        fontsize=8.5,
+        color=INK_2,
+    )
+    return fig

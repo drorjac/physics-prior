@@ -272,12 +272,31 @@ def summary_figures() -> None:
         )
 
 
+def phase2_figure() -> None:
+    """What the frozen pinn default bought, per track and question.
+
+    Returns quietly when the before/after table is absent: a fresh clone has
+    not re-run the pipeline, and one missing input is not a reason for
+    `physprior figures` to stop.
+    """
+    import pandas as pd
+
+    path = get_settings().results_dir / "phase2_before_after.csv"
+    if not path.exists():
+        print("    skip phase 2 figure: results/phase2_before_after.csv absent")
+        return
+    fig = P.fig_phase2_improvement(pd.read_csv(path))
+    out = P.save(fig, "", "phase2_improvement")
+    print(f"    wrote {out.relative_to(get_settings().root)}")
+
+
 def main() -> None:
     print("writing figures/")
     for key in TRACKS:
         _safe(lambda k=key: problem_figures(k), f"problem {key}")
     _safe(mercury_figures, "mercury figures")
     summary_figures()
+    _safe(phase2_figure, "phase 2 improvement")
     print("done")
 
 

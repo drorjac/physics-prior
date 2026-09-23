@@ -214,6 +214,30 @@ Newtonian bias is post-Newtonian truncation, not an artefact of the pipeline.
 
 ---
 
+### What the PINN arm's default is worth
+
+![what the frozen default bought the PINN arm](figures/phase2_improvement.png)
+
+The `pinn` arm's configuration was frozen by ablating one switch at a time on
+the **tuning** seeds (3/7/19) and then re-measuring on the reporting seeds
+(11/23/42). Gradient-norm loss balancing (Wang et al. 2021) was the only
+option that shipped: it helps on five of the eight cells that can move, hurts
+none, and shifts the recovered constants by under 2% — so the accuracy is not
+bought out of the physics.
+
+Rejected, with their measurements: early stopping hurt four cells and helped
+none; Fourier features made hydrogen interpolation **98× worse**; L-BFGS ran
+on every track and its proposal never lowered the loss, so the revert guard
+discarded it every time. A five-member ensemble does help, and stacked with
+balancing helps most, but only by a further 1.3–1.4× for five times the
+compute on all 210 PINN fits of a reporting run.
+
+`relativity/gw150914` does not move, and that is the honest result rather
+than a gap: its arm is the ODE-residual PINN, a different model, and it
+reports the option as **not engaged** instead of returning a baseline number
+under the option's name.
+
+
 ## Notebooks
 
 | Notebook | What it shows |
