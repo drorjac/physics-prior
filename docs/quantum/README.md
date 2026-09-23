@@ -1,0 +1,78 @@
+# quantum
+
+Two tracks that fail in opposite ways: hydrogen, where the law is so nearly
+exact that **its own failure is visible**, and the CMB, where the law is
+transcendental and the observed band cannot identify it.
+
+**Real data** — NIST hydrogen levels; the COBE/FIRAS blackbody.
+**Simulations** — the Schrödinger equation, solved and measured.
+
+Code: [`src/physprior/problems/quantum`](../../src/physprior/problems/quantum)
+· Results: [`results/quantum`](../../results/quantum)
+
+---
+
+## The simulations
+
+| What | Notes |
+|---|---|
+| `infinite_well`, `harmonic_oscillator`, `hydrogen_radial` | bound states by direct diagonalisation of a finite-difference Laplacian |
+| `hydrogen_richardson` | two grids combined to cancel the leading error: 300 ppm → 4 ppm |
+| `grid_convergence`, `box_convergence`, `r_min_sweep` | the solver's error, measured rather than assumed |
+| `wavepacket` | split-operator tunnelling, unitary to 5×10⁻¹⁵ |
+
+| | | |
+|---|---|---|
+| ![infinite well eigenstates](../../figures/quantum/eigenstates_infinite_well.png) | ![harmonic oscillator eigenstates](../../figures/quantum/eigenstates_harmonic.png) | ![hydrogen radial eigenstates](../../figures/quantum/eigenstates_hydrogen.png) |
+
+<img src="../../figures/quantum/tunnelling.gif" alt="a wave packet tunnelling through a barrier" width="560">
+
+**Richardson extrapolation, because the solver was coarser than the effect.**
+Plain second-order differences give the hydrogen levels to ~300 ppm. The
+relativistic + QED shift in the real atom is 10.8 ppm. A solver 30× less
+accurate than the effect cannot see it, and differencing anyway would have
+reported discretisation error as physics.
+
+## The real-data track: `quantum/hydrogen`
+
+Bohr's law fitted to the NIST levels.
+
+| | |
+|---|---|
+| ![track overview](../../figures/quantum/hydrogen/overview.png) | ![the residual against Bohr](../../figures/quantum/hydrogen/bohr_residual.png) |
+| **Overview** — every arm on the track. | **The law's own failure.** The fitted ionisation limit sits **10.8 ppm above** Bohr's prediction. |
+
+That shift is relativistic and QED corrections to the 1s level, and it is
+reached **twice, independently**: by fitting Bohr's law to the NIST levels,
+and by solving Schrödinger's equation and differencing against NIST. A black
+box fits the same levels and can say nothing about QED.
+
+## The real-data track: `quantum/cmb`
+
+The Planck function fitted to the COBE/FIRAS monopole — the identifiability
+track.
+
+| | |
+|---|---|
+| ![track overview](../../figures/quantum/cmb/overview.png) | ![band coverage control](../../figures/quantum/cmb/band_coverage_control.png) |
+| **Overview.** | **The control.** Widening the fitted band downwards, on a synthetic spectrum where the answer is known. |
+
+**In-band accuracy is anti-correlated with having found the law.** Out-of-band
+error falls ~56× as the fitted band reaches into the Rayleigh–Jeans regime
+while the *in-band* error gets worse. Over FIRAS's own coverage, `x = hν/kT`
+runs from 1.2 to 11.3 — almost all Wien — and there `exp(−x)` and
+`1/(exp(x) − 1)` are nearly the same function. The denominator is not
+identifiable from the data.
+
+Symbolic regression accordingly returns a Wien-like exponential rather than
+Planck's law. **That negative result is reported at the same size as the
+successes**, with the control that isolates its cause: the operator set is a
+prior, and one without `^` cannot reach Planck's law at all.
+
+## Caveats, stated up front
+
+The distributed FIRAS monopole is constructed as *a 2.725 K blackbody plus
+the measured residual*, so recovering `T = 2.725 K` is partly by construction
+and is not scored as a discovery. The Planckian shape, the law-recovery
+result and the extrapolation behaviour are unaffected. Provenance is in
+[`docs/DATA.md`](../DATA.md).

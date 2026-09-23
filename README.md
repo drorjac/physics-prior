@@ -64,9 +64,9 @@ package behaves the same from a checkout, a wheel, or CI.
 
 | Problem | Simulations | Real data |
 |---|---|---|
-| [**gravity**](src/physprior/problems/gravity) | two-body orbits · the three-body problem (figure-eight + chaos) · the solar system from JPL initial conditions · symplectic vs RK4 | Kepler's third law, DE441 |
-| [**relativity**](src/physprior/problems/relativity) | Schwarzschild orbits and perihelion precession · post-Newtonian inspiral waveforms · light bending | GW150914 strain (LIGO); Mercury's ephemeris |
-| [**quantum**](src/physprior/problems/quantum) | the Schrödinger equation: bound states, convergence, tunnelling | NIST hydrogen levels; COBE/FIRAS |
+| [**gravity**](docs/gravity) | two-body orbits · the three-body problem (figure-eight + chaos) · the solar system from JPL initial conditions · symplectic vs RK4 | Kepler's third law, DE441 |
+| [**relativity**](docs/relativity) | Schwarzschild orbits and perihelion precession · post-Newtonian inspiral waveforms · light bending | GW150914 strain (LIGO); Mercury's ephemeris |
+| [**quantum**](docs/quantum) | the Schrödinger equation: bound states, convergence, tunnelling | NIST hydrogen levels; COBE/FIRAS |
 
 **Why both halves.** The simulations are the *control*: when the law is
 exactly what was put in, whatever a method fails to recover is the **method's
@@ -254,7 +254,8 @@ the notebooks stay small.
 
 | | |
 |---|---|
-| [`docs/PROBLEMS.md`](docs/PROBLEMS.md) | what is in each physics problem |
+| [`docs/gravity/`](docs/gravity) · [`docs/relativity/`](docs/relativity) · [`docs/quantum/`](docs/quantum) | one folder per physics topic: its simulations, its tracks, its figures and its caveats |
+| [`docs/plans/`](docs/plans) | the audit, the Phase 2 outcome, and the phases waiting at their approval gates |
 | [`docs/TOOLING.md`](docs/TOOLING.md) | which package does what, and **exactly how a formula comes out of symbolic regression** |
 | [`docs/DATA.md`](docs/DATA.md) | provenance, units, and the caveats stated up front |
 | [`docs/METHOD.md`](docs/METHOD.md) | design decisions — including the ones made after something went wrong |

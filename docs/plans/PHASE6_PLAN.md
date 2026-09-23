@@ -7,8 +7,8 @@ Written at the gate `phase6.md` stop point 1, which requires this document
 
 | precondition | state |
 |---|---|
-| Phase 2 merged, PINN default frozen on 3/7/19 | **no** — ablation is decided (see `docs/PLAN.md`), the `balance+ens5` stack is being measured now, defaults not yet frozen |
-| Phase 5 approved | **no** — `docs/PHASE5_PLAN.md` is at its own gate |
+| Phase 2 merged, PINN default frozen on 3/7/19 | **no** — ablation is decided (see `docs/plans/PLAN.md`), the `balance+ens5` stack is being measured now, defaults not yet frozen |
+| Phase 5 approved | **no** — `docs/plans/PHASE5_PLAN.md` is at its own gate |
 | Q1 real-data verified | **yes — done below, and the answer is negative** |
 
 Phase 6 depends on Phase 5 only through Q4, which feeds the Phase 5 Part A
@@ -176,5 +176,5 @@ Given §3 and §4, and that Phase 5's two real-data tracks are its long pole:
 2. **Order**: §6 as proposed, or `phase5.md`'s original A → B1 → B2 → B3 then
    Phase 6.
 3. **Q2**: run it, or defer until the cheap tracks have reported.
-4. Still outstanding from `docs/PHASE5_PLAN.md` §5: the Mie question, and what
+4. Still outstanding from `docs/plans/PHASE5_PLAN.md` §5: the Mie question, and what
    "organise by topics" should change.

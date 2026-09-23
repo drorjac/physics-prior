@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Where does the `pinn` arm win, lose and tie, and by how much?
 
-Reads `results/` and prints the tables in `docs/PLAN.md` section 2. A gap
+Reads `results/` and prints the tables in `docs/plans/PLAN.md` section 2. A gap
 smaller than the pooled seed-to-seed spread is reported as a TIE rather than
 a win: with three reporting seeds, a 2x difference on one metric is often
 nothing at all.

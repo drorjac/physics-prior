@@ -18,7 +18,7 @@ Status of the precondition:
 
 ### 1.1 The three new tracks fit `Problem` — including B3
 
-I expected B3 to hit the limitation recorded in `docs/PLAN.md` §4, where a PDE
+I expected B3 to hit the limitation recorded in `docs/plans/PLAN.md` §4, where a PDE
 track has no `physics` arm and no `sr` arm in the present sense. It does not,
 because the spec measures **probes**, not fields: with `x = (x_probe, t)` and
 `y = E_z`, a 1D Maxwell track is an ordinary `Problem` with a 2-D input, the
@@ -159,7 +159,7 @@ Stubs recorded and not implemented: `em/gaseous_absorption`,
 Two structural notes:
 
 - **`PROBLEMS` becomes five families and eight-plus tracks.** The flat
-  `results/<problem>/<track>/` layout holds, but `docs/PROBLEMS.md` and the
+  `results/<problem>/<track>/` layout holds, but `docs/<topic>/README.md` and the
   README's problem table will need to be generated rather than hand-written,
   or they will drift — invariant 1 applied to structure rather than numbers.
 - **Part A belongs nowhere in `problems/`.** It is a benchmark-level
