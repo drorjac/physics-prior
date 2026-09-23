@@ -60,6 +60,31 @@ package behaves the same from a checkout, a wheel, or CI.
 
 ---
 
+## Start here: a step-by-step PINN course
+
+Six generated, executable notebooks in
+[`notebooks/tutorials/`](notebooks/tutorials) — built from
+[`tutorials.py`](src/physprior/reporting/tutorials.py) and run in CI, so they
+cannot drift from the code they teach.
+
+```bash
+physprior tutorials --execute
+```
+
+| | Notebook | What it teaches |
+|---|---|---|
+| **T1** | [what a PINN is](notebooks/tutorials/T1_what_is_a_pinn.ipynb) | a network trained on an **equation**, not data: collocation points, autograd derivatives, why `tanh` and never `ReLU`, conditions as **hard** constraints |
+| **T2** | [forward and inverse](notebooks/tutorials/T2_forward_and_inverse.ipynb) | recovering an unknown constant from sparse noisy data, and the `w_phys` dial that decides whether it means anything |
+| **T3** | [gravity](notebooks/tutorials/T3_gravity.ipynb) | the law is **exact** — Kepler on real JPL data, five arms at matched capacity |
+| **T4** | [relativity](notebooks/tutorials/T4_relativity.ipynb) | the law is a **truncated expansion** — a 9 M☉ bias the RMSE cannot see |
+| **T5** | [quantum](notebooks/tutorials/T5_quantum_wavefunction.ipynb) | **no data at all** — learning ψ and E together, and the four ways it breaks |
+| **T6** | [when PINNs fail](notebooks/tutorials/T6_when_pinns_fail.ipynb) | the failure catalogue, measured: which of seven standard improvements help, and which cost 98× |
+
+The difficulty rises with the physics, and each domain breaks the previous
+one's assumption — by T5 the prior *is* the problem statement.
+
+---
+
 ## The three problems
 
 | Problem | Simulations | Real data |

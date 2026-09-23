@@ -28,6 +28,9 @@ def tmp_settings(tmp_path, monkeypatch):
         ("PHYSPRIOR_FIGURES_DIR", "figures"),
         ("PHYSPRIOR_CACHE_DIR", "cache"),
         ("PHYSPRIOR_DATA_DIR", "data"),
+        # notebooks too: a test that builds them was writing UNEXECUTED
+        # copies over the committed ones, silently discarding every output.
+        ("PHYSPRIOR_NOTEBOOKS_DIR", "notebooks"),
     ):
         monkeypatch.setenv(var, str(tmp_path / sub))
     reset_settings()

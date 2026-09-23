@@ -72,6 +72,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--execute", action="store_true", help="execute them after building"
     )
 
+    tut = sub.add_parser(
+        "tutorials", help="build (and optionally run) the step-by-step PINN course"
+    )
+    tut.add_argument(
+        "name", nargs="?", default=None, help="only tutorials matching this"
+    )
+    tut.add_argument(
+        "--execute", action="store_true", help="execute them after building"
+    )
+
     data = sub.add_parser("data", help="inspect and fetch datasets")
     data_sub = data.add_subparsers(dest="data_command", required=True)
     data_sub.add_parser("list", help="list the known datasets")
@@ -192,6 +202,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             from physprior.reporting.notebooks import build as build_notebooks
 
             build_notebooks(execute=args.execute, only=args.name)
+            return 0
+        if args.command == "tutorials":
+            from physprior.reporting.tutorials import build as build_tutorials
+
+            build_tutorials(execute=args.execute, only=args.name)
             return 0
         if args.command == "tune":
             return _tune(args.track, args.quick, args.what)

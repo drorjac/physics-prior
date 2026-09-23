@@ -676,6 +676,18 @@ BUILDERS = {
 }
 
 
+def _display(path, root):
+    """A printable path, even when the output directory is outside the repo.
+
+    `notebooks_dir` is env-overridable, so it is not always under `root` --
+    and a bare `relative_to` raises there rather than printing.
+    """
+    try:
+        return path.relative_to(root)
+    except ValueError:
+        return path
+
+
 def build(execute: bool = False, only: str | None = None) -> None:
     settings = get_settings()
     settings.notebooks_dir.mkdir(parents=True, exist_ok=True)
@@ -685,7 +697,7 @@ def build(execute: bool = False, only: str | None = None) -> None:
         nb = fn()
         path = settings.notebooks_dir / f"{name}.ipynb"
         nbf.write(nb, path)
-        print(f"wrote {path.relative_to(settings.root)}")
+        print(f"wrote {_display(path, settings.root)}")
         if execute:
             from nbclient import NotebookClient
 
