@@ -100,3 +100,23 @@ def get_settings() -> Settings:
 def reset_settings() -> None:
     """Forget the cached settings, so a test can change the environment."""
     get_settings.cache_clear()
+
+
+def short_path(path) -> str:
+    """A path to print: relative to the project root when it is under it.
+
+    `Path.relative_to` RAISES when it is not, and every output directory here
+    is env-overridable precisely so it can be pointed somewhere else -- so
+    the obvious `p.relative_to(root)` turns a redirected output directory
+    into a crash after the work is already done. Caught by running
+    `physprior neglected --quick` with PHYSPRIOR_RESULTS_DIR set to a
+    scratch directory, which is the supported way to smoke-test a generator
+    without overwriting committed artefacts.
+    """
+    from pathlib import Path
+
+    p = Path(path)
+    try:
+        return str(p.relative_to(get_settings().root))
+    except ValueError:
+        return str(p)

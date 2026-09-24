@@ -51,7 +51,9 @@ physprior figures            # figures/ from results/
 physprior notebooks --execute
 
 physprior data list          # the registered datasets
-physprior info               # resolved paths and configuration
+physprior neglected          # the neglected-terms study: where a prior actually wins
+physprior neglected tune     # the design sweeps behind it, on the tuning seeds
+physprior info               # resolved paths, and which device torch will use
 ```
 
 Every writable path is overridable — `PHYSPRIOR_RESULTS_DIR`,
@@ -296,6 +298,7 @@ the notebooks stay small.
 | [`docs/DATA.md`](docs/DATA.md) | provenance, units, and the caveats stated up front |
 | [`docs/METHOD.md`](docs/METHOD.md) | design decisions — including the ones made after something went wrong |
 | [`docs/RESULTS.md`](docs/RESULTS.md) | generated from `results/` |
+| [`benchmarks/`](benchmarks) | what a GPU is worth here, measured — and why `mps.is_available()` is False on a machine that has one |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | the rules this project holds itself to, and why |
 
 ## Layout
@@ -317,8 +320,10 @@ src/physprior/
   methods/           neural · pinn (oracle/physics/pinn) · symbolic
   numerics/          integrators (Verlet, RK4) · stencils (+ Richardson)
   benchmark/         protocol (splits, sweeps, scoring) · metrics
+                     neglected.py — the controlled study: three rungs of one ladder
   viz/               plots · animate · palette (validated, not eyeballed)
-  reporting/         report · figures · notebooks
+  methods/device.py  which device and dtype, and why they are not independent
+  reporting/         report · figures · notebooks · neglected_study
   cli.py             the console script
 ```
 

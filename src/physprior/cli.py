@@ -6,6 +6,7 @@
     physprior notebooks [--execute] [NAME]
     physprior data list
     physprior data fetch NAME
+    physprior neglected [STAGE] [--quick]
     physprior info
 
 This is the only module that configures logging or prints; everything under it
@@ -106,6 +107,20 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("ablation", "w_phys", "both"),
         default="both",
         help="which study to run (default: both)",
+    )
+
+    neg = sub.add_parser(
+        "neglected",
+        help="regenerate the neglected-terms study (tables + figures)",
+    )
+    neg.add_argument(
+        "stage",
+        nargs="?",
+        default=None,
+        help="algebraic | ode | pde | derivative | tune (default: all)",
+    )
+    neg.add_argument(
+        "--quick", action="store_true", help="short training, for a smoke test"
     )
 
     sub.add_parser("info", help="show resolved paths and configuration")
@@ -220,6 +235,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _tune(args.track, args.quick, args.what)
         if args.command == "data":
             return _data(args)
+        if args.command == "neglected":
+            from physprior.reporting.neglected_study import main as neglected_main
+
+            neglected_main(quick=args.quick, only=args.stage)
+            return 0
         if args.command == "info":
             return _info()
     except PhysPriorError as exc:

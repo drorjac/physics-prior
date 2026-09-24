@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 
 from physprior.benchmark.protocol import fit_arm
-from physprior.config import get_settings
+from physprior.config import get_settings, short_path
 from physprior.io import load_json, load_table
 from physprior.viz import plots as P
 
@@ -289,10 +289,7 @@ def inverse_schrodinger_figure(epochs: int = 3000) -> None:
         inv, truth=lambda x: 0.5 * x**2, title="Recovered: V(x) = x^2/2"
     )
     out = P.save(fig, "quantum", "inverse_potential")
-    print(
-        f"    wrote {out.relative_to(get_settings().root)}  "
-        f"(spectrum error {inv.spectrum_error:.4f})"
-    )
+    print(f"    wrote {short_path(out)}  (spectrum error {inv.spectrum_error:.4f})")
 
 
 def phase2_figure() -> None:
@@ -310,7 +307,7 @@ def phase2_figure() -> None:
         return
     fig = P.fig_phase2_improvement(pd.read_csv(path))
     out = P.save(fig, "", "phase2_improvement")
-    print(f"    wrote {out.relative_to(get_settings().root)}")
+    print(f"    wrote {short_path(out)}")
 
 
 def main() -> None:

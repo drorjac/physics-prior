@@ -1,0 +1,67 @@
+"""The study's outputs must be reproducible by a command.
+
+This file exists because they were not. Five CSVs under `results/` and
+fourteen figures under `figures/neglected/` were committed, and nothing in
+the repository regenerated them: `scripts/regenerate.sh` ran every problem,
+wrote every other figure, rebuilt the docs and the notebooks, and skipped
+this study. A committed artefact that no command reproduces cannot be
+checked, and silently stops matching the code that supposedly made it.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from physprior.reporting import neglected_study as NS
+
+STAGES = ("algebraic", "ode", "pde", "derivative", "tune")
+
+
+def test_every_stage_is_reachable():
+    import inspect
+
+    src = inspect.getsource(NS.main)
+    for name in STAGES:
+        assert f'"{name}"' in src, f"stage {name} is not in main()'s table"
+        assert callable(getattr(NS, name.replace("derivative", "derivative_accuracy")))
+
+
+def test_unknown_stage_fails_loudly():
+    with pytest.raises(SystemExit, match="no stage matches"):
+        NS.main(only="does-not-exist")
+
+
+def test_regenerate_script_runs_the_study():
+    """The gap that started this file: the pipeline skipped the study."""
+    from physprior.config import get_settings
+
+    script = (get_settings().root / "scripts" / "regenerate.sh").read_text()
+    assert "physprior neglected" in script, (
+        "scripts/regenerate.sh does not regenerate the neglected-terms study, "
+        "so its committed CSVs and figures are orphaned again"
+    )
+
+
+def test_cli_exposes_the_study():
+    from physprior.cli import build_parser
+
+    args = build_parser().parse_args(["neglected", "tune", "--quick"])
+    assert args.command == "neglected"
+    assert args.stage == "tune"
+    assert args.quick is True
+
+
+@pytest.mark.parametrize("name", ["eps", "noise", "budget", "ode", "pde"])
+def test_committed_tables_have_the_columns_the_figures_read(name):
+    import pandas as pd
+
+    from physprior.config import get_settings
+
+    path = get_settings().results_dir / f"neglected_{name}.csv"
+    if not path.exists():
+        pytest.skip(f"{path.name} absent -- run `physprior neglected`")
+    df = pd.read_csv(path)
+    assert "seed" in df and "arm" in df
+    metric = "nrmse" if name in ("ode", "pde") else "nrmse_in"
+    assert metric in df.columns, f"{path.name} lost its {metric} column"
+    assert len(df) > 0

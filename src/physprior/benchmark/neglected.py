@@ -769,6 +769,7 @@ def _pde_fit_pinn(
     curriculum=True,
     resample_every=100,
     w_smooth=0.03,
+    use_correction=True,
     device=None,
 ):
     """Residual PINN on (x, t), with alpha trainable and a learned term.
@@ -917,7 +918,16 @@ def _pde_fit_pinn(
         u_t = torch.autograd.grad(u.sum(), tr, create_graph=True)[0]
         u_x = torch.autograd.grad(u.sum(), xr, create_graph=True)[0]
         u_xx = torch.autograd.grad(u_x.sum(), xr, create_graph=True)[0]
-        c = corr(torch.stack([u, u_x], dim=-1)).squeeze(-1)
+        # THE IDENTIFIABILITY ABLATION. With C free, the pair (alpha, C) is
+        # not identified by the residual at all: for ANY alpha there is a C
+        # that satisfies u_t - alpha u_xx - C = 0 exactly, so the only thing
+        # pinning alpha down is the small penalty w_phys*mean(C^2). Setting
+        # C = 0 removes that freedom, and at eps = 0 it costs nothing --
+        # the true correction there IS zero.
+        if use_correction:
+            c = corr(torch.stack([u, u_x], dim=-1)).squeeze(-1)
+        else:
+            c = torch.zeros_like(u)
         residual = u_t - alpha * u_xx - c
         phys = torch.mean(c**2)
         # The residual is a rate, so it is made dimensionless by the
@@ -1183,7 +1193,7 @@ def derivative_accuracy_study(
         return float((u_t * u_xx).sum() / (u_xx**2).sum()), float(u_xx.abs().mean())
 
     alphas, curvature = [], []
-    plain = None
+    plain: tuple = ()
     for w in weights:
         fn, data_loss = fit(w)
         a, uxx_bar = implied_alpha(fn)
@@ -1191,6 +1201,8 @@ def derivative_accuracy_study(
         curvature.append(uxx_bar)
         if w == 0.0:
             plain = (fn, data_loss)
+    if not plain:
+        raise ValueError("weights must include 0.0: it is the reference fit")
 
     # a slice through both fields at one time, and its curvature
     xg = torch.tensor(np.linspace(0, length, 400), dtype=DTYPE, requires_grad=True)

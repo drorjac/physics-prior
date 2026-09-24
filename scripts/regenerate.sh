@@ -17,6 +17,9 @@ physprior run all ${QUICK}
 echo "=== physprior figures ==="
 physprior figures
 
+echo "=== physprior neglected ${QUICK} ==="
+physprior neglected ${QUICK}
+
 echo "=== physprior report ==="
 physprior report
 

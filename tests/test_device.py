@@ -77,3 +77,19 @@ def test_info_reports_the_device(capsys):
 
     assert main(["info"]) == 0
     assert "torch" in capsys.readouterr().out
+
+
+def test_short_path_survives_a_redirected_output_dir(tmp_path, monkeypatch):
+    """A redirected output directory must not crash the generator.
+
+    Every output dir here is env-overridable, and `Path.relative_to` raises
+    when the target is outside the root -- so printing "wrote <path>" blew up
+    AFTER the work was done. Found by running `physprior neglected --quick`
+    with PHYSPRIOR_RESULTS_DIR pointed at a scratch directory.
+    """
+    from physprior.config import get_settings, short_path
+
+    inside = get_settings().results_dir / "headline.json"
+    assert not str(short_path(inside)).startswith("/")
+    outside = tmp_path / "elsewhere" / "out.csv"
+    assert short_path(outside) == str(outside)
