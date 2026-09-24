@@ -33,6 +33,46 @@ relativistic + QED shift in the real atom is 10.8 ppm. A solver 30× less
 accurate than the effect cannot see it, and differencing anyway would have
 reported discretisation error as physics.
 
+## Learning the wave function, and inverting the spectrum
+
+`methods/eigen_pinn.py` solves the Schrodinger equation as a PINN — **no data
+at all**, only the operator equation and a boundary. The first four levels of
+the infinite well come out at 0.000%, 0.041%, 0.060% and 0.045% of the exact
+eigenvalues.
+
+The inverse is the one worth caring about: given only a spectrum, recover the
+potential that produced it.
+
+![the potential recovered from six eigenvalues](../../figures/quantum/inverse_potential.png)
+
+Six numbers in, `V(x) = x²/2` out — the word "harmonic" appears nowhere. Four
+things make it work, and each is a general lesson:
+
+- **ψ = 0 solves the equation**, so every objective is a ratio of inner
+  products and the zero function is not in the domain.
+- **Boundaries are hard-constrained**, `ψ = (x−a)(b−x)·NN(x)`, so there is no
+  boundary weight to justify.
+- **One spectrum does not determine a 1-D potential** (Borg–Marchenko; "can
+  one hear the shape of a drum?"). Symmetry is imposed architecturally, and
+  it buys *identifiability* rather than accuracy.
+- **Where no state has support, the data says nothing about `V`** — every
+  term of the residual is proportional to ψ. An unconstrained network puts a
+  bump in the tail and invents spurious bound states, so a Tikhonov term on
+  `V''` states a preference for the smoothest potential consistent with the
+  data. That is a prior, and it is reported as one.
+
+**When a differentiable forward model exists, it beats the PINN.**
+Differentiating through `torch.linalg.eigvalsh` rather than representing
+every state with its own network:
+
+| | residual PINN | differentiable solver |
+|---|---|---|
+| spectrum error | 0.17 | **0.0034** |
+| time | 100 s | **18 s** |
+
+Both are kept, because that comparison is a measurement rather than an
+opinion — and the PINN is what remains when no such solver exists.
+
 ## The real-data track: `quantum/hydrogen`
 
 Bohr's law fitted to the NIST levels.

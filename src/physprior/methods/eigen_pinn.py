@@ -309,3 +309,342 @@ def as_fit(state: EigenState, name: str = "eigen_pinn") -> Fit:
         seconds=state.seconds,
         extra={"residual_rms": state.residual_rms, "method": state.method},
     )
+
+
+# ---------------------------------------------------------------------------
+# the inverse problem: recover the potential from a measured spectrum
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class InversePotential:
+    """A potential recovered from a spectrum, and what it cost."""
+
+    x: np.ndarray
+    v: np.ndarray  # the recovered V(x)
+    psi: np.ndarray  # (n_levels, n_grid) the states that came with it
+    energies_target: np.ndarray
+    energies_achieved: np.ndarray
+    symmetric: bool
+    seconds: float = 0.0
+    history: dict = field(default_factory=dict)
+
+    @property
+    def spectrum_error(self) -> float:
+        """Max relative error on the eigenvalues it was asked to reproduce."""
+        t = np.asarray(self.energies_target, float)
+        return float(np.max(np.abs((self.energies_achieved - t) / t)))
+
+    def error_against(self, truth) -> float:
+        """Max |V_hat - V_true| over the region the states actually occupy.
+
+        Scored where the wave functions have support, because a spectrum
+        cannot constrain the potential where no state visits: out in the
+        classically forbidden tails `V` is free to be almost anything, and a
+        global norm would report that freedom as failure.
+        """
+        v_true = np.asarray(truth(self.x), float)
+        weight = np.sum(self.psi**2, axis=0)
+        mask = weight > 0.01 * weight.max()
+        return float(np.max(np.abs(self.v[mask] - v_true[mask])))
+
+
+class PotentialNet(torch.nn.Module):
+    """V(x), optionally forced to be even.
+
+    Symmetry is not a convenience here. **One spectrum does not determine a
+    one-dimensional potential** -- the Borg-Marchenko theorem says two
+    spectra are needed in general, and the classic "can one hear the shape of
+    a drum?" is the same question. For a SYMMETRIC potential one spectrum is
+    enough, so `symmetric=True` buys identifiability rather than accuracy,
+    and it is imposed architecturally by evaluating at |x - centre|.
+    """
+
+    def __init__(self, x_min: float, x_max: float, symmetric: bool, width=64, depth=3):
+        super().__init__()
+        self.net = mlp(1, width, depth)
+        self.symmetric = symmetric
+        self.centre = 0.5 * (x_min + x_max)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        u = torch.abs(x - self.centre) if self.symmetric else x
+        return self.net(u.unsqueeze(-1)).squeeze(-1)
+
+
+def fit_inverse_potential(
+    energies,
+    x_min: float,
+    x_max: float,
+    *,
+    symmetric: bool = True,
+    method: str = "diagonalise",
+    n_collocation: int = 512,
+    width: int = 64,
+    depth: int = 3,
+    epochs: int = 6000,
+    lr: float = 3e-3,
+    seed: int = 0,
+    w_ortho: float = 1.0,
+    w_smooth: float = 1e-3,
+    record_every: int = 0,
+) -> InversePotential:
+    """Recover `V(x)` from the eigenvalues it is supposed to produce.
+
+    This is the inverse of `fit_eigen_pinn`, and the one worth caring about:
+    the forward problem is solved better by a tridiagonal matrix, while this
+    one has no such solver at all.
+
+    The eigenvalues are **fixed to the observed values** rather than computed
+    by a Rayleigh quotient, and `V` and every `psi_k` are moved until
+
+        -1/2 psi_k'' + V psi_k - E_k psi_k = 0
+
+    holds for all of them at once. Fixing E is what makes the problem
+    well-posed: an arbitrary function has a Rayleigh quotient too, so
+    matching a quotient to a number constrains far less than requiring the
+    residual to vanish at that number.
+
+    Two gauges, handled differently:
+
+      * `V -> V + c` shifts every eigenvalue by `c`. Because the target
+        eigenvalues are absolute, the data fixes this one -- nothing to do.
+      * `psi_k -> a psi_k` is free, so every term is a ratio of inner
+        products, as in the forward problem.
+
+    **The problem is underdetermined, and `w_smooth` is what makes it
+    tractable.** Every term of the residual is proportional to `psi`, so
+    where no state has support the data says nothing at all about `V` -- and
+    an unconstrained network duly puts a bump out in the tail, which
+    manufactures spurious bound states and corrupts the spectrum the
+    potential actually has. With three levels and a 512-point grid the fit
+    reproduced the first two eigenvalues and invented a degenerate pair for
+    the third.
+
+    `w_smooth` penalises `V''`, which is Tikhonov regularisation: it does not
+    add information, it states a preference for the smoothest potential
+    consistent with the data. That is an honest prior and it must be reported
+    as one. The alternative fixes are more levels or a parametric form for
+    `V`, and both are better when available.
+    """
+    if method not in ("residual", "diagonalise"):
+        raise ValueError(f"unknown method {method!r}")
+    t0 = time.time()
+    set_seed(seed)
+    e_target = np.asarray(energies, float).ravel()
+    n_levels = len(e_target)
+
+    if method == "diagonalise":
+        return _inverse_by_diagonalising(
+            e_target,
+            x_min,
+            x_max,
+            symmetric=symmetric,
+            n_grid=n_collocation,
+            width=width,
+            depth=depth,
+            epochs=epochs,
+            lr=lr,
+            w_smooth=w_smooth,
+            record_every=record_every,
+            t0=t0,
+        )
+
+    x = torch.linspace(x_min, x_max, n_collocation, dtype=DTYPE)
+    dx = float((x_max - x_min) / (n_collocation - 1))
+    e_t = torch.tensor(e_target, dtype=DTYPE)
+    scale = float(np.max(np.abs(e_target))) or 1.0
+
+    v_net = PotentialNet(x_min, x_max, symmetric, width, depth)
+    # One network per state: the states have different numbers of nodes and
+    # sharing a trunk between them mostly shares the wrong features.
+    psi_nets = torch.nn.ModuleList(
+        [WaveFunction(x_min, x_max, width, depth) for _ in range(n_levels)]
+    )
+    opt = torch.optim.Adam(
+        list(v_net.parameters()) + list(psi_nets.parameters()), lr=lr
+    )
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
+    history: dict[str, list] = {
+        "epoch": [],
+        "loss": [],
+        "residual": [],
+        "ortho": [],
+        "smooth": [],
+    }
+
+    for ep in range(epochs):
+        opt.zero_grad()
+        xc = x.clone().requires_grad_(True)
+        v = v_net(xc)
+        states = []
+        residual_total = torch.zeros((), dtype=DTYPE)
+        for k in range(n_levels):
+            psi = psi_nets[k](xc)
+            d2 = _second_derivative(psi, xc)
+            r = -0.5 * d2 + v * psi - e_t[k] * psi
+            residual_total = residual_total + _inner(r, r, dx) / (
+                _inner(psi, psi, dx) * scale**2
+            )
+            states.append(psi)
+
+        ortho = torch.zeros((), dtype=DTYPE)
+        for i in range(n_levels):
+            for j in range(i + 1, n_levels):
+                ortho = ortho + _inner(states[i], states[j], dx) ** 2 / (
+                    _inner(states[i], states[i], dx) * _inner(states[j], states[j], dx)
+                )
+
+        # Tikhonov on V'': the data cannot see V where no state lives, so
+        # something has to choose, and "smooth" is the honest choice to
+        # declare. Scaled by the spectrum so it means the same thing at any
+        # energy scale.
+        d2v = (v[2:] - 2 * v[1:-1] + v[:-2]) / dx**2
+        smooth = _inner(d2v, d2v, dx) / scale**2
+        loss = residual_total + w_ortho * ortho + w_smooth * smooth
+        loss.backward()
+        opt.step()
+        sched.step()
+        if record_every and (ep % record_every == 0 or ep == epochs - 1):
+            history["epoch"].append(ep)
+            history["loss"].append(float(loss.detach()))
+            history["residual"].append(float(residual_total.detach()))
+            history["ortho"].append(float(ortho.detach()))
+            history["smooth"].append(float(smooth.detach()))
+
+    with torch.no_grad():
+        v_out = v_net(x).numpy()
+        psi_out = np.stack([net(x).numpy() for net in psi_nets])
+
+    # What eigenvalues does the recovered potential actually have? Answer with
+    # the independent solver, not with the network that produced it.
+    achieved = _eigenvalues_of(v_out, x.numpy(), n_levels)
+    return InversePotential(
+        x=x.numpy(),
+        v=v_out,
+        psi=psi_out,
+        energies_target=e_target,
+        energies_achieved=achieved,
+        symmetric=symmetric,
+        seconds=time.time() - t0,
+        history=history,
+    )
+
+
+def _eigenvalues_of(v: np.ndarray, x: np.ndarray, n_levels: int) -> np.ndarray:
+    """Diagonalise the recovered potential, as an independent check.
+
+    Deliberately NOT the network's own estimate. A PINN's internal
+    diagnostics cannot tell you whether it is right, so the spectrum it
+    claims is verified by the method it was supposed to replace.
+    """
+    from scipy.linalg import eigh_tridiagonal
+
+    dx = float(x[1] - x[0])
+    interior = slice(1, -1)
+    d = 1.0 / dx**2 + v[interior]
+    e = -0.5 / dx**2 * np.ones(len(d) - 1)
+    vals = eigh_tridiagonal(
+        d, e, select="i", select_range=(0, n_levels - 1), eigvals_only=True
+    )
+    return np.asarray(vals, float)
+
+
+def _tridiagonal_eigenvalues(v: torch.Tensor, dx: float, n_levels: int):
+    """The lowest `n_levels` eigenvalues of -1/2 d2/dx2 + V, differentiably.
+
+    `torch.linalg.eigvalsh` is differentiable, so a gradient flows from the
+    eigenvalues back to `V`. That is the whole trick: the forward problem is
+    a matrix eigendecomposition and the matrix is a differentiable function
+    of the unknown, so there is no need for a network to represent the states
+    at all.
+    """
+    n = v.shape[0] - 2
+    main = torch.diag(1.0 / dx**2 + v[1:-1])
+    off = torch.diag(-0.5 / dx**2 * torch.ones(n - 1, dtype=v.dtype), 1)
+    h = main + off + off.T
+    return torch.linalg.eigvalsh(h)[:n_levels]
+
+
+def _inverse_by_diagonalising(
+    e_target,
+    x_min,
+    x_max,
+    *,
+    symmetric,
+    n_grid,
+    width,
+    depth,
+    epochs,
+    lr,
+    w_smooth,
+    record_every,
+    t0,
+):
+    """Recover V by differentiating through the eigensolver itself.
+
+    The PINN formulation has to represent every wave function with its own
+    network and only approximately satisfies the eigenvalue equation, so the
+    eigenvalues it reports are not quite the eigenvalues the recovered
+    potential has. Here they are, exactly, by construction -- there is
+    nothing left to approximate on the forward side, and every bit of the
+    optimisation goes into `V`.
+
+    **When a differentiable forward model exists, this beats a PINN.** The
+    PINN earns its place when one does not: an unmeshable geometry, a
+    potential known only pointwise, a solver that is not differentiable.
+    Keeping both here is what lets that claim be a measurement rather than an
+    opinion.
+    """
+    x = torch.linspace(x_min, x_max, n_grid, dtype=DTYPE)
+    dx = float((x_max - x_min) / (n_grid - 1))
+    target = torch.tensor(np.asarray(e_target, float), dtype=DTYPE)
+    scale = float(np.max(np.abs(e_target))) or 1.0
+
+    v_net = PotentialNet(x_min, x_max, symmetric, width, depth)
+    opt = torch.optim.Adam(v_net.parameters(), lr=lr)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
+    history: dict[str, list] = {"epoch": [], "loss": [], "residual": [], "smooth": []}
+
+    for ep in range(epochs):
+        opt.zero_grad()
+        v = v_net(x)
+        vals = _tridiagonal_eigenvalues(v, dx, len(target))
+        match = torch.mean(((vals - target) / scale) ** 2)
+        d2v = (v[2:] - 2 * v[1:-1] + v[:-2]) / dx**2
+        smooth = torch.mean(d2v**2) / scale**2
+        loss = match + w_smooth * smooth
+        loss.backward()
+        opt.step()
+        sched.step()
+        if record_every and (ep % record_every == 0 or ep == epochs - 1):
+            history["epoch"].append(ep)
+            history["loss"].append(float(loss.detach()))
+            history["residual"].append(float(match.detach()))
+            history["smooth"].append(float(smooth.detach()))
+
+    with torch.no_grad():
+        v_out = v_net(x).numpy()
+    achieved = _eigenvalues_of(v_out, x.numpy(), len(target))
+    psi = _eigenvectors_of(v_out, x.numpy(), len(target))
+    return InversePotential(
+        x=x.numpy(),
+        v=v_out,
+        psi=psi,
+        energies_target=np.asarray(e_target, float),
+        energies_achieved=achieved,
+        symmetric=symmetric,
+        seconds=time.time() - t0,
+        history=history,
+    )
+
+
+def _eigenvectors_of(v: np.ndarray, x: np.ndarray, n_levels: int) -> np.ndarray:
+    from scipy.linalg import eigh_tridiagonal
+
+    dx = float(x[1] - x[0])
+    d = 1.0 / dx**2 + v[1:-1]
+    e = -0.5 / dx**2 * np.ones(len(d) - 1)
+    _, vecs = eigh_tridiagonal(d, e, select="i", select_range=(0, n_levels - 1))
+    psi = np.zeros((n_levels, len(x)))
+    psi[:, 1:-1] = vecs.T
+    return psi / np.sqrt(np.sum(psi**2, axis=1, keepdims=True) * dx)

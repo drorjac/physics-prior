@@ -116,3 +116,69 @@ def test_the_learned_state_is_not_the_zero_function():
     st = fit_eigen_pinn(_free, 0.0, 1.0, epochs=1500, seed=5)
     assert np.max(np.abs(st.psi)) > 1e-6
     assert np.trapezoid(st.normalised() ** 2, st.x) == pytest.approx(1.0, rel=1e-6)
+
+
+# --- the inverse problem --------------------------------------------------
+def _sho_spectrum(n):
+    return np.arange(n) + 0.5
+
+
+@pytest.mark.slow
+def test_the_potential_is_recovered_from_its_spectrum_alone():
+    """Six numbers in, V(x) = x^2/2 out. The word 'harmonic' appears nowhere."""
+    from physprior.methods.eigen_pinn import fit_inverse_potential
+
+    inv = fit_inverse_potential(
+        _sho_spectrum(6), -6.0, 6.0, n_collocation=256, epochs=3000, seed=11
+    )
+    assert inv.spectrum_error < 0.02
+    for x0, v_true in ((0.0, 0.0), (1.0, 0.5), (2.0, 2.0)):
+        assert np.interp(x0, inv.x, inv.v) == pytest.approx(v_true, abs=0.15)
+
+
+@pytest.mark.slow
+def test_the_differentiable_solver_beats_the_residual_pinn_here():
+    """When a differentiable forward model exists, use it.
+
+    The PINN must represent every state with its own network and satisfies
+    the eigenvalue equation only approximately, so the eigenvalues it reports
+    are not the ones its potential actually has. Differentiating through the
+    eigensolver leaves nothing to approximate on the forward side.
+    """
+    from physprior.methods.eigen_pinn import fit_inverse_potential
+
+    kw = {"n_collocation": 256, "epochs": 2000, "seed": 11}
+    fast = fit_inverse_potential(
+        _sho_spectrum(4), -6.0, 6.0, method="diagonalise", **kw
+    )
+    slow = fit_inverse_potential(_sho_spectrum(4), -6.0, 6.0, method="residual", **kw)
+    assert fast.spectrum_error < slow.spectrum_error
+
+
+def test_the_reported_spectrum_is_verified_independently():
+    """`energies_achieved` comes from diagonalising the recovered potential,
+    never from the network that produced it -- a PINN's own diagnostics
+    cannot say whether it is right."""
+    from physprior.methods.eigen_pinn import _eigenvalues_of
+
+    x = np.linspace(-6, 6, 400)
+    vals = _eigenvalues_of(0.5 * x**2, x, 4)
+    assert vals == pytest.approx(np.arange(4) + 0.5, abs=2e-3)
+
+
+def test_symmetry_is_imposed_architecturally():
+    """One spectrum does not determine a 1-D potential in general, so the
+    even constraint buys identifiability rather than accuracy."""
+    from physprior.methods.eigen_pinn import PotentialNet
+
+    net = PotentialNet(-4.0, 4.0, symmetric=True)
+    left = net(torch.tensor([-3.0, -1.0], dtype=torch.float64))
+    right = net(torch.tensor([3.0, 1.0], dtype=torch.float64))
+    assert torch.allclose(left, right, atol=1e-12)
+
+
+def test_an_unknown_inverse_method_is_refused():
+    from physprior.methods.eigen_pinn import fit_inverse_potential
+
+    with pytest.raises(ValueError, match="unknown method"):
+        fit_inverse_potential([0.5], -1.0, 1.0, method="magic", epochs=1)

@@ -824,6 +824,71 @@ in a problem whose answer is known to nine digits.
 Next: [T6](T6_when_pinns_fail.ipynb) collects the failures this repository has
 measured on real data.
 """),
+            md("""
+---
+
+## The inverse problem: recover the potential from the spectrum
+
+This is the one worth caring about. The forward problem has a better solver;
+the inverse has none. Hand it only the energies — never the functional form,
+never the word "harmonic" — and ask for `V(x)`.
+"""),
+            code("""
+from physprior.methods.eigen_pinn import fit_inverse_potential
+energies = np.arange(6) + 0.5          # all the method is told
+inv = fit_inverse_potential(energies, -6.0, 6.0, n_collocation=256,
+                            epochs=3000, seed=11)
+print("target  :", np.round(inv.energies_target, 4))
+print("achieved:", np.round(inv.energies_achieved, 4), " (by diagonalising V_hat)")
+print(f"spectrum error: {inv.spectrum_error*100:.2f}%")
+for x0, v_true in ((0.0, 0.0), (1.0, 0.5), (2.0, 2.0), (3.0, 4.5)):
+    print(f"  V({x0}) = {np.interp(x0, inv.x, inv.v):7.3f}   true {v_true}")
+"""),
+            code("""
+fig = P.fig_inverse_potential(inv, truth=lambda x: 0.5*x**2,
+                              title="Recovered: V(x) = x^2/2")
+plt.show()
+"""),
+            md("""
+### Three things this problem teaches that the forward one cannot
+
+**1 · One spectrum does not determine a potential.** Borg-Marchenko: two
+spectra are needed in general, and "can one hear the shape of a drum?" is the
+same question. Here symmetry is imposed *architecturally* — `V` is evaluated
+at `|x - centre|` — which buys **identifiability**, not accuracy. Without it
+the problem is genuinely ill-posed and no amount of training fixes that.
+
+**2 · Where no state lives, the data is silent.** Every term of the residual
+is proportional to psi, so out in the classically forbidden tails the
+spectrum says nothing about V at all. An unconstrained network puts a bump
+there, and that bump manufactures spurious bound states that corrupt the very
+spectrum you were matching. The first run of this produced a potential that
+turned *over* at large $|x|$ and returned a degenerate pair where the truth
+has none.
+
+The fix is a Tikhonov term on the curvature of V: it adds no information, it states a
+*preference* for the smoothest potential consistent with the data. That is a
+prior and it must be reported as one.
+
+**3 · When a differentiable forward model exists, use it instead.**
+
+| | residual PINN | differentiable eigensolver |
+|---|---|---|
+| spectrum error | 0.17 | **0.0034** |
+| time | 100 s | **18 s** |
+
+The PINN has to represent every state with its own network and satisfies the
+eigenvalue equation only approximately, so the eigenvalues it reports are not
+the ones its potential actually has. Differentiating through
+`torch.linalg.eigvalsh` leaves nothing to approximate on the forward side and
+puts every bit of the optimisation into `V`.
+
+**That is the honest scope of a PINN.** It is not a better eigensolver. It is
+what remains when there is no eigensolver — an unmeshable geometry, a forward
+model you cannot differentiate, a physical law known only as a residual. Both
+methods are kept in this repository so that claim stays a measurement rather
+than an opinion.
+"""),
         ],
         "T5 - quantum wave function",
     )

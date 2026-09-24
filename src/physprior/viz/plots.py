@@ -587,3 +587,168 @@ def fig_phase2_improvement(df, title=None):
         color=INK_2,
     )
     return fig
+
+
+def fig_inverse_potential(inv, truth=None, title=None):
+    """From a handful of numbers to a function: the inverse Schrodinger problem.
+
+    Two panels, because the story is a transformation. Left is everything the
+    method was told -- a level diagram, which is how a spectroscopist would
+    write it down. Right is what came back, against the truth, with the
+    states drawn at their own energies in the way every quantum textbook
+    draws them.
+
+    `V_true` is a reference rather than a competing series, so it is muted
+    ink and heavier, under the recovered curve.
+    """
+    use_style()
+    fig, axes = plt.subplots(
+        1, 2, figsize=(10.4, 4.2), gridspec_kw={"width_ratios": [1, 2.4]}
+    )
+
+    # --- left: the given spectrum, as a level diagram ---------------------
+    ax = axes[0]
+    for e in inv.energies_target:
+        ax.plot(
+            [0.12, 0.88],
+            [e, e],
+            color=ARM_COLOR["physics"],
+            lw=2.4,
+            solid_capstyle="round",
+        )
+    ax.set_xlim(0, 1)
+    ax.set_xticks([])
+    lo0 = float(np.min(inv.energies_target))
+    hi0 = float(np.max(inv.energies_target))
+    pad = 0.12 * ((hi0 - lo0) or 1.0)
+    # Headroom for the note, which otherwise lands on the top level.
+    ax.set_ylim(lo0 - pad, hi0 + 4 * pad)
+    ax.set_ylabel("energy")
+    ax.set_title(f"Given: {len(inv.energies_target)} numbers")
+    ax.grid(axis="x", visible=False)
+    # At the top: the lowest level sits near the bottom of this panel and a
+    # note placed there lands on it.
+    ax.annotate(
+        "no functional form,\nno name, no hint",
+        xy=(0.5, 0.99),
+        xycoords="axes fraction",
+        ha="center",
+        va="top",
+        fontsize=8.5,
+        color=INK_MUTED,
+    )
+
+    # --- right: the recovered potential, with its states ------------------
+    ax = axes[1]
+    if truth is not None:
+        ax.plot(
+            inv.x, truth(inv.x), lw=3.4, color=INK_MUTED, zorder=1, label="true V(x)"
+        )
+    ax.plot(inv.x, inv.v, color=ARM_COLOR["pinn"], zorder=3, label="recovered V(x)")
+
+    span = float(np.ptp(inv.energies_target)) or 1.0
+    for k, e in enumerate(inv.energies_achieved):
+        ax.plot(
+            inv.x,
+            np.full_like(inv.x, e),
+            color=INK_MUTED,
+            lw=0.7,
+            ls=(0, (4, 4)),
+            zorder=2,
+        )
+        psi = inv.psi[k]
+        amp = 0.16 * span / (np.max(np.abs(psi)) or 1.0)
+        ax.plot(
+            inv.x,
+            e + amp * psi,
+            color=ARM_COLOR["physics"],
+            lw=1.4,
+            alpha=0.85,
+            zorder=4,
+        )
+
+    lo, hi = float(np.min(inv.energies_target)), float(np.max(inv.energies_target))
+    # Headroom above the highest state so the legend has somewhere to sit
+    # that is not on top of the potential.
+    ax.set_ylim(lo - 0.45 * span, hi + 1.05 * span)
+    ax.set_xlabel("x")
+    ax.set_ylabel("V(x) and the states, at their energies")
+    ax.set_title(title or "Recovered: a function")
+    ax.plot([], [], color=ARM_COLOR["physics"], lw=1.4, label="states psi_n")
+    ax.legend(loc="upper center", ncols=3)
+
+    err = ""
+    if truth is not None:
+        err = f"   |V error| where the states live: {inv.error_against(truth):.3g}"
+    fig.text(
+        0.0,
+        -0.02,
+        f"Spectrum reproduced to {inv.spectrum_error * 100:.2f}% "
+        f"(checked by diagonalising the recovered V, not by the network).{err}",
+        fontsize=8.5,
+        color=INK_2,
+    )
+    return fig
+
+
+def fig_eigen_convergence(states, exact, title=None):
+    """Learned eigenvalues against the closed form, and the overlap that says
+    whether each level is a distinct state at all.
+
+    Two panels on one figure because they answer two different questions
+    about the same run: *is the energy right* and *is it even a new state*.
+    """
+    use_style()
+    fig, axes = plt.subplots(1, 2, figsize=(9.8, 3.8))
+    n = np.arange(1, len(states) + 1)
+    err = [abs(s.energy - e) / e * 100 for s, e in zip(states, exact, strict=True)]
+
+    ax = axes[0]
+    ax.plot(
+        n,
+        [s.energy for s in states],
+        "o",
+        markersize=9,
+        color=ARM_COLOR["pinn"],
+        markeredgecolor=SURFACE,
+        markeredgewidth=1.4,
+        label="learned",
+        zorder=3,
+    )
+    ax.plot(n, exact, lw=3, color=INK_MUTED, zorder=1, label="exact")
+    ax.set_xticks(n)
+    ax.set_xlabel("level n")
+    ax.set_ylabel("energy")
+    ax.set_title(title or "The learned spectrum")
+    ax.legend(loc="upper left")
+
+    ax = axes[1]
+    colours = [ARM_COLOR["pinn"] if s.converged else ARM_COLOR["sr"] for s in states]
+    ax.bar(
+        n,
+        [max(s.max_overlap, 1e-4) for s in states],
+        color=colours,
+        edgecolor=SURFACE,
+        linewidth=2,
+        width=0.6,
+    )
+    ax.axhline(0.1, color=INK_2, lw=1.2, ls=(0, (3, 3)))
+    ax.annotate(
+        "collapse threshold",
+        xy=(n[-1] + 0.4, 0.1),
+        xytext=(0, 5),
+        textcoords="offset points",
+        ha="right",
+        fontsize=8.5,
+        color=INK_2,
+    )
+    ax.set_yscale("log")
+    ax.set_xticks(n)
+    ax.set_xlabel("level n")
+    ax.set_ylabel("overlap with the states below")
+    ax.set_title("Is it a new state, or a copy?")
+    for xi, e in zip(n, err, strict=True):
+        ax.annotate(
+            f"{e:.2f}%", xy=(xi, 1.3e-4), ha="center", fontsize=7.5, color=INK_MUTED
+        )
+    return fig

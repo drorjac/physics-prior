@@ -272,6 +272,29 @@ def summary_figures() -> None:
         )
 
 
+def inverse_schrodinger_figure(epochs: int = 3000) -> None:
+    """Recover V(x) from a spectrum, and draw it.
+
+    Trains, so it is not part of the default figure sweep -- call it directly
+    or via `physprior figures --inverse`.
+    """
+    import numpy as np
+
+    from physprior.methods.eigen_pinn import fit_inverse_potential
+
+    inv = fit_inverse_potential(
+        np.arange(6) + 0.5, -6.0, 6.0, n_collocation=256, epochs=epochs, seed=11
+    )
+    fig = P.fig_inverse_potential(
+        inv, truth=lambda x: 0.5 * x**2, title="Recovered: V(x) = x^2/2"
+    )
+    out = P.save(fig, "quantum", "inverse_potential")
+    print(
+        f"    wrote {out.relative_to(get_settings().root)}  "
+        f"(spectrum error {inv.spectrum_error:.4f})"
+    )
+
+
 def phase2_figure() -> None:
     """What the frozen pinn default bought, per track and question.
 
