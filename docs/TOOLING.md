@@ -169,19 +169,56 @@ kernels at all**, so asking for MPS is asking for float32 whether or not you
 meant it. `resolve()` warns rather than letting a second-derivative residual
 quietly lose half its precision.
 
-Two honesty notes:
+### Why `mps.is_available()` is False here, and it is not the hardware
 
-- **The GPU paths are written but unverified.** This machine reports
-  `cuda.is_available() = False` and `mps.is_available() = False`; every number
-  in `results/` was produced on the CPU in float64. Treat the device selection
-  as untested until someone runs it on hardware that has one.
-- **A GPU would not help most of this repository.** The 1-D tracks fit in
-  ~25 s and are bottlenecked by the optimiser's *serial* epochs, not by matrix
-  work — batches of a few hundred points do not fill a GPU, and the transfer
-  overhead per epoch can make it slower. The one place the arithmetic is
-  actually large is the 2-D field residual (§ the PDE study): 10^4 collocation
-  points with second derivatives in both coordinates. That is what the device
-  selection was added for.
+This machine has an **Apple M2 with 10 GPU cores and Metal 3**. The project's
+torch still cannot use it:
+
+```
+RuntimeError: The MPS backend is supported on MacOS 14.0+
+```
+
+torch 2.11 requires macOS 14; this machine runs 13.4. So `is_built()` is True
+(the code is compiled in) and `is_available()` is False (the OS is too old) —
+an **OS constraint**, not a missing GPU and not missing code. PyTorch raised
+that floor at 2.9, so `torch==2.8.0` reaches the same GPU on the same machine,
+which is how the numbers below were obtained. See `benchmarks/README.md`.
+
+### What the GPU is actually worth
+
+The 2-D field residual with second derivatives, ms per epoch:
+
+| collocation points | cpu float64 | cpu float32 | mps float32 | speedup |
+|---|---|---|---|---|
+| 2,000 | 217.7 | 122.9 | 62.2 | 3.50× |
+| 10,000 | 856.3 | 354.8 | 109.2 | 7.84× |
+| 50,000 | 6455.5 | 3374.3 | 955.4 | 6.76× |
+
+Roughly **7× once the collocation set is large** — which is the field case and
+only the field case. The 1-D tracks fit in ~25 s and are bottlenecked by the
+optimiser's *serial* epochs; a few hundred points do not fill a GPU.
+
+### What float32 costs, measured
+
+On the analytic field, where α = 0.05 exactly:
+
+| | implied α | relative error |
+|---|---|---|
+| cpu float64 | 0.050000000000 | — |
+| cpu float32 | 0.050000000991 | 2.0×10⁻⁸ |
+| mps float32 | 0.049999999585 | 8.3×10⁻⁹ |
+
+**Negligible, and an earlier draft of this section said the opposite.** It
+argued that a float32 second derivative "loses about half its digits" and
+concluded single precision was unsafe here. The digit count is right and the
+conclusion was wrong: the worst pointwise error in `u_xx` is 6×10⁻⁷ relative,
+while the *network's* error in `u_xx` is 60 % — eight orders of magnitude
+larger. Arithmetic precision is not what limits this problem, and the warning
+in `resolve()` now says so.
+
+**The device selection inside the package is still unverified**, because the
+package's own torch cannot reach the GPU on this OS. Every number in
+`results/` was produced on the CPU in float64.
 
 ---
 

@@ -38,10 +38,16 @@ def test_unavailable_device_warns_and_falls_back(monkeypatch):
 
 
 def test_mps_forces_float32_and_says_so(monkeypatch):
-    """Not a preference -- MPS cannot do float64 at all."""
+    """Not a preference -- MPS cannot do float64 at all.
+
+    The warning quotes the MEASURED cost (~2e-08 relative, benchmarks/)
+    rather than an argument about digit counts: an earlier version reasoned
+    that a float32 second derivative "loses half its digits" and concluded
+    the GPU was unsafe here, which the measurement contradicted.
+    """
     monkeypatch.setattr(torch.backends.mps, "is_available", lambda: True)
     monkeypatch.setenv("PHYSPRIOR_DTYPE", "float64")
-    with pytest.warns(UserWarning, match="SECOND derivatives"):
+    with pytest.warns(UserWarning, match=r"does not support float64"):
         dev, dtype = device.resolve("mps")
     assert dev.type == "mps"
     assert dtype is torch.float32

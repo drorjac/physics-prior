@@ -1,11 +1,8 @@
 """Where the tensors live, and the dtype that decision forces.
 
-This package has always run on the CPU, in **float64**, and that pairing is
-deliberate rather than accidental: the physics terms differentiate the
-network twice, and a second derivative in float32 loses about half the digits
-a first derivative keeps. On the 1-D tracks the CPU is also simply fast
-enough -- a PINN fit is ~25 s and the bottleneck is the optimiser's serial
-epochs, not the matrix work.
+This package has always run on the CPU, in **float64**. On the 1-D tracks
+the CPU is simply fast enough -- a PINN fit is ~25 s and the bottleneck is
+the optimiser's serial epochs, not the matrix work.
 
 That stops being true for a field. A 2-D residual over 10^4 collocation
 points with second derivatives in both coordinates is where a GPU earns its
@@ -16,16 +13,41 @@ place, so the device is now selectable.
     PHYSPRIOR_DEVICE=cpu       force the CPU (the default remains automatic)
     PHYSPRIOR_DTYPE=float32    trade precision for speed, deliberately
 
-**The GPU paths are written but NOT verified**: the machine this was
-developed on reports `cuda.is_available() = False` and
-`backends.mps.is_available() = False`, so every number in this repository was
-produced on the CPU in float64. Treat the device selection as untested code
-until someone runs it on hardware that has one.
+Measured on this machine (`benchmarks/`, Apple M2, 10 GPU cores), on the
+2-D residual with second derivatives:
 
-One consequence is not a preference but an arithmetic fact: **MPS does not
-support float64 at all.** Selecting it silently demotes the whole package to
-float32, which is why `resolve()` says so out loud rather than letting a
-second-derivative residual quietly lose half its precision.
+    collocation    cpu f64    cpu f32    mps f32    speedup
+          2,000    217.7ms    122.9ms     62.2ms      3.50x
+         10,000    856.3ms    354.8ms    109.2ms      7.84x
+         50,000   6455.5ms   3374.3ms    955.4ms      6.76x
+
+So the GPU is worth roughly 7x once the collocation set is large -- which is
+the field case, and only the field case.
+
+**MPS does not support float64 at all**, so selecting it demotes the package
+to float32 whether or not that was intended, and `resolve()` returns the
+dtype alongside the device rather than letting that happen quietly.
+
+What that demotion costs was also measured rather than asserted, on the
+ANALYTIC field where alpha = 0.05 exactly:
+
+    cpu float64    0.050000000000
+    cpu float32    0.050000000991    2.0e-08 relative
+    mps float32    0.049999999585    8.3e-09 relative
+
+**Negligible** -- and an earlier version of this file claimed otherwise,
+saying a float32 second derivative "loses about half the digits". The digit
+count is right and the conclusion was wrong: the worst pointwise error in
+u_xx is 6e-07 relative, while the network's own error in u_xx is 60%, eight
+orders of magnitude larger. Arithmetic precision is not what limits this
+problem. The warning below therefore flags the demotion without claiming it
+is the dominant error.
+
+**The GPU paths in the package remain UNVERIFIED**, because the project's own
+torch cannot reach the GPU on this OS: torch 2.11 requires macOS 14 and this
+machine runs 13.4, so `is_built()` is True and `is_available()` is False. The
+benchmarks above ran under torch 2.8 in a separate venv. Every number in
+`results/` was produced on the CPU in float64. See `benchmarks/README.md`.
 """
 
 from __future__ import annotations
@@ -73,10 +95,11 @@ def resolve(requested: str | None = None) -> tuple[torch.device, torch.dtype]:
         # Not a policy choice. MPS has no float64 kernels.
         if wanted == "float64":
             warnings.warn(
-                "mps does not support float64; falling back to float32. The "
-                "physics terms here take SECOND derivatives, which lose about "
-                "half their digits at single precision -- prefer cpu or cuda "
-                "when a recovered constant is the result.",
+                "mps does not support float64; falling back to float32. "
+                "Measured cost on this project's second-derivative estimator "
+                "is ~2e-08 relative (benchmarks/device_precision.py), so this "
+                "is a notice, not a reason to avoid the gpu -- but prefer cpu "
+                "or cuda if you need float64 reproducibility with results/.",
                 stacklevel=2,
             )
         dtype = torch.float32
