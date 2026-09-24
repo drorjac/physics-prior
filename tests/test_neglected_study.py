@@ -91,3 +91,28 @@ def test_every_committed_figure_is_regenerated_by_some_stage():
         "these committed figures are not written by any stage of "
         f"`physprior neglected`: {missing}"
     )
+
+
+def test_cli_help_lists_exactly_the_stages_that_exist():
+    """A help string that names a stage which does not exist, or omits one
+    that does, is a small lie the user pays for."""
+    import inspect
+    import re
+
+    from physprior.cli import build_parser
+
+    table = re.findall(r'^\s+"(\w+)":', inspect.getsource(NS.main), re.M)
+    assert table, "could not read main()'s stage table"
+
+    action = next(
+        a
+        for a in build_parser()
+        ._subparsers._group_actions[0]
+        .choices["neglected"]
+        ._actions
+        if a.dest == "stage"
+    )
+    advertised = {w.strip() for w in re.split(r"[|]", action.help.split("(")[0])}
+    assert advertised == set(table), (
+        f"help advertises {sorted(advertised)} but main() has {sorted(table)}"
+    )

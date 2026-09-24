@@ -302,6 +302,26 @@ def derivative_accuracy(quick: bool = False) -> None:
         f"  data loss {out['data_loss']:.2e}; mean |u_xx| "
         f"{out['curvature'][0]:.3f} against an exact {out['curvature_exact']:.3f}"
     )
+    # Written out because docs/neglected/README.md quotes these, and prose
+    # numbers in this project are re-derived by tests rather than typed.
+    _write_tune(
+        pd.DataFrame(
+            [
+                {
+                    "w_smooth": w,
+                    "implied_alpha": a,
+                    "mean_abs_uxx": c,
+                    "alpha_true": out["alpha_true"],
+                    "mean_abs_uxx_exact": out["curvature_exact"],
+                    "data_loss": out["data_loss"],
+                }
+                for w, a, c in zip(
+                    out["weights"], out["alphas"], out["curvature"], strict=True
+                )
+            ]
+        ),
+        "derivative_accuracy",
+    )
     _save(
         P.fig_derivative_accuracy(
             out["x"],

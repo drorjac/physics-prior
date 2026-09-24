@@ -6,6 +6,55 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`physprior neglected`** — the neglected-terms study is now reproducible by
+  a command. Its five tables and fourteen figures were committed with nothing
+  in the repository that regenerated them; `scripts/regenerate.sh` skipped the
+  study entirely. Stages: `algebraic`, `ode`, `pde`, `detail`, `derivative`,
+  `tune`. A test asserts that no committed figure is left without a stage.
+- **`docs/neglected/`** — a topic page for the study, which had none. Every
+  number in it is re-derived from `results/` by `tests/test_claims.py`.
+- **`physprior.methods.device`** — selectable device and dtype via
+  `PHYSPRIOR_DEVICE` / `PHYSPRIOR_DTYPE`, reported by `physprior info`.
+  `resolve()` returns the pair because MPS has no float64 kernels, so
+  choosing that device chooses single precision.
+- **`benchmarks/`** — what a GPU is worth here, measured rather than assumed
+  (~7× on the 2-D field residual at 10⁴ collocation points), plus why
+  `mps.is_available()` is False on a machine that has an M2: torch 2.11
+  requires macOS 14 and this machine runs 13.4.
+- **`config.short_path`** — printing an output path no longer crashes when
+  the output directory is redirected outside the project root.
+- Residual-adaptive collocation, a curriculum in `t`, and a curvature
+  penalty (`w_smooth`) on the PDE residual PINN. None of them fixes it; all
+  are recorded because each is a standard remedy that did not work here.
+
+### Fixed
+
+- `Path.relative_to(root)` raised whenever `PHYSPRIOR_RESULTS_DIR` or
+  `PHYSPRIOR_FIGURES_DIR` pointed outside the checkout — after the work was
+  already done. Affected `reporting/figures.py` as well.
+- Three mypy errors introduced by the new modules.
+
+### Changed
+
+- the project brief's "Current state" claimed two commits at twenty-four, and
+  mentioned neither the arm that does not converge nor the GPU situation.
+- `methods/device.py` previously argued that a float32 second derivative
+  "loses about half its digits" and that the GPU was therefore unsafe for a
+  recovered constant. Measured on the analytic field, the cost is 2×10⁻⁸
+  relative — while the network's own error in `u_xx` is 60 %. The digit count
+  was right and the conclusion was wrong.
+
+### Known not to converge
+
+- The 2-D residual PINN on the PDE rung returns `alpha` about 69 % wrong at
+  `eps = 0`, where the modelled law is exactly right. Marked
+  `converged=False`; the rung's conclusion rests on the `physics` arm, whose
+  result is a closed-form identity. The diagnosis — a data loss of 8×10⁻⁴
+  with `u_xx` 50–60 % too large, so `alpha = |u_t|/|u_xx|` cannot be right —
+  is in `docs/METHOD.md`.
+
 ## [0.1.0] - 2026-09-21
 
 First public release.

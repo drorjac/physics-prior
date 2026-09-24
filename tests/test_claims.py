@@ -196,3 +196,90 @@ def _meta_topic(topic):
     if not p.exists():
         pytest.skip(f"{topic} topic not run")
     return json.loads(p.read_text())
+
+
+# ---------------------------------------------------------------------------
+# The neglected-terms study: the prose in docs/neglected/README.md
+
+
+@pytest.fixture(scope="module")
+def neglected_doc() -> str:
+    p = get_settings().root / "docs" / "neglected" / "README.md"
+    if not p.exists():
+        pytest.skip("docs/neglected/README.md missing")
+    return p.read_text()
+
+
+def _neglected(name):
+    import pandas as pd
+
+    p = get_settings().results_dir / f"neglected_{name}.csv"
+    if not p.exists():
+        pytest.skip(f"neglected_{name}.csv missing -- run `physprior neglected`")
+    return pd.read_csv(p)
+
+
+def test_algebraic_crossover_numbers(neglected_doc):
+    """The doc quotes the eps = 0 cost of the prior and the eps = 0.8 win."""
+    d = _neglected("eps")
+    g = d.groupby(["eps", "arm"]).nrmse_in.median()
+    for eps in (0.0, 0.8):
+        for arm in ("physics", "pinn"):
+            assert f"{g[(eps, arm)]:.4f}" in neglected_doc, (
+                f"eps={eps} {arm} drifted to {g[(eps, arm)]:.6f}"
+            )
+    ratio = g[(0.8, "physics")] / g[(0.8, "pinn")]
+    assert f"{ratio:.1f}×" in neglected_doc, f"the win at eps=0.8 is now {ratio:.2f}x"
+
+
+def test_noise_crossover_table(neglected_doc):
+    """The doc's claim that `physics` retakes the lead by 10% noise."""
+    d = _neglected("noise")
+    g = d.groupby(["noise", "arm"]).nrmse_in.median()
+    assert g[(0.10, "physics")] < g[(0.10, "pinn")], (
+        "the noise crossover has moved: `pinn` still wins at 10% noise"
+    )
+    assert g[(0.0, "physics")] > g[(0.0, "pinn")], "no crossover left to describe"
+    for noise in (0.0, 0.05, 0.10):
+        for arm in ("physics", "pinn"):
+            assert f"{g[(noise, arm)]:.4f}" in neglected_doc, (
+                f"noise={noise} {arm} drifted to {g[(noise, arm)]:.6f}"
+            )
+
+
+def test_ode_damping_is_the_distinguishable_case(neglected_doc):
+    d = _neglected("ode")
+    d = d[d.amplitude_deg == 60]
+    g = d.groupby(["shape", "arm"]).nrmse.median()
+    ratio = g[("damping", "physics")] / g[("damping", "pinn")]
+    assert ratio > 5, f"damping is no longer a decisive win: {ratio:.1f}x"
+    assert f"{ratio:.0f}×" in neglected_doc, (
+        f"the quoted ODE win drifted to {ratio:.1f}x"
+    )
+    # and the degenerate one: `physics` fits BETTER while omega is worse
+    assert g[("anharmonic", "physics")] < g[("anharmonic", "pinn")], (
+        "the anharmonic case no longer shows a better fit with a worse model"
+    )
+
+
+def test_pde_absorption_table(neglected_doc):
+    """The heart of rung 3: degenerate absorbs into alpha, distinguishable does not."""
+    d = _neglected("pde")
+    g = d[d.arm == "physics"].groupby(["shape", "eps"]).alpha_error_pct.median()
+    deg = g[("diffusive", 0.6)]
+    dis = g[("advective", 0.6)]
+    assert deg > 10 * dis, (
+        f"the contrast collapsed: diffusive {deg:.1f}% vs advective {dis:.1f}%"
+    )
+    assert f"{deg:.1f} %" in neglected_doc, (
+        f"the degenerate error drifted to {deg:.2f}%"
+    )
+    assert f"{dis:.1f} %" in neglected_doc, (
+        f"the distinguishable error drifted to {dis:.2f}%"
+    )
+
+
+def test_doc_does_not_report_the_unconverged_pinn_as_a_result(neglected_doc):
+    """Invariant 4: a non-converged arm is marked, not quoted."""
+    assert "converged=False" in neglected_doc
+    assert "does not depend on it" in neglected_doc

@@ -10,9 +10,12 @@ planning record.
 | [**gravity**](gravity/) | Newtonian orbits, the three-body problem, the solar system from JPL initial conditions; Kepler's third law from DE441 |
 | [**relativity**](relativity/) | Schwarzschild precession and post-Newtonian inspirals; GW150914 strain and Mercury's ephemeris |
 | [**quantum**](quantum/) | the Schrödinger equation, bound states and tunnelling; NIST hydrogen levels and the COBE/FIRAS blackbody |
+| [**neglected**](neglected/) | the controlled study that cuts across all three: **when** a physics prior helps, on an algebraic law, an ODE and a PDE |
 
-Each topic page carries that problem's simulations, its real-data tracks, its
-figures and animations, and the caveats that belong to it.
+The first three carry that problem's simulations, its real-data tracks, its
+figures and animations, and the caveats that belong to it. **neglected** is
+different in kind: it is the controlled experiment where the answer is known
+in advance, and it is the one page to read if you only read one.
 
 ## Cross-cutting
 
