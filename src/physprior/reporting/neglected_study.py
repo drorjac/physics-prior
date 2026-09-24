@@ -391,9 +391,9 @@ def tune(quick: bool = False) -> None:
     # removing it costs nothing and the test is clean.
     ablation: list[dict] = []
     settings = [
-        ("C free, w_phys=1e-3", dict(use_correction=True, w_phys=1e-3)),
-        ("C penalised, w_phys=1e0", dict(use_correction=True, w_phys=1e0)),
-        ("C penalised, w_phys=1e3", dict(use_correction=True, w_phys=1e3)),
+        ("C free (w_phys=1e-3)", dict(use_correction=True, w_phys=1e-3)),
+        ("C penalised (w_phys=1e0)", dict(use_correction=True, w_phys=1e0)),
+        ("C penalised (w_phys=1e3)", dict(use_correction=True, w_phys=1e3)),
         ("C removed (c == 0)", dict(use_correction=False, w_phys=0.0)),
     ]
     for label, kw in settings[:2] if quick else settings:
