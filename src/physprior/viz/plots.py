@@ -1231,3 +1231,94 @@ def fig_learning_curves(history, published=None, title=None):
         ax.set_ylabel("recovered constant")
         ax.set_title("The constant, converging separately")
     return fig
+
+
+def fig_learned_force(system, force_fn, predict=None, physics=None, title=None):
+    """The differential-equation analogue: did the network learn the missing
+    FORCE, not merely a curve that happens to fit?
+
+    The left panel plots the correction against **whatever the missing force
+    actually depends on** -- angle for the anharmonic term, velocity for
+    damping. Plotting a velocity-dependent force against angle draws a flat
+    line and says nothing, which is exactly the mistake this parameter
+    exists to prevent.
+
+    The right panel is the consequence of having dropped it, against the
+    FITTED harmonic arm rather than the harmonic law at the true omega: the
+    `physics` arm is free to bias omega, and drawing it unbiased would
+    overstate how badly it does.
+    """
+    use_style()
+    t, exact = system.solve(600)
+    dexact = np.gradient(exact, t)
+    velocity_dependent = system.shape == "damping"
+
+    if velocity_dependent:
+        q = np.linspace(dexact.min(), dexact.max(), 300)
+        truth = system.missing_force(np.zeros_like(q), q)
+        learned = force_fn(np.zeros_like(q), q)
+        xlabel, qplot = "angular velocity (rad/s)", q
+        left_title = title or "A force that depends on VELOCITY"
+        caption_extra = f"gamma = {system.gamma}"
+    else:
+        amp = abs(system.amplitude)
+        q = np.linspace(-amp, amp, 300)
+        truth = system.missing_force(q)
+        learned = force_fn(q)
+        xlabel, qplot = "angle (degrees)", np.degrees(q)
+        left_title = title or "A force that depends on ANGLE"
+        caption_extra = (
+            f"true period {system.true_period:.3f} against the "
+            f"modelled {2 * np.pi / system.omega:.3f}"
+        )
+
+    fig, axes = plt.subplots(1, 2, figsize=(10.6, 3.9))
+    ax = axes[0]
+    ax.axhline(0, color=GRID, lw=1.0, zorder=0)
+    ax.axvline(0, color=GRID, lw=1.0, zorder=0)
+    ax.plot(qplot, truth, lw=3.2, color=INK_MUTED, zorder=1, label="the force left out")
+    ax.plot(
+        qplot,
+        learned,
+        color=ARM_COLOR["pinn"],
+        zorder=3,
+        label="learned by the network",
+    )
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("force left out of the model")
+    ax.set_title(left_title)
+    ax.legend(loc="upper right")
+
+    ax = axes[1]
+    ax.plot(t, exact, lw=3.0, color=INK_MUTED, zorder=1, label="the truth")
+    harmonic = (
+        physics(t)
+        if physics is not None
+        else system.amplitude * np.cos(system.omega * t)
+    )
+    ax.plot(
+        t,
+        harmonic,
+        color=ARM_COLOR["physics"],
+        lw=1.8,
+        ls=(0, (4, 3)),
+        zorder=2,
+        label="harmonic, fitted" if physics is not None else "harmonic law",
+    )
+    if predict is not None:
+        ax.plot(t, predict(t), color=ARM_COLOR["pinn"], lw=1.6, zorder=3, label="PINN")
+    ax.set_xlabel("time")
+    ax.set_ylabel("angle (rad)")
+    ax.set_title("and what the model cannot reproduce")
+    ax.legend(loc="lower left", ncols=2)
+    fig.text(
+        0.0,
+        -0.03,
+        f"amplitude {np.degrees(abs(system.amplitude)):.0f} deg, shape "
+        f"{system.shape!r} -- the dropped force is "
+        f"{system.missing_fraction * 100:.1f}% of the restoring force; "
+        f"{caption_extra}",
+        fontsize=8.5,
+        color=INK_2,
+    )
+    return fig

@@ -319,3 +319,325 @@ def sweep(values, key: str = "eps", seeds=REPORT_SEEDS, **kw):
                 )
         print(f"  {key}={v} done", flush=True)
     return pd.DataFrame(rows)
+
+
+# ---------------------------------------------------------------------------
+# the same question for a DIFFERENTIAL law
+# ---------------------------------------------------------------------------
+#
+# Everything above is an algebraic relation, `y = law(x) + missing`, and the
+# `pinn` arm is the law-plus-correction form. The other shape of PINN solves a
+# differential equation, and the neglected-term question is sharper there:
+# the missing piece is a missing FORCE, and recovering it means the network
+# has learned a term of the equation of motion rather than a curve.
+#
+# The system is the one every physicist meets first. A pendulum obeys
+#
+#     theta'' = -omega^2 sin(theta)
+#
+# and the small-angle approximation drops everything past the linear term:
+#
+#     theta'' = -omega^2 theta          <- what we model
+#     missing  = -omega^2 (sin theta - theta)  ~  +omega^2 theta^3 / 6
+#
+# The dial is the AMPLITUDE, which is a physical quantity rather than a knob:
+# at 10 degrees the missing force is 0.1% of the restoring force, at 90
+# degrees it is 10%. And the approximation has a measurable consequence --
+# the true period grows with amplitude while the modelled one does not.
+
+
+@dataclass
+class NeglectedODE:
+    """A pendulum, modelled as a harmonic oscillator.
+
+    `amplitude` (radians) is the dial. The modelled law is exact as it goes to
+    zero and increasingly wrong as it grows, which is what the small-angle
+    approximation IS.
+    """
+
+    amplitude: float
+    noise: float
+    omega: float = 1.0
+    t_max: float = 12.0
+    shape: str = "damping"
+    gamma: float = 0.06
+
+    def missing_force(self, theta, dtheta=None):
+        """What the model leaves out, as a force.
+
+        `anharmonic`  the small-angle step, -omega^2 (sin theta - theta). A
+                      function of theta alone and, over a short window,
+                      **nearly degenerate with omega itself**: a pendulum at
+                      amplitude A has period T(A), and a harmonic oscillator
+                      can simply adopt omega = 2 pi / T(A). What is left is a
+                      waveform-shape difference, which is second order. This
+                      is the `power` case of the algebraic study in a
+                      differential costume.
+
+        `damping`     -2 gamma thetadot. A function of the VELOCITY, so no
+                      choice of omega can imitate it -- a conservative model
+                      cannot produce decay at all. This is the `bump` case:
+                      distinguishable by construction.
+        """
+        theta = np.asarray(theta, float)
+        if self.shape == "anharmonic":
+            return -(self.omega**2) * (np.sin(theta) - theta)
+        if self.shape == "damping":
+            if dtheta is None:
+                return np.zeros_like(theta)
+            return -2.0 * self.gamma * np.asarray(dtheta, float)
+        raise ValueError(f"unknown shape {self.shape!r}")
+
+    def solve(self, n: int = 400):
+        """The truth, by integrating the full nonlinear equation."""
+        from scipy.integrate import solve_ivp
+
+        def rhs(_t, s):
+            if self.shape == "anharmonic":
+                return [s[1], -(self.omega**2) * np.sin(s[0])]
+            return [s[1], -(self.omega**2) * s[0] - 2.0 * self.gamma * s[1]]
+
+        t = np.linspace(0.0, self.t_max, n)
+        sol = solve_ivp(
+            rhs,
+            (0.0, self.t_max),
+            [self.amplitude, 0.0],
+            t_eval=t,
+            method="DOP853",
+            rtol=1e-11,
+            atol=1e-13,
+        )
+        return t, sol.y[0]
+
+    def sample(self, n: int, seed: int):
+        rng = np.random.default_rng(seed)
+        t_dense, theta_dense = self.solve(2000)
+        t = np.sort(rng.uniform(0.0, self.t_max, n))
+        theta = np.interp(t, t_dense, theta_dense)
+        return t, theta + rng.normal(0.0, self.noise * np.std(theta_dense), n)
+
+    @property
+    def missing_fraction(self) -> float:
+        """The missing force as a fraction of the restoring force, at peak."""
+        a = self.amplitude
+        if self.shape == "damping":
+            # at peak speed |thetadot| ~ omega * a
+            return float(
+                2.0 * self.gamma * self.omega * abs(a) / (self.omega**2 * abs(a) or 1.0)
+            )
+        return float(abs(self.missing_force(a)) / (self.omega**2 * abs(a) or 1.0))
+
+    @property
+    def true_period(self) -> float:
+        """The real period, which grows with amplitude -- the observable
+        consequence of the term being dropped."""
+        from scipy.special import ellipk
+
+        return float(4.0 / self.omega * ellipk(np.sin(self.amplitude / 2.0) ** 2))
+
+
+def _ode_fit_physics(sys_, t, theta):
+    """Fit the harmonic solution. It cannot bend, so it cannot be right."""
+    from scipy.optimize import curve_fit
+
+    def model(tt, omega, a):
+        return a * np.cos(omega * tt)
+
+    popt, _ = curve_fit(model, t, theta, p0=[1.0, sys_.amplitude], maxfev=40000)
+    omega = float(popt[0])
+    return (lambda tq: model(np.asarray(tq, float), *popt)), omega
+
+
+def _ode_fit_pinn(
+    sys_,
+    t,
+    theta,
+    *,
+    w_phys,
+    w_res=1.0,
+    epochs=4000,
+    seed=0,
+    width=32,
+    depth=3,
+    lr=5e-3,
+    n_collocation=256,
+):
+    """Residual PINN with a LEARNED FORCE correction.
+
+        theta'' + omega^2 theta - C(theta) = 0
+
+    `omega` is trainable and `C` is a network of theta -- not of t. That
+    matters: a correction in `t` is a curve, while a correction in `theta` is
+    a term of the equation of motion, and only the second can be compared
+    against the force that was dropped.
+    """
+    import torch
+
+    from physprior.methods.neural import DTYPE, mlp
+
+    torch.manual_seed(seed)
+    scale = float(np.std(theta)) or 1.0
+    t_t = torch.tensor(t, dtype=DTYPE)
+    y_t = torch.tensor(theta, dtype=DTYPE)
+    t_c = torch.linspace(0.0, sys_.t_max, n_collocation, dtype=DTYPE)
+
+    net = mlp(1, width, depth)  # theta(t)
+    corr_raw = mlp(2, width, depth)  # C(theta), the missing force
+    log_w = torch.nn.Parameter(torch.zeros((), dtype=DTYPE))
+    opt = torch.optim.Adam([*net.parameters(), *corr_raw.parameters(), log_w], lr=lr)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
+    history: dict[str, list] = {"epoch": [], "data": [], "phys": [], "GM": []}
+
+    def theta_of(tt):
+        return net(tt.unsqueeze(-1)).squeeze(-1)
+
+    def correction(th, dth=None):
+        """C(theta), forced ODD by construction.
+
+        The dropped force is -omega^2 (sin theta - theta), which is odd, and
+        a restoring force must vanish at theta = 0 on symmetry grounds alone.
+        Antisymmetrising the network imposes both exactly, at every step, for
+        free -- and without it the correction wanders near the origin where
+        the data constrains it least.
+        """
+        # A missing force may depend on velocity as well as position --
+        # damping does, and no function of theta alone can express it. Both
+        # go in, and the pair is antisymmetrised, because a force that does
+        # not vanish at rest at the origin is not a correction to this
+        # equation.
+        d = torch.zeros_like(th) if dth is None else dth
+        u = torch.stack([th, d], dim=-1)
+        return (corr_raw(u) - corr_raw(-u)).squeeze(-1) / 2.0
+
+    for ep in range(epochs):
+        opt.zero_grad()
+        omega = torch.exp(log_w)
+        data = torch.mean(((theta_of(t_t) - y_t) / scale) ** 2)
+
+        tc = t_c.clone().requires_grad_(True)
+        th = theta_of(tc)
+        dth = torch.autograd.grad(th.sum(), tc, create_graph=True)[0]
+        d2th = torch.autograd.grad(dth.sum(), tc, create_graph=True)[0]
+        c = correction(th, dth)
+        residual = d2th + omega**2 * th - c
+        phys = torch.mean(c**2)
+        (data + w_res * torch.mean(residual**2) + w_phys * phys).backward()
+        opt.step()
+        sched.step()
+        if ep % 25 == 0 or ep == epochs - 1:
+            history["epoch"].append(ep)
+            history["data"].append(float(data.detach()))
+            history["phys"].append(float(phys.detach()))
+            history["GM"].append(float(torch.exp(log_w).detach()))
+
+    omega_hat = float(torch.exp(log_w).detach())
+
+    def predict(tq):
+        with torch.no_grad():
+            return theta_of(
+                torch.tensor(np.asarray(tq, float).ravel(), dtype=DTYPE)
+            ).numpy()
+
+    def force(theta_q, dtheta_q=None):
+        with torch.no_grad():
+            q = torch.tensor(np.asarray(theta_q, float).ravel(), dtype=DTYPE)
+            d = (
+                torch.zeros_like(q)
+                if dtheta_q is None
+                else torch.tensor(np.asarray(dtheta_q, float).ravel(), dtype=DTYPE)
+            )
+            return correction(q, d).numpy()
+
+    n_params = 1 + sum(p.numel() for p in [*net.parameters(), *corr_raw.parameters()])
+    return predict, omega_hat, n_params, force, history
+
+
+def _ode_fit_nn(sys_, t, theta, *, epochs=4000, seed=0, width=32, depth=3, lr=5e-3):
+    import torch
+
+    from physprior.methods.neural import DTYPE, Standardiser, mlp
+
+    torch.manual_seed(seed)
+    std = Standardiser.fit(t.reshape(-1, 1), theta)
+    ts = torch.tensor(std.x(t.reshape(-1, 1)), dtype=DTYPE)
+    ys = torch.tensor(std.y(theta), dtype=DTYPE)
+    net = mlp(1, width, depth)
+    opt = torch.optim.Adam(net.parameters(), lr=lr)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
+    for _ in range(epochs):
+        opt.zero_grad()
+        torch.mean((net(ts).squeeze(-1) - ys) ** 2).backward()
+        opt.step()
+        sched.step()
+
+    def predict(tq):
+        tq = np.asarray(tq, float).ravel()
+        with torch.no_grad():
+            z = net(torch.tensor(std.x(tq.reshape(-1, 1)), dtype=DTYPE)).squeeze(-1)
+            return std.y_inv(z.numpy())
+
+    return predict, sum(p.numel() for p in net.parameters())
+
+
+def run_ode(
+    amplitude: float,
+    noise: float = 0.02,
+    shape: str = "damping",
+    n_train: int = 60,
+    seed: int = 11,
+    w_phys: float = 1e-3,
+    epochs: int = 3000,
+) -> list:
+    """All three arms on the pendulum, scored against the true trajectory."""
+    sys_ = NeglectedODE(amplitude=amplitude, noise=noise, shape=shape)
+    t, theta = sys_.sample(n_train, seed)
+    t_dense, truth = sys_.solve(400)
+    scale = float(np.std(truth))
+
+    out = []
+    predict, omega = _ode_fit_physics(sys_, t, theta)
+    out.append(
+        ArmResult(
+            "physics",
+            nrmse(truth, predict(t_dense), scale=scale),
+            float("nan"),
+            abs(omega - sys_.omega) / sys_.omega * 100,
+            2,
+        )
+    )
+
+    predict, omega, npar, force, hist = _ode_fit_pinn(
+        sys_, t, theta, w_phys=w_phys, epochs=epochs, seed=seed
+    )
+    # Score the learned force along the ACTUAL trajectory, because that is
+    # the only place the data constrained it -- and a damping term cannot be
+    # scored on a theta grid at all, since it depends on the velocity.
+    t_traj, theta_traj = sys_.solve(400)
+    dtheta_traj = np.gradient(theta_traj, t_traj)
+    grid, grid_d = theta_traj, dtheta_traj
+    true_force = sys_.missing_force(grid, grid_d)
+    denom = np.std(true_force) or 1.0
+    out.append(
+        ArmResult(
+            "pinn",
+            nrmse(truth, predict(t_dense), scale=scale),
+            float("nan"),
+            abs(omega - sys_.omega) / sys_.omega * 100,
+            npar,
+            correction_error=float(
+                np.sqrt(np.mean((force(grid) - true_force) ** 2)) / denom
+            ),
+            history=hist,
+        )
+    )
+
+    predict, npar = _ode_fit_nn(sys_, t, theta, epochs=epochs, seed=seed)
+    out.append(
+        ArmResult(
+            "nn",
+            nrmse(truth, predict(t_dense), scale=scale),
+            float("nan"),
+            n_params=npar,
+        )
+    )
+    return out

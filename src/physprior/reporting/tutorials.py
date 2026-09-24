@@ -1349,6 +1349,96 @@ print(f"distinguishable term : GM = {gm:.4f}   ({abs(gm-1)*100:.1f}% error)")
 print(f"degenerate term      : GM = {gm_deg:.4f}   ({abs(gm_deg-1)*100:.1f}% error)")
 """),
             md("""
+---
+
+## The same question for a differential law
+
+Everything above is algebraic, `y = law(x) + missing`. The other shape of
+PINN solves a **differential equation**, and there the missing piece is a
+missing **force** — so recovering it means the network has learned a term of
+the equation of motion, not a curve.
+
+The system is the one every physicist meets first. A pendulum obeys
+$\\ddot\\theta = -\\omega^{2}\\sin\\theta$, and the small-angle step models it as
+$\\ddot\\theta = -\\omega^{2}\\theta$. The residual PINN carries a learned force:
+
+$$\\ddot\\theta + \\omega^{2}\\theta - C_\\phi(\\theta, \\dot\\theta) = 0$$
+
+with $\\omega$ trainable, $C_\\phi$ penalised by `w_phys`, and $C_\\phi$
+antisymmetrised so a force that does not vanish at rest at the origin is not
+representable at all.
+
+**And the same distinction decides everything.**
+"""),
+            code("""
+import physprior.benchmark.neglected as N
+ode = pd.read_csv("results/neglected_ode.csv").rename(columns={"nrmse": "nrmse_in"})
+P.fig_neglected_sweep(ode[ode["shape"] == "damping"], "amplitude_deg",
+    "pendulum amplitude (degrees)",
+    "A conservative model cannot decay, at any omega")
+plt.show()
+print(ode[ode["shape"]=="damping"].groupby(["amplitude_deg","arm"]).nrmse_in.median()
+        .unstack("arm").to_string(float_format=lambda v: f"{v:.4g}"))
+"""),
+            md("""
+`physics` is pinned at **0.209 at every amplitude**. That is not a fit going
+wrong — a conservative harmonic model *cannot produce decay at all*, at any
+value of `ω`, so its error is a property of the model rather than of the
+data. The PINN is 16–18× better as soon as there is enough amplitude to see.
+
+### Did it learn the force itself?
+"""),
+            code("""
+s_damp = N.NeglectedODE(amplitude=np.radians(60), noise=0.02, shape="damping")
+t, th = s_damp.sample(60, seed=11)
+ph, om_ph = N._ode_fit_physics(s_damp, t, th)
+pr, om, _, force, hist = N._ode_fit_pinn(s_damp, t, th, w_phys=1e-3,
+                                         epochs=2500, seed=11)
+P.fig_learned_force(s_damp, force, pr, physics=ph); plt.show()
+print(f"omega: physics {om_ph:.4f}, pinn {om:.4f}  (true 1.0)")
+"""),
+            md("""
+It did — the learned force has the right sign and slope against **velocity**,
+which is the variable it actually depends on. Plotting it against *angle*
+would have drawn a flat line and told you nothing, which is the differential
+version of asking the wrong question of the data.
+
+### And now the degenerate case, again
+
+Replace damping with the anharmonic term the small-angle step really drops,
+$-\\omega^{2}(\\sin\\theta - \\theta)$. It depends on **angle**, and a pendulum at
+amplitude $A$ has period $T(A)$ — so a harmonic oscillator can simply adopt
+$\\omega = 2\\pi/T(A)$ and absorb most of it.
+"""),
+            code("""
+P.fig_neglected_sweep(ode[ode["shape"] == "anharmonic"], "amplitude_deg",
+    "pendulum amplitude (degrees)",
+    "...but a shifted omega absorbs the anharmonic term")
+plt.show()
+s_anh = N.NeglectedODE(amplitude=np.radians(60), noise=0.02, shape="anharmonic")
+ta, tha = s_anh.sample(60, seed=11)
+pha, om_a = N._ode_fit_physics(s_anh, ta, tha)
+pra, oma, _, fa, _ = N._ode_fit_pinn(s_anh, ta, tha, w_phys=1e-3, epochs=2500, seed=11)
+P.fig_learned_force(s_anh, fa, pra, physics=pha); plt.show()
+"""),
+            md("""
+No clean win, exactly as in the algebraic `1/r³` case. **The same principle
+governs both forms of PINN:**
+
+| | algebraic law | differential law |
+|---|---|---|
+| **degenerate** missing piece | `1/r³` — absorbed into `GM` | anharmonic — absorbed into `ω` |
+| **distinguishable** missing piece | a localised bump | damping (depends on velocity) |
+| result | prior wins by ~10× | prior wins by ~16× |
+
+> A physics prior helps when the missing piece is **distinguishable from the
+> law** — not merely when the law is incomplete. Which variable the missing
+> term depends on is the whole question.
+
+That is `quantum/cmb`'s identifiability finding, reached twice more from
+completely different directions.
+"""),
+            md("""
 Over a finite range of `r`, `1/r³` is **nearly degenerate with `1/r²`**:
 raising `GM` mimics most of it. So the fit absorbs the missing physics into
 the constant, the correction learns nothing identifiable, and `GM` comes back

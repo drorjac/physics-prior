@@ -94,3 +94,49 @@ def test_the_arms_are_compared_at_comparable_capacity():
     assert res["pinn"].n_params == res["nn"].n_params + 1
     assert res["physics"].n_params == 1
     assert GM_TRUE == 1.0
+
+
+# --- the same question for a differential law ----------------------------
+def test_the_two_ode_shapes_depend_on_different_variables():
+    """Which variable the missing force depends on is the whole question:
+    a harmonic model can shift omega to absorb an angle-dependent term, and
+    can do nothing at all about a velocity-dependent one."""
+    from physprior.benchmark.neglected import NeglectedODE
+
+    anh = NeglectedODE(amplitude=1.0, noise=0.0, shape="anharmonic")
+    damp = NeglectedODE(amplitude=1.0, noise=0.0, shape="damping")
+    theta = np.linspace(-1, 1, 50)
+    # the anharmonic force is a function of angle alone
+    assert np.any(np.abs(anh.missing_force(theta)) > 0)
+    # damping vanishes identically when the velocity is not supplied
+    assert np.allclose(damp.missing_force(theta), 0.0)
+    assert np.any(np.abs(damp.missing_force(theta, np.ones_like(theta))) > 0)
+
+
+def test_an_unknown_ode_shape_is_refused():
+    from physprior.benchmark.neglected import NeglectedODE
+
+    with pytest.raises(ValueError, match="unknown shape"):
+        NeglectedODE(amplitude=1.0, noise=0.0, shape="magic").missing_force(0.5)
+
+
+def test_the_anharmonic_period_grows_with_amplitude():
+    """The observable consequence of the small-angle step, in closed form."""
+    from physprior.benchmark.neglected import NeglectedODE
+
+    small = NeglectedODE(amplitude=np.radians(5), noise=0.0, shape="anharmonic")
+    large = NeglectedODE(amplitude=np.radians(120), noise=0.0, shape="anharmonic")
+    assert small.true_period == pytest.approx(2 * np.pi, rel=1e-3)
+    assert large.true_period > 1.2 * small.true_period
+
+
+@pytest.mark.slow
+def test_a_conservative_model_cannot_decay_at_any_omega():
+    """The `physics` arm's error on a damped pendulum is a property of the
+    model, not of the fit -- so it barely moves with amplitude."""
+    from physprior.benchmark.neglected import run_ode
+
+    lo = {r.arm: r for r in run_ode(np.radians(30), shape="damping", epochs=1500)}
+    hi = {r.arm: r for r in run_ode(np.radians(120), shape="damping", epochs=1500)}
+    assert lo["physics"].nrmse_in == pytest.approx(hi["physics"].nrmse_in, rel=0.15)
+    assert hi["pinn"].nrmse_in < 0.3 * hi["physics"].nrmse_in
