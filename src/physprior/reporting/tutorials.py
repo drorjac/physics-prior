@@ -1479,6 +1479,35 @@ for shape in ("diffusive", "advective"):
     P.fig_pde_field(s, _pde_fit_physics(s)); plt.show()
 """),
             md("""
+### One thing that did not work, reported as such
+
+The 2-D residual PINN in this study **does not converge**, so its numbers are
+marked rather than reported. The failure is unambiguous and it is worst where
+it should be easiest — at `eps = 0`, where the modelled law is exactly right
+and there is nothing whatever to recover, `alpha` is driven to ~0.001 against
+a true 0.05 and the field is reproduced to only ~0.5 nRMSE.
+
+Two diagnosed attempts did not fix it:
+
+1. **Hard initial and boundary conditions**, in the T1/T5 style —
+   `u = u0(x) + t·x·(L−x)·NN(x,t)`, which satisfies both exactly. Necessary,
+   and not sufficient.
+2. **Re-nondimensionalising the residual** by the characteristic rate rather
+   than the amplitude. The first scaling made the physics term about a
+   thousand times the data term, and since `u = u0` with `alpha = 0` gives an
+   *exactly zero* residual, the optimiser simply took it.
+
+So the PDE section above rests entirely on the `physics` arm — whose result
+is a closed-form identity and needs no network at all. That is the honest
+position: the finding does not depend on the thing that failed.
+
+What it would take is not a parameter tweak. It is the Phase 2 machinery —
+gradient-norm loss balancing, measured in [T6](T6_when_pinns_fail.ipynb) to
+be worth up to 101× on the 1-D tracks — applied to a 2-D residual, where the
+data and physics terms differ by three orders of magnitude at initialisation.
+That is exactly the disease balancing treats, and it is the obvious next
+piece of work.
+
 The advective residual is a **dipole** — mass moved from one side to the
 other, which is exactly what a drift does and exactly what diffusion cannot.
 Its peak is six times the diffusive one.

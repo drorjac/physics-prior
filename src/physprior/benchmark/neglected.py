@@ -133,6 +133,10 @@ class ArmResult:
     n_params: int = 0
     correction_error: float = float("nan")
     history: dict = field(default_factory=dict)
+    # Set by `run_pde`: the 2-D residual PINN does not converge in this
+    # configuration, and a number from a fit that did not converge is not a
+    # measurement.
+    converged: bool = True
 
 
 def _fit_physics(sys_, r, y):
@@ -789,8 +793,37 @@ def _pde_fit_pinn(
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
     history: dict[str, list] = {"epoch": [], "data": [], "phys": [], "GM": []}
 
+    # The initial and boundary conditions as a HARD constraint, exactly as
+    # T1 and T5 impose theirs:
+    #
+    #     u(x, t) = u0(x) + t * x * (L - x) * NN(x, t)
+    #
+    # At t = 0 this is u0(x); at x = 0 or L the second term vanishes and u0
+    # is already zero there. So every candidate satisfies both conditions at
+    # every step, with no weight to tune.
+    #
+    # Without this the residual alone does NOT identify alpha -- many pairs
+    # (u, alpha) satisfy u_t = alpha u_xx -- and the first version of this
+    # study duly returned alpha 70% wrong at eps = 0, where the modelled law
+    # is exactly right and there is nothing at all to recover.
+    length = float(sys_.length)
+    x_grid, _ = sys_.grid()
+    u0_np = np.exp(-(((x_grid - 0.5 * length) / (0.08 * length)) ** 2))
+    u0_np[0] = u0_np[-1] = 0.0
+    x_g = torch.tensor(x_grid, dtype=DTYPE)
+    u0_g = torch.tensor(u0_np, dtype=DTYPE)
+
+    def u0_of(xq):
+        # linear interpolation onto the initial profile
+        idx = torch.clamp(torch.searchsorted(x_g, xq.contiguous()), 1, len(x_g) - 1)
+        x0, x1 = x_g[idx - 1], x_g[idx]
+        y0, y1 = u0_g[idx - 1], u0_g[idx]
+        w = (xq - x0) / (x1 - x0)
+        return y0 + w * (y1 - y0)
+
     def u_of(xq, tq):
-        return net(torch.stack([xq, tq], dim=-1)).squeeze(-1)
+        raw = net(torch.stack([xq, tq], dim=-1)).squeeze(-1)
+        return u0_of(xq) + tq * xq * (length - xq) * raw
 
     for ep in range(epochs):
         opt.zero_grad()
@@ -806,7 +839,14 @@ def _pde_fit_pinn(
         c = corr(torch.stack([u, u_x], dim=-1)).squeeze(-1)
         residual = u_t - alpha * u_xx - c
         phys = torch.mean(c**2)
-        (data + torch.mean(residual**2) / scale**2 + w_phys * phys).backward()
+        # The residual is a rate, so it is made dimensionless by the
+        # CHARACTERISTIC rate (scale / t_max), not by the amplitude. Dividing
+        # by scale^2 made the physics term about a thousand times the data
+        # term, and since u = u0 with alpha = 0 gives an exactly zero
+        # residual, the optimiser took that trivial solution and drove alpha
+        # to 0.001 against a true 0.05.
+        rate = scale / sys_.t_max
+        (data + torch.mean(residual**2) / rate**2 + w_phys * phys).backward()
         opt.step()
         sched.step()
         if ep % 25 == 0 or ep == epochs - 1:
@@ -858,14 +898,46 @@ def run_pde(
         sys_, xs, ts, us, w_phys=w_phys, epochs=epochs, seed=seed
     )
     pred = predict(xx.ravel(), tt.ravel()).reshape(field.shape)
-    out.append(
-        ArmResult(
-            "pinn",
-            nrmse(field.ravel(), pred.ravel(), scale=scale),
-            float("nan"),
-            abs(alpha_hat - sys_.alpha) / sys_.alpha * 100,
-            npar,
-            history=hist,
-        )
+    field_err = nrmse(field.ravel(), pred.ravel(), scale=scale)
+    res = ArmResult(
+        "pinn",
+        field_err,
+        float("nan"),
+        abs(alpha_hat - sys_.alpha) / sys_.alpha * 100,
+        npar,
+        history=hist,
     )
+    res.converged = pde_pinn_converged(alpha_hat, field_err, sys_.alpha)
+    out.append(res)
     return out
+
+
+# The 2-D residual PINN in this module DOES NOT CONVERGE, and what it returns
+# is marked rather than reported as a measurement.
+#
+# The failure is unambiguous and it is present at eps = 0, where the modelled
+# law is exactly right and there is nothing whatever to recover: alpha is
+# driven to ~0.001 against a true 0.05 and the field is reproduced to only
+# ~0.5 nRMSE. Two diagnosed attempts did not fix it -- hard initial and
+# boundary conditions in the T1/T5 style, and re-nondimensionalising the
+# residual by the characteristic rate rather than by the amplitude, after the
+# first scaling made the physics term about a thousand times the data term
+# and handed the optimiser the trivial solution u = u0 with alpha = 0.
+#
+# The PDE section of the study therefore rests on the `physics` arm, whose
+# result is a closed-form identity and needs no network at all. Fixing this
+# means the Phase 2 machinery -- gradient-norm loss balancing, measured to be
+# worth up to 101x on the 1-D tracks -- applied to a 2-D residual, which is a
+# piece of work rather than a parameter tweak.
+PDE_PINN_ALPHA_FLOOR = 0.5  # |alpha_hat/alpha - 1| beyond this is a failure
+PDE_PINN_FIELD_FLOOR = 0.2  # nRMSE beyond this is not a fit
+
+
+def pde_pinn_converged(
+    alpha_hat: float, field_nrmse: float, alpha_true: float = 0.05
+) -> bool:
+    """Did the 2-D residual PINN fit anything? In this configuration: no."""
+    return bool(
+        abs(alpha_hat / alpha_true - 1.0) < PDE_PINN_ALPHA_FLOOR
+        and field_nrmse < PDE_PINN_FIELD_FLOOR
+    )

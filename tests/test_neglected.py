@@ -204,3 +204,21 @@ def test_the_pde_solution_conserves_its_boundaries():
     _, _, u = NeglectedPDE(eps=0.2, noise=0.0).solve(20)
     assert np.allclose(u[:, 0], 0.0, atol=1e-9)
     assert np.allclose(u[:, -1], 0.0, atol=1e-9)
+
+
+def test_the_pde_pinn_is_marked_as_not_converged():
+    """It does not converge in this configuration, and a number from a fit
+    that did not converge is not a measurement. The guard must fire."""
+    from physprior.benchmark.neglected import (
+        PDE_PINN_ALPHA_FLOOR,
+        pde_pinn_converged,
+    )
+
+    # what it actually returns: alpha driven to the floor, field unfitted
+    assert not pde_pinn_converged(0.001, 0.5)
+    # a fit that worked would pass
+    assert pde_pinn_converged(0.051, 0.01)
+    # and the guard is not vacuous in either direction
+    assert not pde_pinn_converged(0.051, 0.5)
+    assert not pde_pinn_converged(0.001, 0.01)
+    assert PDE_PINN_ALPHA_FLOOR < 1.0
