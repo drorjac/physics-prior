@@ -1069,3 +1069,165 @@ def fig_alpha_convergence(rows, published=1.0, title=None):
         arrowprops={"arrowstyle": "-", "color": INK_MUTED, "linewidth": 0.8},
     )
     return fig
+
+
+# ---------------------------------------------------------------------------
+# the neglected-terms study
+# ---------------------------------------------------------------------------
+
+_NEGLECT_COLOUR = {
+    "physics": ARM_COLOR["physics"],
+    "pinn": ARM_COLOR["pinn"],
+    "nn": ARM_COLOR["nn"],
+}
+
+
+def fig_neglected_sweep(df, key, xlabel, title=None, metric="nrmse_in", logx=False):
+    """Three arms against one dial, medians over the reporting seeds.
+
+    The question is always where the lines CROSS, so the arms are direct
+    labelled at the right edge and there is no legend box competing for the
+    same space.
+    """
+    use_style()
+    fig, ax = plt.subplots(figsize=(7.0, 4.2))
+    g = df.groupby([key, "arm"])[metric].median().unstack("arm")
+    for arm in ("physics", "pinn", "nn"):
+        if arm not in g:
+            continue
+        ax.plot(
+            g.index,
+            g[arm],
+            "-o",
+            color=_NEGLECT_COLOUR[arm],
+            markersize=7,
+            markeredgecolor=SURFACE,
+            markeredgewidth=1.3,
+            label=arm,
+        )
+        ax.annotate(
+            f"  {arm}",
+            xy=(g.index[-1], g[arm].iloc[-1]),
+            color=_NEGLECT_COLOUR[arm],
+            fontsize=9,
+            va="center",
+        )
+    ax.set_yscale("log")
+    if logx:
+        ax.set_xscale("log")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("held-out nRMSE (log) — lower is better")
+    ax.set_title(title or "Where the physics prior pays")
+    ax.set_xlim(right=g.index[-1] + 0.14 * (g.index[-1] - g.index[0]))
+    ax.legend(loc="upper left")
+    return fig
+
+
+def fig_learned_correction(system, correction_fn, r=None, title=None):
+    """Did the network learn the physics that was left out of the law?
+
+    The single most informative plot in the study: the correction the PINN
+    learned, drawn against the term it was never shown. If they agree, the
+    network has recovered missing physics rather than absorbing noise.
+    """
+    use_style()
+    r = np.linspace(system.r_min, system.r_max, 400) if r is None else r
+    truth = system.neglected(r)
+    learned = correction_fn(r)
+
+    fig, axes = plt.subplots(
+        1, 2, figsize=(10.4, 3.9), gridspec_kw={"width_ratios": [1.5, 1]}
+    )
+    ax = axes[0]
+    ax.plot(
+        r,
+        truth,
+        lw=3.2,
+        color=INK_MUTED,
+        zorder=1,
+        label="the term left out of the law",
+    )
+    ax.plot(
+        r, learned, color=ARM_COLOR["pinn"], zorder=3, label="what the network learned"
+    )
+    ax.axhline(0, color=GRID, lw=1.0, zorder=0)
+    ax.set_xlabel("r")
+    ax.set_ylabel("contribution to y")
+    ax.set_title(title or "The network recovers the missing physics")
+    ax.legend(loc="upper right")
+
+    ax = axes[1]
+    ax.plot(r, system.law(r), lw=2.4, color=ARM_COLOR["physics"], label="the law")
+    ax.plot(r, truth, lw=2.4, color=INK_MUTED, label="what it misses")
+    ax.set_yscale("log")
+    # A Gaussian tail underflows to 1e-21 and drags the axis with it, which
+    # makes the comparison that matters -- law against missing term -- invisible.
+    peak = float(max(np.max(np.abs(truth)), 1e-12))
+    ax.set_ylim(peak * 1e-3, float(np.max(system.law(r))) * 2)
+    ax.set_xlabel("r")
+    ax.set_ylabel("magnitude (log)")
+    ax.set_title("for scale")
+    ax.legend(loc="upper right")
+    fig.text(
+        0.0,
+        -0.03,
+        f"missing term is {system.neglected_fraction * 100:.1f}% of the law "
+        f"on average; shape = {system.shape!r}",
+        fontsize=8.5,
+        color=INK_2,
+    )
+    return fig
+
+
+def fig_learning_curves(history, published=None, title=None):
+    """What the loss actually did, split into its terms.
+
+    A single total loss hides the trade the physics weight is making. The two
+    terms are drawn apart, and the trainable constant beside them, because
+    "the loss went down" and "the constant converged" are different claims
+    and only the second one is physics.
+    """
+    use_style()
+    has_param = "GM" in history and len(history.get("GM", []))
+    fig, axes = plt.subplots(
+        1,
+        2 if has_param else 1,
+        figsize=(10.0 if has_param else 6.0, 3.8),
+        squeeze=False,
+    )
+    ax = axes[0][0]
+    ax.semilogy(
+        history["epoch"],
+        history["data"],
+        color=ARM_COLOR["physics"],
+        label="data term   MSE / sd_y^2",
+    )
+    if "phys" in history:
+        ax.semilogy(
+            history["epoch"],
+            history["phys"],
+            color=ARM_COLOR["pinn"],
+            label="physics term   mean(NN^2)",
+        )
+    ax.set_xlabel("epoch")
+    ax.set_ylabel("loss term (log)")
+    ax.set_title(title or "The loss, split into what it is trading")
+    ax.legend(loc="upper right")
+
+    if has_param:
+        ax = axes[0][1]
+        ax.plot(history["epoch"], history["GM"], color=ARM_COLOR["pinn"])
+        if published is not None:
+            ax.axhline(published, color=INK_2, lw=1.4)
+            ax.annotate(
+                "published value",
+                xy=(history["epoch"][0], published),
+                xytext=(4, 5),
+                textcoords="offset points",
+                fontsize=8.4,
+                color=INK_2,
+            )
+        ax.set_xlabel("epoch")
+        ax.set_ylabel("recovered constant")
+        ax.set_title("The constant, converging separately")
+    return fig

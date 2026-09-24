@@ -27,6 +27,7 @@ import sys
 import nbformat as nbf
 
 from physprior.config import get_settings
+from physprior.reporting.notebooks import section
 
 SETUP = """import warnings
 warnings.filterwarnings("ignore")
@@ -1152,6 +1153,225 @@ The pattern across this repository, stated plainly:
     )
 
 
+# ---------------------------------------------------------------------------
+# T7 -- the regime where the prior actually wins
+# ---------------------------------------------------------------------------
+
+
+def t7_when_the_prior_wins():
+    return _nb(
+        [
+            md("""
+# T7 · When does a physics prior actually beat a black box?
+
+[T6](T6_when_pinns_fail.ipynb) is uncomfortable reading: across four real
+tracks the `pinn` arm wins **one** cell in twelve. That is not because
+physics-informed learning does not work. It is because those tracks are the
+wrong test — their laws are either **exact** (Kepler on a two-body system) or
+**unidentifiable from the band observed** (Planck on FIRAS).
+
+The case a physics prior was built for is the third one, and it was missing:
+
+> The law is right as far as it goes, and **something real has been left out
+> of it.**
+
+That is the normal condition of applied physics — a neglected oblateness
+term, a higher post-Newtonian order, an unmodelled instrument response. This
+notebook builds exactly that, as a controlled experiment where the left-out
+term is known and can be dialled.
+"""),
+            code(
+                SETUP
+                + """
+from physprior.benchmark.neglected import NeglectedSystem, run_one, _fit_pinn
+"""
+            ),
+            md(f"""
+{section(1, "a law with a term removed")}
+
+$$y(r) = \\underbrace{{\\frac{{GM}}{{r^{{2}}}}}}_{{\\text{{the law we model}}}}
+\\;+\\; \\underbrace{{\\varepsilon\\,A\\,e^{{-((r-r_{{0}})/w)^{{2}}}}}}_{{\\text{{left out, never disclosed}}}}
+\\;+\\; \\text{{noise}}$$
+
+Three arms, and each can do something different about the missing piece:
+
+| arm | what it can represent | what it cannot |
+|---|---|---|
+| `physics` | `GM` inside the law | the missing term, **at all** |
+| `nn` | anything | — but must learn the whole curve from scratch |
+| `pinn` | the law **and** a correction | — the network only has the residual to learn |
+
+The prediction is a crossover. Let us see the system first.
+"""),
+            code("""
+sys_ = NeglectedSystem(eps=0.4, noise=0.02, shape="bump")
+r, y, clean = sys_.sample(40, seed=11)
+grid = np.linspace(sys_.r_min, sys_.r_max, 400)
+
+fig, ax = plt.subplots(figsize=(7.0, 4.0))
+ax.plot(grid, sys_.law(grid), lw=2.6, color=P.ARM_COLOR["physics"],
+        label="the law we model,  GM/r^2")
+ax.plot(grid, sys_.truth(grid), lw=2.0, color=P.INK_MUTED, ls=(0,(4,3)),
+        label="the truth,  law + missing term")
+ax.plot(r, y, "o", markersize=6, color=P.ARM_COLOR["pinn"],
+        markeredgecolor=P.SURFACE, markeredgewidth=1.2, label="40 noisy samples")
+ax.set_xlabel("r"); ax.set_ylabel("y")
+ax.set_title("The missing term is small, smooth, and completely invisible here")
+ax.legend(); plt.show()
+print(f"the missing term averages {sys_.neglected_fraction*100:.1f}% of the law")
+"""),
+            md(f"""
+{section(3, "what each loss actually is")}
+
+`physics` minimises, over `GM` alone:
+
+$$\\sum_i \\left(y_i - \\frac{{GM}}{{r_i^{{2}}}}\\right)^{{2}}$$
+
+`nn` minimises, over the network weights alone:
+
+$$\\sum_i \\left(y_i - \\mathrm{{NN}}(r_i)\\right)^{{2}}$$
+
+`pinn` minimises, over **both at once**:
+
+$$\\mathcal{{L}} = \\underbrace{{\\frac{{1}}{{\\sigma_y^{{2}}}}\\sum_i
+\\left(y_i - \\frac{{GM}}{{r_i^{{2}}}} - \\sigma_y\\mathrm{{NN}}(r_i)\\right)^{{2}}}}_{{\\text{{data}}}}
+\\;+\\; w_{{phys}}\\underbrace{{\\overline{{\\mathrm{{NN}}^{{2}}}}}}_{{\\text{{keep the correction small}}}}$$
+
+The second term is the prior: *the law is nearly right, so the correction
+should be nearly zero*. `w_phys` sets how strongly that is believed.
+"""),
+            md(f"""
+{section(4, "the dial: how big is the missing term")}
+"""),
+            code("""
+import pandas as pd
+eps = pd.read_csv("results/neglected_eps.csv")
+P.fig_neglected_sweep(eps, "eps", "size of the term left out of the law  (eps)",
+                      "The physics prior pays as soon as the law is incomplete")
+plt.show()
+print(eps.groupby(["eps","arm"]).nrmse_in.median().unstack("arm")
+        .to_string(float_format=lambda v: f"{v:.4g}"))
+"""),
+            md("""
+**At `eps = 0` the law is exact and `physics` wins**, as it must — the PINN
+pays 5× for a correction it does not need, and the black box pays 44×.
+
+**From `eps = 0.1` onwards the PINN wins decisively**, and its error is
+almost flat while `physics` degrades eight-fold. That is the crossover, and
+it arrives as soon as there is *any* missing physics worth the name.
+
+`nn` is flat at ~0.046 throughout. It never learns the curve well from forty
+points, and the size of the missing term is irrelevant to it — it was
+learning everything from scratch anyway.
+
+### Did the network learn the missing physics, or just absorb noise?
+
+This is the question that separates a useful correction from a flexible one.
+The correction is plotted against the term it was **never shown**.
+"""),
+            code("""
+_, gm, _, correction, hist = _fit_pinn(sys_, r, y, w_phys=0.01, epochs=2500, seed=11)
+P.fig_learned_correction(sys_, correction); plt.show()
+print(f"recovered GM = {gm:.4f}   (true 1.0)")
+"""),
+            md("""
+It learned it. And because the correction carries the missing term, `GM`
+comes back at **1.012** instead of being dragged off by physics it cannot
+represent.
+
+### What the loss was trading while that happened
+"""),
+            code("""
+P.fig_learning_curves(hist, published=1.0,
+                      title="What the loss traded, epoch by epoch")
+plt.show()
+"""),
+            md("""
+The data term falls thirtyfold. The physics term **rises** and plateaus —
+that is the correction growing to the size of the missing bump and stopping
+there, which is exactly what `w_phys` is negotiating. And the constant
+overshoots to 1.038 before settling: *the loss going down and the constant
+converging are different events.*
+"""),
+            md(f"""
+{section(4, "noise, and where the advantage stops")}
+"""),
+            code("""
+nz = pd.read_csv("results/neglected_noise.csv")
+P.fig_neglected_sweep(nz, "noise", "measurement noise (fraction of signal spread)",
+                      "...and stops paying when the correction starts fitting noise")
+plt.show()
+"""),
+            md("""
+A clean bias–variance crossover:
+
+* `physics` is **biased but noise-immune** — it cannot fit the bump, and it
+  cannot fit the noise either, so it sits flat at 0.055 whatever happens.
+* `pinn` is **unbiased but not noise-immune**. Its correction is flexible
+  enough to represent the missing term, which means it is flexible enough to
+  represent noise, and above about 7% noise it starts doing so.
+
+So the prior's advantage is **not unconditional**. It is a bias–variance
+trade, and the crossover point is a measurable property of the problem rather
+than a matter of taste.
+
+### And the data budget
+"""),
+            code("""
+bud = pd.read_csv("results/neglected_budget.csv")
+P.fig_neglected_sweep(bud, "n_train", "training points",
+                      "The black box needs data to reach a prior it never beats",
+                      logx=True)
+plt.show()
+"""),
+            md("""
+`physics` is **flat**: it is bias-limited, and no amount of data fixes a
+model that cannot represent the truth. `nn` improves elevenfold from 10 to
+160 points and still does not catch the PINN. The prior is worth roughly a
+factor of four in data here, and worth more the less data you have.
+"""),
+            md("""
+## The catch, and the real conclusion
+
+Everything above used a **localised** missing term — a bump the law has no
+way to imitate. Repeat it with a missing term that looks like the law itself,
+`eps·GM·R/r³`, one order higher in `1/r`, which is how a neglected oblateness
+or first relativistic correction actually appears:
+"""),
+            code("""
+deg = NeglectedSystem(eps=0.4, noise=0.02, shape="power")
+rd, yd, _ = deg.sample(40, seed=11)
+_, gm_deg, _, corr_deg, _ = _fit_pinn(deg, rd, yd, w_phys=0.01, epochs=2500, seed=11)
+P.fig_learned_correction(deg, corr_deg,
+    title="...and when it cannot: the law absorbs it instead")
+plt.show()
+print(f"distinguishable term : GM = {gm:.4f}   ({abs(gm-1)*100:.1f}% error)")
+print(f"degenerate term      : GM = {gm_deg:.4f}   ({abs(gm_deg-1)*100:.1f}% error)")
+"""),
+            md("""
+Over a finite range of `r`, `1/r³` is **nearly degenerate with `1/r²`**:
+raising `GM` mimics most of it. So the fit absorbs the missing physics into
+the constant, the correction learns nothing identifiable, and `GM` comes back
+**27% wrong** instead of 1%.
+
+> **A physics prior does not help because the law is incomplete. It helps
+> when the missing piece is *distinguishable from the law*.**
+
+That is the same lesson as `quantum/cmb`, where the Planck denominator is not
+identifiable from the Wien-dominated band FIRAS observed — arriving here from
+a completely different direction, in a system where the answer is known
+exactly.
+
+And it is the honest reading of T6's scorecard. The `pinn` arm wins one cell
+in twelve on the real tracks **because those tracks are mostly the exact-law
+and the degenerate cases**. Given a track in the third regime, it wins by an
+order of magnitude.
+"""),
+        ],
+        "T7 - when the prior wins",
+    )
+
+
 TUTORIALS = {
     "T1_what_is_a_pinn": t1_what_is_a_pinn,
     "T2_forward_and_inverse": t2_forward_and_inverse,
@@ -1159,6 +1379,7 @@ TUTORIALS = {
     "T4_relativity": t4_relativity,
     "T5_quantum_wavefunction": t5_quantum_wavefunction,
     "T6_when_pinns_fail": t6_when_pinns_fail,
+    "T7_when_the_prior_wins": t7_when_the_prior_wins,
 }
 
 

@@ -174,68 +174,129 @@ def nb_overview():
 # physprior — what does a physics prior buy you?
 
 A neural network can fit almost any curve. A physicist writes a law with two
-constants in it. On **real measured data** — and on **simulations where the
-answer is known exactly** — which should you use, and for what?
+constants in it. On **real measured data** — LIGO, COBE/FIRAS, NIST, JPL —
+and on **simulations where the answer is known exactly**, which should you
+use, and for what?
 
-Three problems, each a subpackage under `physprior.problems`:
-
-| Problem | Real data | Simulations |
-|---|---|---|
-| [`gravity`](01_gravity.ipynb) | Kepler's third law, JPL DE441 | two-body orbits, the three-body problem, the solar system |
-| [`relativity`](02_relativity.ipynb) | GW150914 strain, Mercury's ephemeris | Schwarzschild orbits, inspiral waveforms, light bending |
-| [`quantum`](03_quantum.ipynb) | NIST hydrogen levels, COBE/FIRAS | the Schrödinger equation, bound states and tunnelling |
-
-Five arms everywhere: `oracle` (published law) · `physics` (law, fitted) ·
-`pinn` (law + network) · `sr` (symbolic regression) · `nn` (black box).
-
-**Why both real data and simulation.** The simulations are the control. When
-the law is exactly what we put in, whatever a method fails to recover is the
-*method's* error — its noise floor. Every real-data number is read against
-that floor.
+This notebook is the map. Each claim links to the notebook that measures it.
 """),
             code(HEADER),
-            md("## Physical constants recovered, across all problems"),
+            md("""
+## The question, made concrete
+
+Five arms run on every track, through the same six protocol questions, so
+that *physics-informed* is compared against something rather than asserted.
+
+| arm | knows the law? | returns a constant? | returns a formula? |
+|---|---|---|---|
+| `oracle` | published law **and** constants — a ceiling, not a competitor | — | yes |
+| `physics` | the law, constants fitted | yes, with a covariance | yes |
+| `pinn` | the law **plus** a learned correction | yes | yes + correction |
+| `sr` | **no** — searches for a law | sometimes | whatever it finds |
+| `nn` | no — a tuned MLP | no | no |
+
+The `pinn` arm comes in two shapes, and which one a track uses follows from
+whether its law is a differential equation or an algebraic relation:
+"""),
+            code("""
+P.fig_pinn_anatomy(); plt.show()
+"""),
+            md("""
+## The answer, in one figure
+
+The honest scorecard across the four real-data tracks: **most protocol
+questions do not separate the arms at all**, and the `pinn` arm wins one cell
+in twelve.
+"""),
+            code("""
+from physprior.reporting import conclusions as C
+frame = C.verdict_frame("all")
+counts = frame.verdict.str.split(" ").str[0].value_counts()
+fig, axes = plt.subplots(1, 2, figsize=(10.4, 3.4))
+ax = axes[0]
+ax.barh(list(counts.index), list(counts.values),
+        color=[{"WIN": P.ARM_COLOR["pinn"]}.get(k, P.INK_MUTED) for k in counts.index],
+        edgecolor=P.SURFACE, linewidth=2, height=0.55)
+for k, v in counts.items():
+    ax.annotate(f"  {v}", xy=(v, k), va="center", fontsize=9, color=P.INK_2)
+ax.set_xlabel("protocol questions"); ax.grid(axis="y", visible=False)
+ax.set_title("Most questions are ties")
+
+ax = axes[1]
+wins = frame[frame.verdict.str.startswith("WIN")].winner.value_counts()
+ax.barh(list(wins.index), list(wins.values),
+        color=[P.ARM_COLOR.get(a, P.INK_MUTED) for a in wins.index],
+        edgecolor=P.SURFACE, linewidth=2, height=0.55)
+for k, v in wins.items():
+    ax.annotate(f"  {v}", xy=(v, k), va="center", fontsize=9, color=P.INK_2)
+ax.set_xlabel("decisive wins"); ax.grid(axis="y", visible=False)
+ax.set_title("and who takes the rest")
+plt.show()
+"""),
+            md("""
+That is a real result, and it is not the one the field usually reports. It is
+also **not** evidence that physics-informed learning does not work — it is
+evidence that these four tracks are mostly the wrong test.
+
+## Three regimes, and only one of them is a fair test
+
+| regime | example here | who wins |
+|---|---|---|
+| the law is **exact** | `gravity/kepler` | `physics` — the prior has nothing to add |
+| the missing piece is **degenerate** with the law | `quantum/cmb` | nobody — the constant is not identifiable |
+| the missing piece is **distinguishable** | [T7](tutorials/T7_when_the_prior_wins.ipynb) | **`pinn`, by an order of magnitude** |
+
+The third regime is the normal condition of applied physics, and it was
+missing from the real tracks. [T7](tutorials/T7_when_the_prior_wins.ipynb)
+builds it as a controlled experiment:
+"""),
+            code("""
+import pandas as pd
+eps = pd.read_csv("results/neglected_eps.csv")
+P.fig_neglected_sweep(eps, "eps", "size of the term left out of the law  (eps)",
+                      "Given a law that is incomplete in a way it can see")
+plt.show()
+"""),
+            md("""
+## The constants this project recovered from real data
+"""),
             code("""
 h = json.load(open(RESULTS / "headline.json"))
 P.fig_parameter_recovery(h["parameter_recovery"]); plt.show()
-pd.DataFrame(h["parameter_recovery"])
 """),
             md("""
 ## Extrapolation, across the benchmark tracks
 
-Each arm is fitted on the *low* part of its range and asked to predict the
-*high* part.
+Each arm is fitted on the *low* part of its range and asked about the *high*
+part. This is where a prior either pays or does not.
 """),
             code("""
 P.fig_cross_track_extrapolation(h["extrapolation_summary"]); plt.show()
-pd.DataFrame(h["extrapolation_summary"])
-"""),
-            md("### What each arm can do, and when the black box catches up"),
-            code("""
-display(pd.DataFrame(h["capability_matrix"]))
-display(pd.DataFrame(h["budget_crossover"]))
-pd.DataFrame(h["oracle_sanity"])
 """),
             md("""
 ## The findings
 
-1. **Inside the training range, with enough clean data, the black box is
-   competitive.** Physics buys little there.
+1. **Inside the training range, with enough clean data, a tuned black box is
+   competitive.** Physics buys little there, and claims to the contrary
+   usually compare against an untuned baseline.
 2. **Outside it the gap is orders of magnitude — but the mechanism is
-   identifiability, not the mere presence of a law.** Track `quantum/cmb`
-   shows out-of-band error falling ~56× as the fitted band reaches into the
-   Rayleigh-Jeans regime, while the *in-band* error gets worse.
-   `relativity/gw150914` is the counter-control: from four faint early cycles
-   every fitted arm fails, physics included.
-3. **Only the physics arms return something a physicist can argue with** — and
-   three times in this project the argument was worth having: QED in hydrogen,
-   the post-Newtonian expansion in GW150914, and a truncation error
-   masquerading as a 56σ refutation of general relativity.
+   identifiability, not the mere presence of a law.** On `quantum/cmb`
+   out-of-band error falls ~56× as the fitted band reaches the Rayleigh–Jeans
+   regime *while in-band error gets worse*.
+3. **Only the physics arms return something a physicist can argue with** —
+   QED in hydrogen, the post-Newtonian expansion in GW150914, and a
+   truncation error masquerading as a 56σ refutation of general relativity.
 4. **The network eats the physics if you let it.** At `w_phys = 0` the
-   recovered `GM_sun` is ~19% wrong while the held-out error barely moves.
+   recovered `GM_sun` is 19.5% wrong while held-out error barely moves.
+5. **A pipeline you have not injected into has no error budget.**
 
-See [`docs/TOOLING.md`](../docs/TOOLING.md) for which package does what and
-exactly how a formula comes out of symbolic regression.
+### Where to go next
+
+| | |
+|---|---|
+| [tutorials/](tutorials/README.md) | a step-by-step PINN course, T1 → T7 |
+| [01_gravity](01_gravity.ipynb) · [02_relativity](02_relativity.ipynb) · [03_quantum](03_quantum.ipynb) | the three problems in full |
+| [T7](tutorials/T7_when_the_prior_wins.ipynb) | the regime where the prior wins, and why the others do not |
 """),
             *conclusion_cells("all"),
         ],
