@@ -65,3 +65,29 @@ def test_committed_tables_have_the_columns_the_figures_read(name):
     metric = "nrmse" if name in ("ode", "pde") else "nrmse_in"
     assert metric in df.columns, f"{path.name} lost its {metric} column"
     assert len(df) > 0
+
+
+def test_every_committed_figure_is_regenerated_by_some_stage():
+    """No orphans. A figure in the repo that no stage writes is drift waiting
+    to happen: it cannot be checked, and nothing notices when the code that
+    made it changes.
+
+    The first version of the driver covered nine of the fourteen and missed
+    the six single-run detail figures, which is exactly the gap this asserts.
+    """
+    import inspect
+
+    from physprior.config import get_settings
+
+    figures = get_settings().figures_dir / "neglected"
+    if not figures.exists():
+        pytest.skip("figures/neglected absent")
+    committed = {p.stem for p in figures.glob("*.png")}
+    assert committed, "no committed figures to check"
+
+    written = inspect.getsource(NS)
+    missing = sorted(n for n in committed if f'"{n}"' not in written)
+    assert not missing, (
+        "these committed figures are not written by any stage of "
+        f"`physprior neglected`: {missing}"
+    )

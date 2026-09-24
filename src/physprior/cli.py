@@ -117,7 +117,7 @@ def build_parser() -> argparse.ArgumentParser:
         "stage",
         nargs="?",
         default=None,
-        help="algebraic | ode | pde | derivative | tune (default: all)",
+        help="algebraic | ode | pde | detail | derivative | tune (default: all)",
     )
     neg.add_argument(
         "--quick", action="store_true", help="short training, for a smoke test"

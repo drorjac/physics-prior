@@ -198,14 +198,90 @@ def pde(quick: bool = False) -> None:
             print(f"  {shape} eps={eps} done", flush=True)
     df = _write(pd.DataFrame(rows), "pde")
 
-    for shape in ("diffusive", "advective"):
+    for shape, name in (
+        ("diffusive", "12_pde_diffusive"),
+        ("advective", "12_pde_advective"),
+    ):
         sub = df[(df["shape"] == shape) & (df["arm"] == "physics")]
         alpha_err = float(sub["alpha_error_pct"].median())
         sys_ = N.NeglectedPDE(eps=0.3, noise=0.0, shape=shape)
-        _save(
-            P.fig_pde_field(sys_, sys_.alpha * (1 + alpha_err / 100)),
-            f"12_pde_{shape}",
+        _save(P.fig_pde_field(sys_, sys_.alpha * (1 + alpha_err / 100)), name)
+
+
+def detail(quick: bool = False) -> None:
+    """The single-run figures: what one fit actually learned.
+
+    The sweeps say which arm wins. These say WHY, and they are the point of
+    the study: a correction drawn against the term it was never shown, and a
+    loss split into its parts so that "the loss went down" and "the constant
+    converged" can be seen to be different events.
+    """
+    import physprior.benchmark.neglected as N
+
+    epochs = 600 if quick else 3000
+    print("detail: what a single fit learned")
+
+    # --- rung 1, the distinguishable case -------------------------------
+    sys_ = N.NeglectedSystem(eps=0.2, noise=0.02, shape="bump")
+    r, y, _ = sys_.sample(40, seed=11)
+    _, _, _, correction, hist = N._fit_pinn(
+        sys_, r, y, w_phys=1.0, epochs=epochs, seed=11
+    )
+    _save(
+        P.fig_learned_correction(
+            sys_,
+            correction,
+            title="The correction the PINN learned, against the term it never saw",
+        ),
+        "04_learned_correction",
+    )
+    _save(
+        P.fig_learning_curves(
+            hist,
+            published=N.GM_TRUE,
+            title="The loss going down and the constant converging are different events",
+        ),
+        "05_learning_curves",
+    )
+
+    # --- rung 2, both shapes --------------------------------------------
+    for shape, amp, name, title in (
+        (
+            "damping",
+            60.0,
+            "07_ode_damping",
+            "A missing force the harmonic law cannot imitate",
+        ),
+        (
+            "anharmonic",
+            60.0,
+            "09_ode_anharmonic",
+            "A missing force shaped like the law: absorbed into omega",
+        ),
+    ):
+        sys_ = N.NeglectedODE(amplitude=amp, noise=0.02, shape=shape)
+        t, theta = sys_.sample(60, seed=11)
+        predict, _, _, force, hist = N._ode_fit_pinn(
+            sys_, t, theta, w_phys=1e-3, epochs=epochs, seed=11
         )
+        phys_predict, _ = N._ode_fit_physics(sys_, t, theta)
+        _save(
+            P.fig_learned_force(
+                sys_, force, predict=predict, physics=phys_predict, title=title
+            ),
+            name,
+        )
+        if shape == "damping":
+            _save(
+                P.fig_learned_force(sys_, force, title="The learned force alone"),
+                "07_ode_force",
+            )
+            _save(
+                P.fig_learning_curves(
+                    hist, title="Training the residual PINN on the pendulum"
+                ),
+                "08_ode_learning",
+            )
 
 
 def derivative_accuracy(quick: bool = False) -> None:
@@ -326,6 +402,7 @@ def main(quick: bool = False, only: str | None = None) -> None:
         "algebraic": algebraic,
         "ode": ode,
         "pde": pde,
+        "detail": detail,
         "derivative": derivative_accuracy,
         "tune": tune,
     }
