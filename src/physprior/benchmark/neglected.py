@@ -762,6 +762,10 @@ def _pde_fit_pinn(
     depth=4,
     lr=4e-3,
     n_collocation=2000,
+    balance_every=50,
+    balance_alpha=0.9,
+    warmup_frac=0.3,
+    ic_tau=0.05,
 ):
     """Residual PINN on (x, t), with alpha trainable and a learned term.
 
@@ -775,6 +779,7 @@ def _pde_fit_pinn(
     import torch
 
     from physprior.methods.neural import DTYPE, mlp
+    from physprior.methods.pinn import _annealed_weight
 
     torch.manual_seed(seed)
     scale = float(np.std(us)) or 1.0
@@ -791,7 +796,16 @@ def _pde_fit_pinn(
     log_a = torch.nn.Parameter(torch.tensor(np.log(0.02), dtype=DTYPE))
     opt = torch.optim.Adam([*net.parameters(), *corr.parameters(), log_a], lr=lr)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
-    history: dict[str, list] = {"epoch": [], "data": [], "phys": [], "GM": []}
+    history: dict[str, list] = {
+        "epoch": [],
+        "data": [],
+        "phys": [],
+        "GM": [],
+        "w_res": [],
+    }
+    rate = scale / sys_.t_max
+    w_res = 1.0
+    warmup = int(warmup_frac * epochs)
 
     # The initial and boundary conditions as a HARD constraint, exactly as
     # T1 and T5 impose theirs:
@@ -807,23 +821,42 @@ def _pde_fit_pinn(
     # study duly returned alpha 70% wrong at eps = 0, where the modelled law
     # is exactly right and there is nothing at all to recover.
     length = float(sys_.length)
-    x_grid, _ = sys_.grid()
-    u0_np = np.exp(-(((x_grid - 0.5 * length) / (0.08 * length)) ** 2))
-    u0_np[0] = u0_np[-1] = 0.0
-    x_g = torch.tensor(x_grid, dtype=DTYPE)
-    u0_g = torch.tensor(u0_np, dtype=DTYPE)
+    ic_width = 0.08 * length
 
     def u0_of(xq):
-        # linear interpolation onto the initial profile
-        idx = torch.clamp(torch.searchsorted(x_g, xq.contiguous()), 1, len(x_g) - 1)
-        x0, x1 = x_g[idx - 1], x_g[idx]
-        y0, y1 = u0_g[idx - 1], u0_g[idx]
-        w = (xq - x0) / (x1 - x0)
-        return y0 + w * (y1 - y0)
+        """The initial profile ANALYTICALLY, not interpolated.
+
+        It was a piecewise-linear interpolant, whose second derivative is
+        zero almost everywhere -- so the residual saw `u_xx` of the initial
+        profile as nothing at all, when in truth it is the largest term in
+        the equation. That is the ReLU mistake of T1 committed inside a hard
+        constraint, and it is why the field was never learned.
+        """
+        return torch.exp(-(((xq - 0.5 * length) / ic_width) ** 2))
 
     def u_of(xq, tq):
         raw = net(torch.stack([xq, tq], dim=-1)).squeeze(-1)
-        return u0_of(xq) + tq * xq * (length - xq) * raw
+        # (1 - exp(-t/tau)), NOT t.
+        #
+        # Both vanish at t = 0, so both impose the initial condition exactly.
+        # But a bare `t` also makes the prefactor tiny near t = 0 -- at the
+        # earliest data, t = 0.02 and x = 0.5, `t x (L - x)` is 0.005, so the
+        # network needed outputs of order 200 to correct anything at all.
+        # That is a conditioning failure, and it is why the field was never
+        # learned and alpha therefore never identifiable: alpha is exactly
+        # the ratio |u_t| / |u_xx|, which is only meaningful once u is right.
+        #
+        # The saturating factor reaches 0.86 by t = 0.1 and leaves the
+        # constraint exact.
+        # The initial condition stays HARD, through a factor that vanishes
+        # at t = 0. The boundary condition does NOT: multiplying by
+        # x (L - x) as well made the parameterisation stiff exactly where it
+        # matters, since near the walls both (u - u0) and the factor go to
+        # zero and the network has to represent their ratio. The walls are
+        # instead carried by the data, which reaches them, and by u0 already
+        # vanishing there.
+        gate = 1.0 - torch.exp(-tq / ic_tau)
+        return u0_of(xq) + gate * raw
 
     for ep in range(epochs):
         opt.zero_grad()
@@ -840,13 +873,44 @@ def _pde_fit_pinn(
         residual = u_t - alpha * u_xx - c
         phys = torch.mean(c**2)
         # The residual is a rate, so it is made dimensionless by the
-        # CHARACTERISTIC rate (scale / t_max), not by the amplitude. Dividing
-        # by scale^2 made the physics term about a thousand times the data
-        # term, and since u = u0 with alpha = 0 gives an exactly zero
-        # residual, the optimiser took that trivial solution and drove alpha
-        # to 0.001 against a true 0.05.
-        rate = scale / sys_.t_max
-        (data + torch.mean(residual**2) / rate**2 + w_phys * phys).backward()
+        # CHARACTERISTIC rate (scale / t_max) rather than the amplitude.
+        res_loss = torch.mean(residual**2) / rate**2
+
+        # GRADIENT-NORM LOSS BALANCING (Wang et al. 2021) -- what this study
+        # needed and did not have. Nondimensionalising is not enough: the two
+        # terms still differ by orders of magnitude, and because u = u0 with
+        # alpha = 0 gives an EXACTLY zero residual, any residual that
+        # outweighs the data hands the optimiser that trivial solution. It
+        # took it, and returned alpha = 0.001 against a true 0.05.
+        #
+        # So the weight is set from the ratio of gradient norms rather than
+        # chosen, and smoothed. This is the same rule PinnOptions(balance)
+        # applies on the 1-D tracks, where it was the only option that
+        # shipped and was worth up to 101x.
+        # A WARMUP ON DATA ALONE, before the residual is allowed to speak.
+        #
+        # This is the fix the study actually needed. Before the network can
+        # represent the field at all, u is still close to u0 -- so u_t is
+        # nearly zero while u_xx is the initial Gaussian's very large
+        # curvature, and the cheapest way to kill `u_t - alpha u_xx - c` is
+        # to send alpha to zero. It did exactly that, reaching 0.004 against
+        # a true 0.05 while the data loss had barely moved.
+        #
+        # The residual is only informative once the solution is roughly
+        # right, so it is switched on after the warmup and balanced from
+        # there. Loss balancing alone did not rescue this: it sets the RATIO
+        # of the two terms, and no ratio helps while one of them is being
+        # minimised by a degenerate answer.
+        if ep < warmup:
+            data.backward()
+        else:
+            if ep % balance_every == 0:
+                # (net, data, phys, ...) -- the FIRST loss is the one whose
+                # gradient goes on top. Passing them the other way round
+                # returns the inverse ratio and amplifies exactly the term
+                # that was already too strong, which is what it did here.
+                w_res = _annealed_weight(net, data, res_loss, w_res, balance_alpha)
+            (data + w_res * res_loss + w_phys * phys).backward()
         opt.step()
         sched.step()
         if ep % 25 == 0 or ep == epochs - 1:
@@ -854,6 +918,7 @@ def _pde_fit_pinn(
             history["data"].append(float(data.detach()))
             history["phys"].append(float(phys.detach()))
             history["GM"].append(float(torch.exp(log_a).detach()))
+            history["w_res"].append(float(w_res))
 
     alpha_hat = float(torch.exp(log_a).detach())
 

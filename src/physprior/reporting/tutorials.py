@@ -1487,15 +1487,40 @@ it should be easiest — at `eps = 0`, where the modelled law is exactly right
 and there is nothing whatever to recover, `alpha` is driven to ~0.001 against
 a true 0.05 and the field is reproduced to only ~0.5 nRMSE.
 
-Two diagnosed attempts did not fix it:
+**It is still not fixed**, after loss balancing and four further bug fixes.
+The field error came down from 2.16 to 0.93 nRMSE and `alpha` is still 75%
+wrong, so it stays marked rather than reported. What follows is the list of
+what was actually wrong, because every item was a genuine defect and three of
+them are mistakes this course warns about:
 
-1. **Hard initial and boundary conditions**, in the T1/T5 style —
-   `u = u0(x) + t·x·(L−x)·NN(x,t)`, which satisfies both exactly. Necessary,
-   and not sufficient.
-2. **Re-nondimensionalising the residual** by the characteristic rate rather
-   than the amplitude. The first scaling made the physics term about a
-   thousand times the data term, and since `u = u0` with `alpha = 0` gives an
-   *exactly zero* residual, the optimiser simply took it.
+1. **No initial or boundary conditions at all**, so the residual did not
+   identify `alpha` — many pairs `(u, alpha)` satisfy `u_t = alpha u_xx`.
+2. **The residual was nondimensionalised by the amplitude, not the rate**,
+   making the physics term ~1000× the data term. Since `u = u0` with
+   `alpha = 0` gives an *exactly zero* residual, the optimiser took it.
+3. **`_annealed_weight` was called with its arguments reversed.** Its
+   signature is `(net, data, phys, ...)` and it returns
+   `max|∇data| / mean|∇phys|`; passing the residual first returns the inverse
+   ratio and *amplifies* precisely the term that was already too strong.
+4. **The hard constraint used a bare `t`.** At the earliest data, `t = 0.02`
+   and `x = 0.5`, the prefactor `t·x·(L−x)` is **0.005** — the network needed
+   outputs of order 200 to correct anything. Replaced by a saturating
+   `1 − exp(−t/τ)`, which vanishes at `t = 0` just as exactly.
+5. **The initial profile was a piecewise-linear interpolant**, whose second
+   derivative is zero almost everywhere — so the residual saw `u_xx` of the
+   initial profile as *nothing*, when it is the largest term in the equation.
+   That is [T1](T1_what_is_a_pinn.ipynb)'s ReLU warning, committed inside a
+   hard constraint.
+6. **A data-first warmup** before the residual is allowed to speak, because
+   `alpha` is exactly the ratio `|u_t|/|u_xx|` and that ratio is meaningless
+   until `u` is roughly right.
+
+A control settles where the remaining problem is: a **plain MLP on the same
+500 points reaches a field nRMSE of 0.095**, so the network can represent
+this field easily. The constrained, physics-regularised version reaches 0.93.
+The obstacle is therefore the parameterisation and the optimisation, not
+capacity — and the next thing to try is the collocation sampling and a
+curriculum in `t`, not more weight tuning.
 
 So the PDE section above rests entirely on the `physics` arm — whose result
 is a closed-form identity and needs no network at all. That is the honest
