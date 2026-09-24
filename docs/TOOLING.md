@@ -149,6 +149,42 @@ positive quantities positive and makes the search scale-free over decades.
 
 ---
 
+## Where it runs, and the precision that follows
+
+The default is **the CPU in float64**, and the second half of that sentence is
+the reason for the first. Every physics term here differentiates the network
+**twice**, and a second derivative in float32 keeps roughly half the
+significant digits a first derivative keeps. The recovered constants *are* the
+result, so precision is not a tuning knob.
+
+```bash
+physprior info                 # what this machine offers, and what was chosen
+PHYSPRIOR_DEVICE=cuda physprior run quantum
+PHYSPRIOR_DEVICE=cpu  PHYSPRIOR_DTYPE=float32 physprior run quantum   # deliberate
+```
+
+`physprior.methods.device.resolve()` returns `(device, dtype)` as a **pair**,
+because on Apple Silicon they are not independent: **MPS has no float64
+kernels at all**, so asking for MPS is asking for float32 whether or not you
+meant it. `resolve()` warns rather than letting a second-derivative residual
+quietly lose half its precision.
+
+Two honesty notes:
+
+- **The GPU paths are written but unverified.** This machine reports
+  `cuda.is_available() = False` and `mps.is_available() = False`; every number
+  in `results/` was produced on the CPU in float64. Treat the device selection
+  as untested until someone runs it on hardware that has one.
+- **A GPU would not help most of this repository.** The 1-D tracks fit in
+  ~25 s and are bottlenecked by the optimiser's *serial* epochs, not by matrix
+  work — batches of a few hundred points do not fill a GPU, and the transfer
+  overhead per epoch can make it slower. The one place the arithmetic is
+  actually large is the 2-D field residual (§ the PDE study): 10^4 collocation
+  points with second derivatives in both coordinates. That is what the device
+  selection was added for.
+
+---
+
 ## How the simulations are integrated
 
 | Problem | Method | Why |

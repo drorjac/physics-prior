@@ -178,6 +178,14 @@ def _info() -> int:
         ("offline", settings.offline),
     ):
         print(f"  {label:10s} {value}")
+    try:
+        from physprior.methods import device
+    except ImportError:  # torch is an optional extra
+        print("  torch      not installed ([nn] extra)")
+        return 0
+    print(f"  torch      {device.describe()}")
+    if device.available()["cuda"] or device.available()["mps"]:
+        print("             (the GPU paths are UNVERIFIED -- see methods/device.py)")
     return 0
 
 
