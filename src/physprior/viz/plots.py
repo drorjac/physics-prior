@@ -1322,3 +1322,104 @@ def fig_learned_force(system, force_fn, predict=None, physics=None, title=None):
         color=INK_2,
     )
     return fig
+
+
+def _sequential_cmap():
+    """One hue, light to dark. Magnitude has no poles, so it gets one hue."""
+    from matplotlib.colors import LinearSegmentedColormap
+
+    return LinearSegmentedColormap.from_list(
+        "physprior_seq", ["#f4f8fd", "#a8c8ec", "#2a78d6", "#123a6b"]
+    )
+
+
+def _diverging_cmap():
+    """Two hues with a NEUTRAL midpoint -- never a hue at zero, or the eye
+    reads a feature where the data has none."""
+    from matplotlib.colors import LinearSegmentedColormap
+
+    return LinearSegmentedColormap.from_list(
+        "physprior_div",
+        ["#123a6b", "#2a78d6", "#a8c8ec", "#efeeea", "#f6bfa4", "#eb6834", "#8c3413"],
+    )
+
+
+def fig_pde_field(system, alpha_fitted, title=None):
+    """What the modelled equation can and cannot reproduce, as fields.
+
+    Three panels: the truth, the modelled law at its best-fitting constant,
+    and the difference. The difference panel is where the answer is: a SMALL
+    residual means the missing term was largely absorbable and it is the
+    constant that went wrong, while a large structured one means the model
+    cannot represent the physics at any constant. Both residuals have
+    structure -- the distinction is magnitude, and the diffusive case's is
+    six times smaller.
+    """
+    use_style()
+    t, x, truth = system.solve(60)
+
+    modelled = type(system)(
+        eps=0.0,
+        noise=0.0,
+        shape=system.shape,
+        alpha=alpha_fitted,
+        n_x=system.n_x,
+        t_max=system.t_max,
+        length=system.length,
+    )
+    _, _, model_field = modelled.solve(60)
+    diff = truth - model_field
+
+    fig, axes = plt.subplots(1, 3, figsize=(12.2, 3.5))
+    extent = [x[0], x[-1], t[0], t[-1]]
+    vmax = float(np.max(np.abs(truth)))
+    for ax, field, name, cmap, lim in (
+        (axes[0], truth, "the truth", _sequential_cmap(), (0, vmax)),
+        (
+            axes[1],
+            model_field,
+            f"pure diffusion at its best alpha = {alpha_fitted:.4f}",
+            _sequential_cmap(),
+            (0, vmax),
+        ),
+        (
+            axes[2],
+            diff,
+            "what the model cannot reproduce",
+            _diverging_cmap(),
+            (
+                -float(np.max(np.abs(diff))) or -1e-12,
+                float(np.max(np.abs(diff))) or 1e-12,
+            ),
+        ),
+    ):
+        im = ax.imshow(
+            field,
+            origin="lower",
+            aspect="auto",
+            extent=extent,
+            cmap=cmap,
+            vmin=lim[0],
+            vmax=lim[1],
+        )
+        ax.set_xlabel("x")
+        ax.set_title(name, fontsize=10)
+        ax.grid(visible=False)
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
+    axes[0].set_ylabel("t")
+    fig.suptitle(title or f"missing term: {system.shape!r}", x=0.0, ha="left")
+    fig.text(
+        0.0,
+        -0.06,
+        f"peak residual {np.max(np.abs(diff)):.2e} against a signal of "
+        f"{vmax:.2f} -- "
+        + (
+            "small: the missing term was mostly absorbed into alpha, so it is "
+            "the CONSTANT that went wrong"
+            if np.max(np.abs(diff)) < 0.02 * vmax
+            else "large and structured: no value of alpha can reproduce this"
+        ),
+        fontsize=8.5,
+        color=INK_2,
+    )
+    return fig

@@ -140,3 +140,67 @@ def test_a_conservative_model_cannot_decay_at_any_omega():
     hi = {r.arm: r for r in run_ode(np.radians(120), shape="damping", epochs=1500)}
     assert lo["physics"].nrmse_in == pytest.approx(hi["physics"].nrmse_in, rel=0.15)
     assert hi["pinn"].nrmse_in < 0.3 * hi["physics"].nrmse_in
+
+
+# --- and once more for a partial differential law ------------------------
+def test_a_diffusive_missing_term_biases_alpha_by_exactly_eps():
+    """The sharpest identifiability statement in the package, in closed form.
+
+    `eps * alpha * u_xx` is MORE OF THE SAME OPERATOR, so a single rescaling
+    alpha -> alpha (1 + eps) reproduces the truth exactly. The prediction is
+    then flawless and the constant is wrong by precisely eps -- which is the
+    dangerous case, because nothing about the fit looks wrong.
+    """
+    from physprior.benchmark.neglected import NeglectedPDE, _pde_fit_physics
+
+    baseline = _pde_fit_physics(NeglectedPDE(eps=0.0, noise=0.0, shape="diffusive"))
+    for eps in (0.2, 0.4):
+        sys_ = NeglectedPDE(eps=eps, noise=0.0, shape="diffusive")
+        alpha_hat = _pde_fit_physics(sys_)
+        # measured against the eps = 0 estimate, which carries the scheme's
+        # own discretisation bias and would otherwise be charged to eps
+        assert alpha_hat / baseline - 1.0 == pytest.approx(eps, rel=0.15)
+        assert sys_.expected_alpha_bias == eps
+
+
+def test_an_advective_missing_term_leaves_alpha_alone():
+    """Drift is orthogonal to `u_xx` in the least-squares projection, so it
+    does not bias the constant at all -- it makes the MODEL wrong instead.
+    The two failure signatures are opposite, which is the point."""
+    from physprior.benchmark.neglected import NeglectedPDE, _pde_fit_physics
+
+    baseline = _pde_fit_physics(NeglectedPDE(eps=0.0, noise=0.0, shape="advective"))
+    drifted = _pde_fit_physics(NeglectedPDE(eps=0.4, noise=0.0, shape="advective"))
+    assert abs(drifted / baseline - 1.0) < 0.05
+    assert np.isnan(
+        NeglectedPDE(eps=0.4, noise=0.0, shape="advective").expected_alpha_bias
+    )
+
+
+def test_the_advective_residual_is_far_larger_than_the_diffusive_one():
+    """What the modelled equation cannot reproduce, at its own best alpha."""
+    from physprior.benchmark.neglected import NeglectedPDE, _pde_fit_physics
+
+    peaks = {}
+    for shape in ("diffusive", "advective"):
+        sys_ = NeglectedPDE(eps=0.3, noise=0.0, shape=shape)
+        best = type(sys_)(eps=0.0, noise=0.0, shape=shape, alpha=_pde_fit_physics(sys_))
+        _, _, truth = sys_.solve(60)
+        _, _, model = best.solve(60)
+        peaks[shape] = float(np.max(np.abs(truth - model)))
+    assert peaks["advective"] > 4 * peaks["diffusive"]
+
+
+def test_an_unknown_pde_shape_is_refused():
+    from physprior.benchmark.neglected import NeglectedPDE
+
+    with pytest.raises(ValueError, match="unknown shape"):
+        NeglectedPDE(eps=0.1, noise=0.0, shape="magic").solve(5)
+
+
+def test_the_pde_solution_conserves_its_boundaries():
+    from physprior.benchmark.neglected import NeglectedPDE
+
+    _, _, u = NeglectedPDE(eps=0.2, noise=0.0).solve(20)
+    assert np.allclose(u[:, 0], 0.0, atol=1e-9)
+    assert np.allclose(u[:, -1], 0.0, atol=1e-9)

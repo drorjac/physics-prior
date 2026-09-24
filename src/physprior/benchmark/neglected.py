@@ -641,3 +641,231 @@ def run_ode(
         )
     )
     return out
+
+
+# ---------------------------------------------------------------------------
+# and once more for a PARTIAL differential law
+# ---------------------------------------------------------------------------
+#
+# The modelled law is pure diffusion,
+#
+#     u_t = alpha u_xx
+#
+# and the truth carries one extra transport term. Which one decides
+# everything, and here the degeneracy is not approximate but EXACT:
+#
+#   `diffusive`  the missing term is eps * alpha * u_xx -- more of the same
+#                operator. A single rescaling alpha -> alpha (1 + eps)
+#                reproduces the truth perfectly, so the prediction is
+#                flawless and the recovered constant is wrong by exactly eps.
+#                The bias is predictable in closed form, which makes this the
+#                sharpest identifiability demonstration in the package.
+#
+#   `advective`  the missing term is -v u_x, a drift. It MOVES the profile,
+#                and diffusion is symmetric -- no value of alpha can shift a
+#                peak. Distinguishable by construction.
+
+
+@dataclass
+class NeglectedPDE:
+    """A diffusion equation with one transport term left out."""
+
+    eps: float
+    noise: float
+    shape: str = "advective"
+    alpha: float = 0.05
+    n_x: int = 96
+    t_max: float = 1.2
+    length: float = 1.0
+
+    @property
+    def velocity(self) -> float:
+        """The drift, scaled so `eps` means the same thing in both shapes:
+        the missing term's size relative to the diffusive one."""
+        return self.eps * self.alpha / self.length * 8.0
+
+    def grid(self):
+        x = np.linspace(0.0, self.length, self.n_x)
+        return x, float(x[1] - x[0])
+
+    def solve(self, n_t: int = 60):
+        """Method of lines, Dirichlet ends, a Gaussian released at the centre."""
+        from scipy.integrate import solve_ivp
+
+        x, dx = self.grid()
+        u0 = np.exp(-(((x - 0.5 * self.length) / (0.08 * self.length)) ** 2))
+        u0[0] = u0[-1] = 0.0
+
+        def rhs(_t, u):
+            uxx = np.zeros_like(u)
+            ux = np.zeros_like(u)
+            uxx[1:-1] = (u[2:] - 2 * u[1:-1] + u[:-2]) / dx**2
+            ux[1:-1] = (u[2:] - u[:-2]) / (2 * dx)
+            du = self.alpha * uxx
+            if self.shape == "diffusive":
+                du = du + self.eps * self.alpha * uxx
+            elif self.shape == "advective":
+                du = du - self.velocity * ux
+            else:
+                raise ValueError(f"unknown shape {self.shape!r}")
+            du[0] = du[-1] = 0.0
+            return du
+
+        t = np.linspace(0.0, self.t_max, n_t)
+        sol = solve_ivp(
+            rhs, (0.0, self.t_max), u0, t_eval=t, method="LSODA", rtol=1e-9, atol=1e-11
+        )
+        return t, x, sol.y.T  # (n_t, n_x)
+
+    def sample(self, n: int, seed: int):
+        """Scattered (x, t, u) observations, as a real measurement would be."""
+        rng = np.random.default_rng(seed)
+        t, x, u = self.solve(80)
+        ti = rng.integers(1, len(t), n)
+        xi = rng.integers(1, len(x) - 1, n)
+        vals = u[ti, xi]
+        return (x[xi], t[ti], vals + rng.normal(0.0, self.noise * np.std(u), n))
+
+    @property
+    def expected_alpha_bias(self) -> float:
+        """For `diffusive`, the fitted alpha is wrong by exactly this."""
+        return self.eps if self.shape == "diffusive" else float("nan")
+
+
+def _pde_fit_physics(sys_):
+    """The classical inverse estimate: alpha from u_t against u_xx.
+
+    Least squares on the modelled PDE alone. It has no term for anything
+    else, so whatever else is happening is pushed into alpha.
+    """
+    t, x, u = sys_.solve(80)
+    dx = float(x[1] - x[0])
+    ut = np.gradient(u, t, axis=0)[1:-1, 1:-1]
+    uxx = ((u[:, 2:] - 2 * u[:, 1:-1] + u[:, :-2]) / dx**2)[1:-1]
+    return float(np.sum(ut * uxx) / np.sum(uxx * uxx))
+
+
+def _pde_fit_pinn(
+    sys_,
+    xs,
+    ts,
+    us,
+    *,
+    w_phys=1e-3,
+    epochs=4000,
+    seed=0,
+    width=48,
+    depth=4,
+    lr=4e-3,
+    n_collocation=2000,
+):
+    """Residual PINN on (x, t), with alpha trainable and a learned term.
+
+        u_t - alpha u_xx - C(u, u_x) = 0
+
+    `C` takes the local state rather than the coordinates: a correction in
+    (x, t) is a source field that can fit anything, while a correction in
+    (u, u_x) is a constitutive term -- and only the second can be compared
+    against the physics that was dropped.
+    """
+    import torch
+
+    from physprior.methods.neural import DTYPE, mlp
+
+    torch.manual_seed(seed)
+    scale = float(np.std(us)) or 1.0
+    xt = torch.tensor(xs, dtype=DTYPE)
+    tt = torch.tensor(ts, dtype=DTYPE)
+    ut_obs = torch.tensor(us, dtype=DTYPE)
+
+    rng = np.random.default_rng(seed)
+    xc = torch.tensor(rng.uniform(0, sys_.length, n_collocation), dtype=DTYPE)
+    tc = torch.tensor(rng.uniform(0, sys_.t_max, n_collocation), dtype=DTYPE)
+
+    net = mlp(2, width, depth)
+    corr = mlp(2, width, depth)
+    log_a = torch.nn.Parameter(torch.tensor(np.log(0.02), dtype=DTYPE))
+    opt = torch.optim.Adam([*net.parameters(), *corr.parameters(), log_a], lr=lr)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
+    history: dict[str, list] = {"epoch": [], "data": [], "phys": [], "GM": []}
+
+    def u_of(xq, tq):
+        return net(torch.stack([xq, tq], dim=-1)).squeeze(-1)
+
+    for ep in range(epochs):
+        opt.zero_grad()
+        alpha = torch.exp(log_a)
+        data = torch.mean(((u_of(xt, tt) - ut_obs) / scale) ** 2)
+
+        xr = xc.clone().requires_grad_(True)
+        tr = tc.clone().requires_grad_(True)
+        u = u_of(xr, tr)
+        u_t = torch.autograd.grad(u.sum(), tr, create_graph=True)[0]
+        u_x = torch.autograd.grad(u.sum(), xr, create_graph=True)[0]
+        u_xx = torch.autograd.grad(u_x.sum(), xr, create_graph=True)[0]
+        c = corr(torch.stack([u, u_x], dim=-1)).squeeze(-1)
+        residual = u_t - alpha * u_xx - c
+        phys = torch.mean(c**2)
+        (data + torch.mean(residual**2) / scale**2 + w_phys * phys).backward()
+        opt.step()
+        sched.step()
+        if ep % 25 == 0 or ep == epochs - 1:
+            history["epoch"].append(ep)
+            history["data"].append(float(data.detach()))
+            history["phys"].append(float(phys.detach()))
+            history["GM"].append(float(torch.exp(log_a).detach()))
+
+    alpha_hat = float(torch.exp(log_a).detach())
+
+    def predict(xq, tq):
+        with torch.no_grad():
+            return u_of(
+                torch.tensor(np.asarray(xq, float).ravel(), dtype=DTYPE),
+                torch.tensor(np.asarray(tq, float).ravel(), dtype=DTYPE),
+            ).numpy()
+
+    n_params = 1 + sum(p.numel() for p in [*net.parameters(), *corr.parameters()])
+    return predict, alpha_hat, n_params, history
+
+
+def run_pde(
+    eps: float,
+    noise: float = 0.02,
+    shape: str = "advective",
+    n_train: int = 500,
+    seed: int = 11,
+    w_phys: float = 1e-3,
+    epochs: int = 3000,
+) -> list:
+    """`physics` and `pinn` on the PDE, scored on the full field."""
+    sys_ = NeglectedPDE(eps=eps, noise=noise, shape=shape)
+    xs, ts, us = sys_.sample(n_train, seed)
+    t, x, field = sys_.solve(60)
+    xx, tt = np.meshgrid(x, t)
+    scale = float(np.std(field))
+
+    alpha_phys = _pde_fit_physics(sys_)
+    out = [
+        ArmResult(
+            "physics",
+            float("nan"),
+            float("nan"),
+            abs(alpha_phys - sys_.alpha) / sys_.alpha * 100,
+            1,
+        )
+    ]
+    predict, alpha_hat, npar, hist = _pde_fit_pinn(
+        sys_, xs, ts, us, w_phys=w_phys, epochs=epochs, seed=seed
+    )
+    pred = predict(xx.ravel(), tt.ravel()).reshape(field.shape)
+    out.append(
+        ArmResult(
+            "pinn",
+            nrmse(field.ravel(), pred.ravel(), scale=scale),
+            float("nan"),
+            abs(alpha_hat - sys_.alpha) / sys_.alpha * 100,
+            npar,
+            history=hist,
+        )
+    )
+    return out

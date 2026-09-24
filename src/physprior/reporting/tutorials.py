@@ -1439,6 +1439,64 @@ That is `quantum/cmb`'s identifiability finding, reached twice more from
 completely different directions.
 """),
             md("""
+---
+
+## And once more, for a partial differential law
+
+The last rung. The modelled law is pure diffusion, $u_t = \\alpha u_{xx}$, and
+the truth carries one extra transport term. Here the degeneracy is not
+approximate but **exact**, and it has a closed form.
+"""),
+            code("""
+from physprior.benchmark.neglected import NeglectedPDE, _pde_fit_physics
+base = _pde_fit_physics(NeglectedPDE(eps=0.0, noise=0.0, shape="diffusive"))
+print(f"{'shape':<12}{'eps':>6}{'alpha_hat':>12}{'bias vs eps=0':>15}")
+for shape in ("diffusive", "advective"):
+    for eps in (0.0, 0.3, 0.6):
+        s = NeglectedPDE(eps=eps, noise=0.0, shape=shape)
+        a = _pde_fit_physics(s)
+        print(f"{shape:<12}{eps:>6}{a:>12.5f}{(a/base-1)*100:>14.1f}%")
+"""),
+            md("""
+**Two opposite failure signatures, from the same question.**
+
+`diffusive` — the missing term is $\\varepsilon\\,\\alpha\\,u_{xx}$, *more of the
+same operator*. A single rescaling $\\alpha \\to \\alpha(1+\\varepsilon)$
+reproduces the truth exactly, so the fitted constant is wrong by **precisely
+$\\varepsilon$** — and the prediction is flawless. This is the dangerous case:
+nothing about the fit looks wrong.
+
+`advective` — the missing term is $-v\\,u_x$, a drift. It is *orthogonal* to
+$u_{xx}$ in the least-squares projection, so it does not bias $\\alpha$ at all.
+Instead it makes the model wrong: diffusion is symmetric and no value of
+$\\alpha$ can move a peak.
+
+Look at what each model cannot reproduce, at its own best constant:
+"""),
+            code("""
+for shape in ("diffusive", "advective"):
+    s = NeglectedPDE(eps=0.3, noise=0.0, shape=shape)
+    P.fig_pde_field(s, _pde_fit_physics(s)); plt.show()
+"""),
+            md("""
+The advective residual is a **dipole** — mass moved from one side to the
+other, which is exactly what a drift does and exactly what diffusion cannot.
+Its peak is six times the diffusive one.
+
+So the arc closes, and the same principle governs all three rungs:
+
+| law | degenerate missing piece | distinguishable missing piece |
+|---|---|---|
+| **algebraic** `y = GM/r²` | `1/r³` → absorbed into `GM` | a localised bump |
+| **ODE** `θ̈ = -ω²θ` | anharmonic → absorbed into `ω` | damping (velocity) |
+| **PDE** `u_t = α u_xx` | `ε α u_xx` → absorbed into `α`, **exactly** | advection (drift) |
+
+> The question is never "is the law incomplete?" It is **"can the model's
+> free parameters imitate what is missing?"** If they can, the fit looks
+> perfect and the constant is quietly wrong. If they cannot, the residual has
+> structure and a physics prior has something to learn.
+"""),
+            md("""
 Over a finite range of `r`, `1/r³` is **nearly degenerate with `1/r²`**:
 raising `GM` mimics most of it. So the fit absorbs the missing physics into
 the constant, the correction learns nothing identifiable, and `GM` comes back
