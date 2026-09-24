@@ -259,21 +259,21 @@ def detail(quick: bool = False) -> None:
             "A missing force shaped like the law: absorbed into omega",
         ),
     ):
-        sys_ = N.NeglectedODE(amplitude=amp, noise=0.02, shape=shape)
-        t, theta = sys_.sample(60, seed=11)
+        ode_sys = N.NeglectedODE(amplitude=amp, noise=0.02, shape=shape)
+        t, theta = ode_sys.sample(60, seed=11)
         predict, _, _, force, hist = N._ode_fit_pinn(
-            sys_, t, theta, w_phys=1e-3, epochs=epochs, seed=11
+            ode_sys, t, theta, w_phys=1e-3, epochs=epochs, seed=11
         )
-        phys_predict, _ = N._ode_fit_physics(sys_, t, theta)
+        phys_predict, _ = N._ode_fit_physics(ode_sys, t, theta)
         _save(
             P.fig_learned_force(
-                sys_, force, predict=predict, physics=phys_predict, title=title
+                ode_sys, force, predict=predict, physics=phys_predict, title=title
             ),
             name,
         )
         if shape == "damping":
             _save(
-                P.fig_learned_force(sys_, force, title="The learned force alone"),
+                P.fig_learned_force(ode_sys, force, title="The learned force alone"),
                 "07_ode_force",
             )
             _save(
@@ -417,6 +417,76 @@ def tune(quick: bool = False) -> None:
     _write_tune(pd.DataFrame(ablation), "pde_correction")
 
 
+def consistency(quick: bool = False) -> None:
+    """Is the OPTIMISER wrong, or the field it is given?
+
+    `alpha` is exactly `argmin |u_t - alpha u_xx|^2`, so any field implies an
+    `alpha` by least squares whether or not one was trained. Train the full
+    residual PINN, then ask that same trained field what `alpha` it implies.
+    The two readings answer different questions and the comparison separates
+    them:
+
+      trained ~= implied   the optimiser is self-consistent. Whatever is
+                           wrong is wrong with the FIELD, and no amount of
+                           work on the loss, the schedule or the sampler can
+                           reach it.
+
+      trained != implied   the search is finding something the field alone
+                           does not support.
+
+    Derivatives are central differences on the returned predictor at two
+    step sizes, because a result still moving with `h` is not a result
+    (invariant 5). The recorded drift is ~4e-06, four orders below the
+    effect.
+    """
+    import physprior.benchmark.neglected as N
+
+    epochs = 600 if quick else 4000
+    seeds = (3,) if quick else (3, 7, 19)
+    print("consistency: is the optimiser wrong, or the field?")
+    sys_ = N.NeglectedPDE(eps=0.0, noise=0.02, shape="diffusive")
+    length, t_max = float(sys_.length), float(sys_.t_max)
+    rng = np.random.default_rng(0)
+    xq = rng.uniform(0.15 * length, 0.85 * length, 4000)
+    tq = rng.uniform(0.1 * t_max, 0.9 * t_max, 4000)
+
+    def implied(predict, h):
+        u_t = (predict(xq, tq + h) - predict(xq, tq - h)) / (2 * h)
+        u_xx = (predict(xq + h, tq) - 2 * predict(xq, tq) + predict(xq - h, tq)) / h**2
+        return float((u_t * u_xx).sum() / (u_xx**2).sum())
+
+    rows: list[dict] = []
+    for label, kw in (
+        ("C free (shipped)", dict(use_correction=True, w_phys=1e-3)),
+        ("C removed", dict(use_correction=False, w_phys=0.0)),
+    ):
+        for sd in seeds:
+            xs, ts, us = sys_.sample(500, seed=sd)
+            predict, trained, _, _ = N._pde_fit_pinn(
+                sys_, xs, ts, us, epochs=epochs, seed=sd, **kw
+            )
+            a1, a2 = implied(predict, 2e-3), implied(predict, 4e-3)
+            rows.append(
+                {
+                    "setting": label,
+                    "seed": sd,
+                    "trained_alpha": trained,
+                    "field_implies": a1,
+                    "field_implies_coarse": a2,
+                    "fd_drift": abs(a1 - a2),
+                    "ratio": a1 / trained,
+                    "alpha_true": sys_.alpha,
+                }
+            )
+            print(
+                f"  {label:<18s} seed {sd:<3d} trained {trained:.5f}  "
+                f"field implies {a1:.5f} (drift {abs(a1 - a2):.1e})  "
+                f"ratio {a1 / trained:.2f}x",
+                flush=True,
+            )
+    _write_tune(pd.DataFrame(rows), "pde_consistency")
+
+
 def main(quick: bool = False, only: str | None = None) -> None:
     stages = {
         "algebraic": algebraic,
@@ -425,6 +495,7 @@ def main(quick: bool = False, only: str | None = None) -> None:
         "detail": detail,
         "derivative": derivative_accuracy,
         "tune": tune,
+        "consistency": consistency,
     }
     if only:
         stages = {k: v for k, v in stages.items() if only in k}

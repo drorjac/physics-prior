@@ -270,13 +270,92 @@ nothing, and the mechanism behind it was measured rather than guessed — but
 0.1 is not chosen despite its better mean, because its seed spread is four
 times larger and a difference that size is not resolved by three seeds.
 
-So excess curvature is *a* real cause and not *the* remaining one. What
-separates the two settings is the free correction term: with `C(u, u_x)` in
-the residual, the pair `(alpha, C)` is not identified at all — for **any**
-`alpha` there is a `C` that satisfies the equation exactly, and only the small
-penalty `w_phys·mean(C²)` pins it down. The least-squares reading has no such
-freedom, which is why it responds to the curvature fix and the trained one
-does not. That is the next thing to test, not a claim.
+So excess curvature is *a* real cause and not *the* remaining one.
+
+### The correction network was the obvious suspect, and it is innocent
+
+The hypothesis was that the free correction is what destroys
+identifiability: with `C(u, u_x)` in the residual, the pair `(alpha, C)` is
+not identified at all, because for **any** `alpha` there is a `C` satisfying
+`u_t - alpha u_xx - C = 0` exactly, leaving only the small penalty
+`w_phys·mean(C²)` to pin `alpha` down. The least-squares reading has no such
+freedom, which would explain why it responds to the curvature fix and the
+trained arm does not.
+
+It was tested at `eps = 0`, where the true correction is **exactly zero**, so
+removing `C` costs nothing and the test is clean
+(`results/neglected/tune_pde_correction.csv`):
+
+| | recovered `alpha` (true 0.05) | error |
+|---|---|---|
+| `C` free, `w_phys = 1e-3` | 0.01535 ± 0.00072 | 69.3 % |
+| `C` penalised, `w_phys = 1e0` | 0.01534 ± 0.00100 | 69.3 % |
+| `C` penalised, `w_phys = 1e3` | 0.01478 ± 0.00028 | 70.4 % |
+| **`C` removed entirely** | **0.01406 ± 0.00097** | **71.9 %** |
+
+**Refuted.** A 10⁶ range on the penalty and then deleting the term outright
+moves `alpha` by 0.0013, in the *wrong* direction. The reasoning was sound
+and the conclusion was wrong, which is the only useful kind of negative
+result: it removes a suspect instead of adding a caveat.
+
+### The optimiser was never the problem
+
+`alpha` is exactly `argmin |u_t - alpha u_xx|²`, so **any** field implies an
+`alpha` by least squares whether or not one was trained. Training the full
+residual PINN and then asking that same field what `alpha` it implies
+separates two questions that had been run together
+(`physprior neglected consistency`,
+`results/neglected/tune_pde_consistency.csv`):
+
+| | trained `alpha` | its own field implies | ratio |
+|---|---|---|---|
+| `C` removed, seed 3 | 0.01470 | 0.01463 | **1.00×** |
+| `C` removed, seed 7 | 0.01480 | 0.01474 | **1.00×** |
+| `C` removed, seed 19 | 0.01269 | 0.01260 | **0.99×** |
+| `C` free, seed 3 | 0.01621 | 0.00759 | 0.47× |
+| `C` free, seed 7 | 0.01541 | 0.00786 | 0.51× |
+| `C` free, seed 19 | 0.01445 | 0.00586 | 0.41× |
+
+Derivatives are central differences at two step sizes; the drift is ~4×10⁻⁶,
+four orders below the effect (invariant 5).
+
+**With `C` removed the optimiser is exactly self-consistent.** It returns the
+least-squares `alpha` of the field it produced, to three digits, on every
+seed. It is doing precisely what it was asked to do. Whatever is wrong is
+wrong with the **field**, and nothing addressed to the loss weights, the
+schedule, the sampler or the parameterisation can reach it — which is why
+none of them did.
+
+(With `C` free the ratio is ~0.45, because the correction absorbs the
+discrepancy and breaks that consistency. It lands nearer the truth than the
+field supports, by accident rather than by identification — a reminder that a
+closer number is not a better method.)
+
+### So what is wrong with the field
+
+| the field | implied `alpha` (true 0.05) |
+|---|---|
+| fitted to the data alone, no residual | 0.032 |
+| after full residual training | 0.0147 |
+
+**Switching the physics term on makes the field roughly twice as bad at
+identifying the constant as having no physics term at all.** The residual is
+self-defeating here: it degrades the very field it needs in order to identify
+`alpha`, and `alpha` then faithfully tracks the degraded field.
+
+That also explains the split that had looked paradoxical. The curvature
+penalty takes the data-only reading from 36 % wrong to 6.8 % and the trained
+arm only from 76 % to 68 %, because it fixes curvature and does nothing about
+the residual wrecking the fit — the data loss goes from 8.4×10⁻⁴ to order 1
+once the physics term is enabled.
+
+The honest statement of the failure is therefore **not** "the PINN did not
+converge". It is: *on this problem, in this configuration, the physics term
+costs more field accuracy than the physics constraint buys.* Whether that is
+fixable — by a different residual scaling, by solving for `alpha` in closed
+form from a data-only field, or by a formulation that does not put `u` and
+`alpha` in the same optimisation — is open, and the arm stays
+`converged=False` until something demonstrates it.
 
 **The arm therefore stays marked `converged=False`.** A diagnosis is not a
 result, and 69 % is not a recovered constant.

@@ -233,6 +233,53 @@ field, the same sweep on the tuning seeds
 68 % across a 33× range of the weight. So excess curvature is *a* real cause
 and demonstrably not the only remaining one.
 
+### One suspect tested and cleared
+
+The obvious candidate for the rest was the free correction `C(u, u_x)`: with
+it in the residual, `(α, C)` is not identified at all, since for **any** `α`
+there is a `C` satisfying the equation exactly. At `ε = 0` the true
+correction is zero, so removing `C` costs nothing and the test is clean
+(`results/neglected/tune_pde_correction.csv`):
+
+| | recovered `α` | error |
+|---|---|---|
+| `C` free, `w_phys = 1e-3` | 0.01535 | 69.3 % |
+| `C` penalised, `w_phys = 1e3` | 0.01478 | 70.4 % |
+| `C` removed entirely | 0.01406 | 71.9 % |
+
+**Refuted.** A 10⁶ range on the penalty and then deleting the term moves `α`
+by 0.0013, in the wrong direction.
+
+### And the optimiser is innocent too
+
+`α` is exactly `argmin |u_t − α u_xx|²`, so any field implies an `α` whether
+or not one was trained. Train the residual PINN, then ask its own field what
+`α` it implies (`results/neglected/tune_pde_consistency.csv`):
+
+| | trained `α` | its field implies | ratio |
+|---|---|---|---|
+| `C` removed, 3 seeds | 0.0147 / 0.0148 / 0.0127 | 0.0146 / 0.0147 / 0.0126 | **1.00× / 1.00× / 0.99×** |
+
+**Exactly self-consistent.** The optimiser returns the least-squares `α` of
+the field it produced, on every seed. It is doing what it was asked. So the
+error is entirely in the **field**, and nothing addressed to loss weights,
+schedules, samplers or parameterisation can reach it — which is why none of
+them did.
+
+What is wrong with the field:
+
+| the field | implied `α` (true 0.05) |
+|---|---|
+| fitted to the data alone, no residual | 0.032 |
+| after full residual training | 0.0147 |
+
+**Turning the physics term on makes the field about twice as bad at
+identifying the constant as having no physics term at all.** The residual is
+self-defeating here — it degrades the very field it needs. The honest
+statement is not "the PINN did not converge" but: *on this problem, in this
+configuration, the physics term costs more field accuracy than the physics
+constraint buys.* See [METHOD.md](../METHOD.md).
+
 The full post-mortem, including what was tried and did not work (gradient-norm
 balancing, a data-only warmup, a hard initial condition, a curriculum in `t`,
 residual-adaptive collocation, capping the residual weight, and a curvature

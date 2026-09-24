@@ -46,6 +46,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   relative — while the network's own error in `u_xx` is 60 %. The digit count
   was right and the conclusion was wrong.
 
+### Investigated and ruled out
+
+- The free correction `C(u, u_x)` was the obvious explanation for the PDE
+  arm's unidentifiable `alpha`, since `(alpha, C)` admits any `alpha`.
+  Tested at `eps = 0`, where the true correction is exactly zero: a 10⁶
+  range on `w_phys` and then removing `C` outright move `alpha` by 0.0013,
+  in the wrong direction. Refuted. `results/neglected/tune_pde_correction.csv`.
+
 ### Known not to converge
 
 - The 2-D residual PINN on the PDE rung returns `alpha` about 69 % wrong at

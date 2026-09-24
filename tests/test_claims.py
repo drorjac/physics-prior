@@ -368,3 +368,32 @@ def test_doc_admits_the_remedy_does_not_transfer(neglected_doc):
     assert f"{hi:.0f} % to {lo:.0f} %" in neglected_doc, (
         f"the quoted range drifted to {hi:.0f}-{lo:.0f}%"
     )
+
+
+def test_the_correction_network_hypothesis_stays_refuted(neglected_doc):
+    """A negative result is a result, and this one must not quietly rot.
+
+    The hypothesis was that the free correction C(u, u_x) destroys the
+    identifiability of alpha, since (alpha, C) admits any alpha. Tested at
+    eps = 0 where the true C is exactly zero: penalising C over six decades
+    and then deleting it outright does not help, and removing it is slightly
+    WORSE. If a future change makes removing C help, this test fails and the
+    prose has to be rewritten -- which is the point.
+    """
+    import pandas as pd
+
+    p = get_settings().results_dir / "neglected" / "tune_pde_correction.csv"
+    if not p.exists():
+        pytest.skip("run `physprior neglected tune`")
+    d = pd.read_csv(p).set_index("setting")
+    free = d[d.index.str.contains("free")].iloc[0]
+    removed = d[d.index.str.contains("removed", case=False)].iloc[0]
+    assert removed.err_pct >= free.err_pct - 5.0, (
+        f"removing C now helps ({free.err_pct:.1f}% -> {removed.err_pct:.1f}%): "
+        "the refutation in docs/METHOD.md no longer holds"
+    )
+    assert "Refuted" in neglected_doc or "refuted" in neglected_doc
+    for row in (free, removed):
+        assert f"{row.alpha_mean:.5f}" in neglected_doc, (
+            f"a quoted alpha drifted to {row.alpha_mean:.6f}"
+        )
