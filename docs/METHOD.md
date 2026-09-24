@@ -194,6 +194,93 @@ the method that produced it.
   conditioning recombines the two copies exactly as it does for the real
   signal.
 
+## A small data loss does not buy a right constant
+
+The PDE rung of the neglected-terms study recovers a diffusivity from
+`u_t = alpha u_xx + C(u, u_x)`. At `eps = 0` the modelled law is exactly
+right and `alpha` must come back 0.05. It came back **0.015** — 70 % wrong —
+and stayed wrong through every fix that operates on the loss:
+gradient-norm balancing, a data-only warmup, a hard initial condition through
+a saturating gate, a curriculum that opens the time horizon gradually,
+residual-adaptive collocation, and capping the residual weight. Each improved
+the fit. None moved `alpha` out of 0.015–0.033.
+
+They could not, because the loss was not where the error was. The measurement
+that settled it (`benchmark.neglected.derivative_accuracy_study`) fits the
+same network to the data **alone**, with no residual term at all, and then
+reads the derivatives off the result:
+
+| | mean \|u_t\| | mean \|u_xx\| | implied `alpha` |
+|---|---|---|---|
+| exact solution | 0.190 | **3.79** | **0.05000** |
+| network, data loss 8.4×10⁻⁴ | 0.201 | **6.09** | 0.0334 |
+
+The field is excellent and `u_t` is right to 6 %. The **second derivative is
+60 % too large**. Since `alpha` is exactly the ratio `|u_t| / |u_xx|`, it
+lands a third low before any physics term has spoken.
+
+Three controls say the excess is the network's own and not the data's:
+
+- at **zero noise** the error is unchanged (35 %), so it is not noise being
+  differentiated;
+- at **eight times the data** it is slightly *worse* (39 %), so it is not
+  sparsity;
+- the least-squares estimator itself returns 0.05000 on the analytic field,
+  so it is not the estimator (`test_implied_alpha_is_exact_on_the_exact_field`).
+
+What remains is the general fact: **a network's accuracy in the k-th
+derivative is not controlled by its accuracy in the value.** High-frequency
+content costs almost nothing in function space and is amplified by every
+differentiation. This is why a PINN can report a small residual and a wrong
+constant at the same time — and why "the residual converged" is not evidence
+that the physics was identified.
+
+The remedy that follows from the diagnosis is to penalise the wiggle one
+derivative **above** the one the equation reads, so the term the residual
+depends on is the one being controlled:
+
+```python
+u_xxx = torch.autograd.grad(u_xx.sum(), x, create_graph=True)[0]
+smooth = torch.mean(u_xxx ** 2) / (scale / ic_width ** 3) ** 2   # dimensionless
+```
+
+Nondimensionalising by the initial profile's own scale is what makes the
+weight portable; without it the penalty means something different at every
+amplitude.
+
+**It works in isolation and largely fails in place, and both halves are the
+result.** Applied to the data-only fit, where `alpha` is read off the field by
+least squares, it takes mean `|u_xx|` from 5.46 to 3.60 against a true 3.79
+and the error from 35 % to 11 %. Applied inside the full fitter, where `alpha`
+is instead *trained by gradient descent through the residual*, the weight
+sweep on the tuning seeds 3/7/19 (`results/neglected/tune_pde_smooth.csv`)
+moves it barely at all:
+
+| `w_smooth` | recovered `alpha` (true 0.05) | error |
+|---|---|---|
+| 0 | 0.01202 ± 0.00129 | 76.0 % |
+| 0.003 | 0.01278 ± 0.00056 | 74.4 % |
+| 0.01 | 0.01368 ± 0.00050 | 72.6 % |
+| 0.03 | 0.01535 ± 0.00072 | **69.3 %** |
+| 0.1 | 0.01610 ± 0.00217 | 67.8 % |
+
+Monotone, consistent across all three seeds, and far too small: a 33× range of
+the weight buys 8 percentage points. `w_smooth = 0.03` ships — it helps, hurts
+nothing, and the mechanism behind it was measured rather than guessed — but
+0.1 is not chosen despite its better mean, because its seed spread is four
+times larger and a difference that size is not resolved by three seeds.
+
+So excess curvature is *a* real cause and not *the* remaining one. What
+separates the two settings is the free correction term: with `C(u, u_x)` in
+the residual, the pair `(alpha, C)` is not identified at all — for **any**
+`alpha` there is a `C` that satisfies the equation exactly, and only the small
+penalty `w_phys·mean(C²)` pins it down. The least-squares reading has no such
+freedom, which is why it responds to the curvature fix and the trained one
+does not. That is the next thing to test, not a claim.
+
+**The arm therefore stays marked `converged=False`.** A diagnosis is not a
+result, and 69 % is not a recovered constant.
+
 ## Perihelion location: root-finding, not parabola-fitting
 
 Mercury's GR shift is 5×10⁻⁷ rad per orbit. Locating the perihelion by fitting

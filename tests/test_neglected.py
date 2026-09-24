@@ -222,3 +222,76 @@ def test_the_pde_pinn_is_marked_as_not_converged():
     assert not pde_pinn_converged(0.051, 0.5)
     assert not pde_pinn_converged(0.001, 0.01)
     assert PDE_PINN_ALPHA_FLOOR < 1.0
+
+
+# ---------------------------------------------------------------------------
+# Fitting a field is not the same as differentiating it
+
+
+def test_implied_alpha_is_exact_on_the_exact_field():
+    """The estimator itself must be unbiased, or nothing below means anything.
+
+    alpha = argmin |u_t - a u_xx|^2 recovers 0.05 to five decimals on the
+    analytic solution. So when a fitted network returns 0.033, the estimator
+    is not what is wrong -- the network's derivatives are.
+    """
+    torch = pytest.importorskip("torch")
+    from physprior.benchmark.neglected import NeglectedPDE
+
+    sys_ = NeglectedPDE(eps=0.0, noise=0.0, shape="diffusive")
+    length, w = float(sys_.length), 0.08 * float(sys_.length)
+    rng = np.random.default_rng(0)
+    x = torch.tensor(rng.uniform(0, length, 4000), dtype=torch.float64).requires_grad_(
+        True
+    )
+    t = torch.tensor(
+        rng.uniform(0, sys_.t_max, 4000), dtype=torch.float64
+    ).requires_grad_(True)
+    s2 = w**2 + 4.0 * sys_.alpha * t
+    u = (w / torch.sqrt(s2)) * torch.exp(-((x - 0.5 * length) ** 2) / s2)
+    u_t = torch.autograd.grad(u.sum(), t, create_graph=True)[0].detach()
+    u_x = torch.autograd.grad(u.sum(), x, create_graph=True)[0]
+    u_xx = torch.autograd.grad(u_x.sum(), x, create_graph=True)[0].detach()
+    alpha = float((u_t * u_xx).sum() / (u_xx**2).sum())
+    assert abs(alpha - sys_.alpha) < 1e-6, (
+        f"the least-squares estimator is biased on the EXACT field: {alpha}"
+    )
+
+
+@pytest.mark.slow
+def test_curvature_penalty_reduces_the_excess_curvature():
+    """The mechanism, at a size a test can afford.
+
+    Not asserting a recovered alpha -- that needs the full run. Asserting the
+    link the fix rests on: the penalty lowers mean |u_xx| toward the exact
+    field's value, which is what moves alpha.
+    """
+    pytest.importorskip("torch")
+    from physprior.benchmark.neglected import derivative_accuracy_study
+
+    out = derivative_accuracy_study(n=200, epochs=600, weights=(0.0, 3e-2))
+    assert out["curvature"][1] < out["curvature"][0], (
+        "the curvature penalty did not reduce mean |u_xx|: "
+        f"{out['curvature'][0]:.3f} -> {out['curvature'][1]:.3f}"
+    )
+    assert out["uxx_net"].shape == out["uxx_exact"].shape
+
+
+def test_derivative_accuracy_figure_is_finite():
+    from physprior.viz import plots as P
+
+    x = np.linspace(0, 1, 50)
+    fig = P.fig_derivative_accuracy(
+        x,
+        np.exp(-((x - 0.5) ** 2)),
+        np.exp(-((x - 0.5) ** 2)) + 1e-3,
+        -np.cos(x),
+        -np.cos(x) * 1.5,
+        ([0.0, 0.01, 0.03], [0.033, 0.045, 0.055]),
+        0.05,
+        title="check",
+    )
+    assert len(fig.axes) == 3
+    # the bug that shipped a 100,991 px figure: a data value used as a
+    # coordinate. Width is in inches and must stay sane.
+    assert fig.get_size_inches()[0] < 20

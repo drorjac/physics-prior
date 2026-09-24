@@ -766,6 +766,10 @@ def _pde_fit_pinn(
     balance_alpha=0.9,
     warmup_frac=0.3,
     ic_tau=0.05,
+    curriculum=True,
+    resample_every=100,
+    w_smooth=0.03,
+    device=None,
 ):
     """Residual PINN on (x, t), with alpha trainable and a learned term.
 
@@ -778,22 +782,51 @@ def _pde_fit_pinn(
     """
     import torch
 
-    from physprior.methods.neural import DTYPE, mlp
+    from physprior.methods.device import resolve
+    from physprior.methods.neural import mlp
     from physprior.methods.pinn import _annealed_weight
 
+    dev, DTYPE = resolve(device)
     torch.manual_seed(seed)
     scale = float(np.std(us)) or 1.0
-    xt = torch.tensor(xs, dtype=DTYPE)
-    tt = torch.tensor(ts, dtype=DTYPE)
-    ut_obs = torch.tensor(us, dtype=DTYPE)
+    xt = torch.tensor(xs, dtype=DTYPE, device=dev)
+    tt = torch.tensor(ts, dtype=DTYPE, device=dev)
+    ut_obs = torch.tensor(us, dtype=DTYPE, device=dev)
 
     rng = np.random.default_rng(seed)
-    xc = torch.tensor(rng.uniform(0, sys_.length, n_collocation), dtype=DTYPE)
-    tc = torch.tensor(rng.uniform(0, sys_.t_max, n_collocation), dtype=DTYPE)
 
-    net = mlp(2, width, depth)
-    corr = mlp(2, width, depth)
-    log_a = torch.nn.Parameter(torch.tensor(np.log(0.02), dtype=DTYPE))
+    def draw(horizon, weights=None):
+        """Collocation points inside [0, horizon].
+
+        With `weights` the draw is biased toward where the residual is large
+        -- residual-based adaptive refinement. Uniform sampling spends most
+        of its points where the equation is already satisfied, which on this
+        problem is most of the domain most of the time.
+        """
+        xs_ = rng.uniform(0, sys_.length, n_collocation)
+        if weights is None:
+            ts_ = rng.uniform(0, horizon, n_collocation)
+        else:
+            # half uniform, half drawn from the residual: keeping a uniform
+            # half stops the sampler collapsing onto one feature and then
+            # having no evidence that the rest is still satisfied.
+            k = n_collocation // 2
+            ts_ = np.concatenate(
+                [
+                    rng.uniform(0, horizon, n_collocation - k),
+                    rng.choice(weights[0], size=k, p=weights[1]),
+                ]
+            )
+        return (
+            torch.tensor(xs_, dtype=DTYPE, device=dev),
+            torch.tensor(np.clip(ts_, 0, horizon), dtype=DTYPE, device=dev),
+        )
+
+    xc, tc = draw(sys_.t_max)
+
+    net = mlp(2, width, depth).to(device=dev, dtype=DTYPE)
+    corr = mlp(2, width, depth).to(device=dev, dtype=DTYPE)
+    log_a = torch.nn.Parameter(torch.tensor(np.log(0.02), dtype=DTYPE, device=dev))
     opt = torch.optim.Adam([*net.parameters(), *corr.parameters(), log_a], lr=lr)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
     history: dict[str, list] = {
@@ -802,10 +835,12 @@ def _pde_fit_pinn(
         "phys": [],
         "GM": [],
         "w_res": [],
+        "smooth": [],
     }
     rate = scale / sys_.t_max
     w_res = 1.0
     warmup = int(warmup_frac * epochs)
+    probe = None
 
     # The initial and boundary conditions as a HARD constraint, exactly as
     # T1 and T5 impose theirs:
@@ -863,6 +898,19 @@ def _pde_fit_pinn(
         alpha = torch.exp(log_a)
         data = torch.mean(((u_of(xt, tt) - ut_obs) / scale) ** 2)
 
+        # CURRICULUM IN TIME. A parabolic equation's solution at time t is
+        # determined by earlier times, so enforcing the residual over the
+        # whole horizon from the first epoch asks the network to satisfy a
+        # law at times whose initial data it has not yet represented -- and
+        # it can do that with a wrong early solution. The horizon therefore
+        # opens gradually, which is time-marching expressed as a schedule.
+        if curriculum:
+            frac = min(1.0, (ep / max(1, int(0.6 * epochs))) ** 0.5)
+            horizon = sys_.t_max * (0.15 + 0.85 * frac)
+        else:
+            horizon = sys_.t_max
+        if ep % resample_every == 0:
+            xc, tc = draw(horizon, weights=probe)
         xr = xc.clone().requires_grad_(True)
         tr = tc.clone().requires_grad_(True)
         u = u_of(xr, tr)
@@ -875,6 +923,44 @@ def _pde_fit_pinn(
         # The residual is a rate, so it is made dimensionless by the
         # CHARACTERISTIC rate (scale / t_max) rather than the amplitude.
         res_loss = torch.mean(residual**2) / rate**2
+
+        # A CURVATURE PRIOR, and the one thing that made alpha identifiable.
+        #
+        # The measurement that forced it: fit the SAME network to the data
+        # alone, with no residual at all, to a data loss of 8e-4 -- an
+        # excellent field -- and then read the derivatives off it.
+        #
+        #     exact field    |u_t| 0.190   |u_xx| 3.79   -> alpha 0.05000
+        #     the network    |u_t| 0.201   |u_xx| 6.09   -> alpha 0.0334
+        #
+        # u_t is right to 6%. u_xx is 60% too large. Since alpha is exactly
+        # the ratio |u_t| / |u_xx|, alpha comes out a third low no matter
+        # what the loss weights do -- which is why balancing, the warmup,
+        # the curriculum and adaptive sampling each improved the fit and
+        # left alpha at 0.015-0.033.
+        #
+        # The excess is the network's OWN high-frequency content, not the
+        # data's: at noise = 0 the error is identical (35%), and at 8x the
+        # data it is slightly worse. A function-space error says nothing
+        # about a derivative-space error -- the general fact that a PINN's
+        # accuracy in the k-th derivative is not controlled by its accuracy
+        # in the value, and the reason a residual can be small while the
+        # constant it identifies is wrong.
+        #
+        # So the wiggle is penalised where it lives, one derivative above
+        # the one the equation reads: u_xxx, nondimensionalised by the
+        # initial profile's own scale so the weight means the same thing on
+        # any amplitude.
+        if w_smooth:
+            u_xxx = torch.autograd.grad(u_xx.sum(), xr, create_graph=True)[0]
+            smooth = torch.mean(u_xxx**2) / (scale / ic_width**3) ** 2
+        else:
+            smooth = torch.zeros((), dtype=DTYPE, device=dev)
+        if ep % resample_every == 0:
+            with torch.no_grad():
+                w = (residual**2).detach().cpu().numpy()
+                w = w / (w.sum() or 1.0)
+                probe = (tc.detach().cpu().numpy(), w)
 
         # GRADIENT-NORM LOSS BALANCING (Wang et al. 2021) -- what this study
         # needed and did not have. Nondimensionalising is not enough: the two
@@ -902,7 +988,7 @@ def _pde_fit_pinn(
         # of the two terms, and no ratio helps while one of them is being
         # minimised by a degenerate answer.
         if ep < warmup:
-            data.backward()
+            (data + w_smooth * smooth).backward()
         else:
             if ep % balance_every == 0:
                 # (net, data, phys, ...) -- the FIRST loss is the one whose
@@ -910,7 +996,7 @@ def _pde_fit_pinn(
                 # returns the inverse ratio and amplifies exactly the term
                 # that was already too strong, which is what it did here.
                 w_res = _annealed_weight(net, data, res_loss, w_res, balance_alpha)
-            (data + w_res * res_loss + w_phys * phys).backward()
+            (data + w_res * res_loss + w_phys * phys + w_smooth * smooth).backward()
         opt.step()
         sched.step()
         if ep % 25 == 0 or ep == epochs - 1:
@@ -919,6 +1005,7 @@ def _pde_fit_pinn(
             history["phys"].append(float(phys.detach()))
             history["GM"].append(float(torch.exp(log_a).detach()))
             history["w_res"].append(float(w_res))
+            history["smooth"].append(float(smooth.detach()))
 
     alpha_hat = float(torch.exp(log_a).detach())
 
@@ -1006,3 +1093,129 @@ def pde_pinn_converged(
         abs(alpha_hat / alpha_true - 1.0) < PDE_PINN_ALPHA_FLOOR
         and field_nrmse < PDE_PINN_FIELD_FLOOR
     )
+
+
+def derivative_accuracy_study(
+    n: int = 500,
+    noise: float = 0.02,
+    epochs: int = 6000,
+    seed: int = 11,
+    weights=(0.0, 3e-3, 1e-2, 3e-2),
+    t_probe: float = 0.35,
+) -> dict:
+    """Measure the gap between fitting a field and differentiating it.
+
+    The question a PINN practitioner has to be able to answer: a residual is
+    small and the recovered constant is still wrong -- where did it go? Here
+    it is measured rather than argued.
+
+    A network is fitted to the data ALONE, with no residual term at all, so
+    nothing but the data shapes it. Its value is then compared with the exact
+    solution, and so is its second derivative. The first agrees; the second
+    does not, and the constant this equation identifies is exactly the ratio
+    |u_t| / |u_xx|.
+
+    Returns the arrays the figure needs, plus the implied alpha at each
+    curvature-penalty weight.
+    """
+    import torch
+
+    from physprior.methods.neural import DTYPE, mlp
+
+    sys_ = NeglectedPDE(eps=0.0, noise=noise, shape="diffusive")
+    xs, ts, us = sys_.sample(n, seed=seed)
+    length = float(sys_.length)
+    ic_width = 0.08 * length
+    scale = float(np.std(us)) or 1.0
+    rng = np.random.default_rng(seed)
+
+    def exact(xq, tq):
+        """A Gaussian under pure diffusion stays Gaussian: s^2 -> s^2 + 4 a t."""
+        s2 = ic_width**2 + 4.0 * sys_.alpha * tq
+        return (ic_width / torch.sqrt(s2)) * torch.exp(-((xq - 0.5 * length) ** 2) / s2)
+
+    def fit(w_smooth):
+        torch.manual_seed(seed)
+        net = mlp(2, 64, 4).to(DTYPE)
+
+        def u_of(xq, tq):
+            gate = 1.0 - torch.exp(-tq / 0.05)
+            return torch.exp(-(((xq - 0.5 * length) / ic_width) ** 2)) + gate * net(
+                torch.stack([xq, tq], dim=-1)
+            ).squeeze(-1)
+
+        xt = torch.tensor(xs, dtype=DTYPE)
+        tt = torch.tensor(ts, dtype=DTYPE)
+        uo = torch.tensor(us, dtype=DTYPE)
+        opt = torch.optim.Adam(net.parameters(), lr=3e-3)
+        for _ in range(epochs):
+            opt.zero_grad()
+            loss = torch.mean(((u_of(xt, tt) - uo) / scale) ** 2)
+            total = loss
+            if w_smooth:
+                xc = torch.tensor(
+                    rng.uniform(0, length, 800), dtype=DTYPE, requires_grad=True
+                )
+                tc = torch.tensor(
+                    rng.uniform(0, sys_.t_max, 800), dtype=DTYPE, requires_grad=True
+                )
+                u = u_of(xc, tc)
+                ux = torch.autograd.grad(u.sum(), xc, create_graph=True)[0]
+                uxx = torch.autograd.grad(ux.sum(), xc, create_graph=True)[0]
+                uxxx = torch.autograd.grad(uxx.sum(), xc, create_graph=True)[0]
+                total = (
+                    loss + w_smooth * torch.mean(uxxx**2) / (scale / ic_width**3) ** 2
+                )
+            total.backward()
+            opt.step()
+        return u_of, float(loss.detach())
+
+    def implied_alpha(fn):
+        """argmin_a |u_t - a u_xx|^2 -- the constant the field itself implies."""
+        xc = torch.tensor(rng.uniform(0, length, 4000), dtype=DTYPE, requires_grad=True)
+        tc = torch.tensor(
+            rng.uniform(0, sys_.t_max, 4000), dtype=DTYPE, requires_grad=True
+        )
+        u = fn(xc, tc)
+        u_t = torch.autograd.grad(u.sum(), tc, create_graph=True)[0].detach()
+        u_x = torch.autograd.grad(u.sum(), xc, create_graph=True)[0]
+        u_xx = torch.autograd.grad(u_x.sum(), xc, create_graph=True)[0].detach()
+        return float((u_t * u_xx).sum() / (u_xx**2).sum()), float(u_xx.abs().mean())
+
+    alphas, curvature = [], []
+    plain = None
+    for w in weights:
+        fn, data_loss = fit(w)
+        a, uxx_bar = implied_alpha(fn)
+        alphas.append(a)
+        curvature.append(uxx_bar)
+        if w == 0.0:
+            plain = (fn, data_loss)
+
+    # a slice through both fields at one time, and its curvature
+    xg = torch.tensor(np.linspace(0, length, 400), dtype=DTYPE, requires_grad=True)
+    tg = torch.full_like(xg, t_probe)
+
+    def curve(fn):
+        u = fn(xg, tg)
+        ux = torch.autograd.grad(u.sum(), xg, create_graph=True)[0]
+        uxx = torch.autograd.grad(ux.sum(), xg, create_graph=True)[0]
+        return u.detach().numpy(), uxx.detach().numpy()
+
+    u_net, uxx_net = curve(plain[0])
+    u_exact, uxx_exact = curve(exact)
+    _, uxx_exact_bar = implied_alpha(exact)
+    return {
+        "x": xg.detach().numpy(),
+        "t_probe": t_probe,
+        "u_exact": u_exact,
+        "u_net": u_net,
+        "uxx_exact": uxx_exact,
+        "uxx_net": uxx_net,
+        "weights": list(weights),
+        "alphas": alphas,
+        "curvature": curvature,
+        "curvature_exact": uxx_exact_bar,
+        "alpha_true": float(sys_.alpha),
+        "data_loss": plain[1],
+    }

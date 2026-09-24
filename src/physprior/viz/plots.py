@@ -1423,3 +1423,85 @@ def fig_pde_field(system, alpha_fitted, title=None):
         color=INK_2,
     )
     return fig
+
+
+def fig_derivative_accuracy(
+    x,
+    u_exact,
+    u_net,
+    uxx_exact,
+    uxx_net,
+    alpha_curve,
+    alpha_true,
+    title=None,
+):
+    """Why a small data loss does not buy a right constant.
+
+    The single most useful picture in this repository for understanding what
+    a PINN actually optimises. The left panel shows the network's field
+    against the truth and they lie on top of each other -- the data loss is
+    8e-4. The middle panel shows the SECOND derivative of the same two
+    curves, and they are not close: the network carries high-frequency
+    content that is invisible in the value and enormous in the curvature.
+
+    Since the constant being identified here is exactly the ratio
+    |u_t| / |u_xx|, that excess curvature is the error, and no amount of
+    loss balancing removes it -- it is not a weighting problem. The right
+    panel is the fix: penalise the wiggle one derivative ABOVE the one the
+    equation reads, and the recovered constant walks back to the truth.
+
+    `alpha_curve` is `(weights, alphas)`; weights are drawn as categories,
+    not on a log axis, because the sweep includes zero.
+    """
+    use_style()
+    fig, axes = plt.subplots(1, 3, figsize=(12.6, 3.7))
+
+    exact_kw = dict(color=INK_MUTED, lw=2.2, ls="--", zorder=2)
+    net_kw = dict(color=ARM_COLOR["pinn"], lw=2.0, zorder=3)
+
+    axes[0].plot(x, u_exact, label="exact solution", **exact_kw)
+    axes[0].plot(x, u_net, label="network", **net_kw)
+    _style(axes[0], "The field: indistinguishable", "x", "u(x, t)")
+    axes[0].legend(frameon=False, loc="upper right")
+
+    axes[1].axhline(0, color=GRID, lw=1.2, zorder=1)
+    axes[1].plot(x, uxx_exact, label="exact solution", **exact_kw)
+    axes[1].plot(x, uxx_net, label="network", **net_kw)
+    _style(
+        axes[1],
+        "Its second derivative: not close",
+        "x",
+        r"$\partial^2 u/\partial x^2$",
+    )
+    axes[1].legend(frameon=False, loc="upper right")
+
+    weights, alphas = alpha_curve
+    pos = np.arange(len(weights))
+    axes[2].axhline(
+        alpha_true, color=INK_MUTED, lw=2.0, ls="--", zorder=2, label="true value"
+    )
+    axes[2].plot(pos, alphas, "o-", ms=8, **net_kw)
+    for xp, a in zip(pos, alphas, strict=False):
+        axes[2].annotate(
+            f"{a:.3f}",
+            (xp, a),
+            textcoords="offset points",
+            xytext=(0, 9),
+            ha="center",
+            color=INK_2,
+            fontsize=9,
+        )
+    axes[2].set_xticks(pos)
+    axes[2].set_xticklabels(["0" if w == 0 else f"{w:g}" for w in weights], color=INK_2)
+    axes[2].set_ylim(0, max(alpha_true, max(alphas)) * 1.45)
+    _style(
+        axes[2],
+        "Penalise the wiggle and the constant returns",
+        "weight on the curvature penalty",
+        r"recovered $\alpha$",
+    )
+    axes[2].legend(frameon=False, loc="lower right")
+
+    if title:
+        fig.suptitle(title, color=INK, x=0.005, ha="left", fontsize=13)
+    return fig
