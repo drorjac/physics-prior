@@ -60,6 +60,17 @@ package behaves the same from a checkout, a wheel, or CI.
 
 ---
 
+## The two shapes a PINN comes in
+
+![the anatomy of both PINN forms](figures/summary/pinn_anatomy.png)
+
+They are not variants of one architecture. **A** is used where the law is a
+differential equation — the network *is* the solution, and the physical
+constant sits inside the residual so it receives a gradient through the
+physics term. **B** is used where the law is an algebraic relation — the
+network is a *correction* to it, and `w_phys` is a continuous dial between
+the classical fit and a black box. The tutorials build both.
+
 ## Start here: a step-by-step PINN course
 
 Six generated, executable notebooks in

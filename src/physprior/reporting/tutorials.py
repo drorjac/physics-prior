@@ -406,6 +406,29 @@ print(f"published GM_sun = {meta['published_GM_sun']:.6e} m^3/s^2")
 """
             ),
             md("""
+## First, the control: simulations where the answer is exact
+
+Every real-data number in this repository is read against a **simulation**
+where the law is exactly what was put in. When a method fails there, the
+failure is the method's own -- there is no other candidate.
+"""),
+            code("""
+from IPython.display import HTML, Image, display
+display(HTML('<table><tr>'
+  '<td><img src="../../figures/gravity/three_body_figure8.gif" width="330"></td>'
+  '<td><img src="../../figures/gravity/three_body_chaotic.gif" width="330"></td>'
+  '</tr><tr>'
+  '<td align="center"><sub>the figure-eight choreography</sub></td>'
+  '<td align="center"><sub>the same, perturbed by 1 part in 10^9</sub></td>'
+  '</tr></table>'))
+"""),
+            md("""
+Symbolic regression recovers the force-law exponent as **-1.9999969** and
+`GM` to **0.6 ppb** from a simulated orbit. That is the floor. So when the
+same machinery returns `GM_sun` from the real ephemeris with a tens-of-ppm
+residual, the residual is not the method -- it is the two-body formula
+neglecting the planets' masses.
+
 ## Five arms on the same data
 
 Every track in this repository is run through the same five arms, so that
@@ -421,11 +444,30 @@ Every track in this repository is run through the same five arms, so that
 """),
             code("""
 idx = np.arange(len(prob))
-for arm in ("oracle", "physics", "pinn", "nn"):
-    fit = fit_arm(arm, prob, idx, seed=11)
-    gm = fit.params.get("GM")
-    err = "" if gm is None else f"   GM error {abs(gm - meta['published_GM_sun'])/meta['published_GM_sun']*1e6:8.1f} ppm"
-    print(f"{arm:8s} {fit.expression or 'no closed form':52s}{err}")
+fits = {a: fit_arm(a, prob, idx, seed=11) for a in ("oracle", "physics", "pinn", "nn")}
+
+published = meta["published_GM_sun"]
+named = [(a, f) for a, f in fits.items() if f.params.get("GM") is not None]
+fig, ax = plt.subplots(figsize=(7.2, 3.6))
+ax.axvline(0, color=P.INK_2, lw=1.4)
+ax.annotate("published GM", xy=(0, len(named) - 0.45), xytext=(6, 0),
+            textcoords="offset points", fontsize=8.4, color=P.INK_2, va="center")
+for i, (arm, f) in enumerate(named):
+    y = len(named) - 1 - i
+    ppm = (f.params["GM"] - published) / published * 1e6
+    ax.scatter([ppm], [y], s=90, color=P.ARM_COLOR.get(arm, P.INK_MUTED),
+               edgecolor=P.SURFACE, linewidth=1.5, zorder=3)
+    ax.annotate(f"  {ppm:+.1f} ppm", xy=(ppm, y), va="center", fontsize=8.5,
+                color=P.ARM_COLOR.get(arm, P.INK_MUTED))
+ax.set_yticks(range(len(named)), [a for a, _ in reversed(named)])
+ax.set_xlabel("deviation from the published GM_sun  (ppm)")
+ax.grid(axis="y", visible=False); ax.set_xlim(-90, 90)
+ax.set_ylim(-0.6, len(named) - 0.15)   # headroom, or the note clips
+ax.set_title("Only three of the five arms return a constant at all")
+plt.show()
+
+for arm, f in fits.items():
+    print(f"{arm:8s} {f.expression or 'no closed form -- nothing to argue with'}")
 """),
             md("""
 ## The PINN here is a *correction*, not a solver
@@ -464,6 +506,18 @@ axes[1].semilogx([max(w, 1e-4) for w in g.index], g.nrmse_out, "-o",
 axes[1].set_yscale("log"); axes[1].set_xlabel("w_phys (0 shown at 1e-4)")
 axes[1].set_ylabel("held-out nRMSE"); axes[1].set_title("The fit")
 plt.show()
+"""),
+            md("""
+## Watching it happen
+
+Training is recorded, not just reported. The left panel is the fit; the right
+is the physical constant walking toward its published value as the physics
+term pulls on it.
+"""),
+            code("""
+# <img>, not Image(): the browser resolves it relative to THIS notebook,
+# and the GIF stays out of the .ipynb instead of being embedded as base64.
+display(HTML('<img src="../../figures/gravity/pinn_learning_orbit.gif" width="620">'))
 """),
             md("""
 ## The finding, on real data
@@ -519,6 +573,22 @@ print(f"published chirp mass (detector frame): {meta['published_Mc_detector']:.3
 """
             ),
             md("""
+## The control: a simulation where GR is exactly what was put in
+
+`d2u/dphi2 + u = GM/h^2 + (3GM/c^2)u^2`, integrated with the GR term on and
+off. The difference between the two runs is the precession, and it comes out
+at 42.98 arcsec/century -- the measured value.
+"""),
+            code("""
+from IPython.display import HTML, display
+display(HTML('<img src="../../figures/relativity/schwarzschild_precession.gif" width="560">'))
+"""),
+            md("""
+Locating the perihelion here is **root-finding, not parabola-fitting**. The
+shift is 5e-7 rad per orbit and fitting a parabola to a sampled grid is good
+to ~1e-6 -- bigger than the effect. The first version of this simulation duly
+reported a Newtonian "precession" 20% larger than the GR one.
+
 ## The post-Newtonian ablation
 
 The same data, the same code, the same fitting — only the order at which the
@@ -646,6 +716,16 @@ from physprior.methods.eigen_pinn import fit_eigen_pinn, fit_spectrum, WaveFunct
 from physprior.problems.quantum import schrodinger as S
 """
             ),
+            md("""
+## The system, moving
+
+Before the eigenvalue problem, the same equation run forward in time: a wave
+packet meeting a barrier, by split-operator FFT, unitary to 5e-15.
+"""),
+            code("""
+from IPython.display import HTML, display
+display(HTML('<img src="../../figures/quantum/tunnelling.gif" width="560">'))
+"""),
             md("""
 ## Trap 1 · ψ = 0 solves the equation exactly
 
@@ -921,6 +1001,22 @@ from physprior.reporting import conclusions as C
 """
             ),
             md("""
+## 0 · The two shapes a PINN comes in
+
+Before the failures, the anatomy. These are not variants of one architecture
+— they answer different questions, and `w_phys` means something different in
+each.
+"""),
+            code("""
+P.fig_pinn_anatomy(); plt.show()
+"""),
+            md("""
+Panel **A** is T1, T4 and T5: the law is a differential equation, the network
+*is* the solution, and the physical constant sits inside the residual so it
+receives a gradient through the physics term. Panel **B** is T3: the law is an
+algebraic relation, the network is a *correction* to it, and `w_phys` is a
+continuous dial between the classical fit and a black box.
+
 ## 1 · The network eats the physics if you let it
 
 Already seen in T2 and T3 — repeated because it is the one that produces
@@ -944,8 +1040,7 @@ held-out error, you will select the wrong physics.
 """),
             code("""
 gr = load_table("relativity/mercury", "gr_convergence")
-print(gr[["step", "fd_order", "alpha_GR", "alpha_sigma"]]
-      .to_string(index=False, float_format=lambda v: f"{v:.6g}"))
+P.fig_alpha_convergence(gr.to_dict("records")); plt.show()
 """),
             md("""
 At a 3-hour step with a 4th-order stencil, the GR coefficient comes out at
@@ -965,10 +1060,22 @@ seeds. The pre-registered ranking got the top two backwards.
 """),
             code("""
 import glob
+from physprior.benchmark.ablation import summarise
 abl = pd.concat([pd.read_csv(f) for f in glob.glob("results/*/*/tune/ablation.csv")])
-from physprior.benchmark.ablation import summarise, decide
-summary = summarise(abl)
-print(decide(summary)[["option", "tracks helped", "tracks hurt", "ship"]].to_string(index=False))
+P.fig_ablation_effect(summarise(abl)); plt.show()
+"""),
+            md("""
+Every dot is one (track, protocol question). Left of the line the switch
+helped, right of it it hurt, and the distance is the effect size on a log
+scale. Two clusters entirely on one side, two entirely on the other, and one
+sitting exactly on the line.
+
+And what the shipped switch bought, per track, on the reporting seeds after
+re-running the whole pipeline:
+"""),
+            code("""
+from IPython.display import HTML, display
+display(HTML('<img src="../../figures/phase2_improvement.png" width="800">'))
 """),
             md("""
 | option | verdict |
@@ -992,7 +1099,18 @@ Two things worth saying out loud in an interview:
 """),
             code("""
 frame = C.verdict_frame("all")
-print(frame.to_string(index=False))
+counts = frame.verdict.str.split(" ").str[0].value_counts()
+fig, ax = plt.subplots(figsize=(6.2, 3.2))
+colours = {"WIN": P.ARM_COLOR["pinn"], "TIE": P.INK_MUTED}
+ax.barh(list(counts.index), list(counts.values),
+        color=[colours.get(k, P.INK_MUTED) for k in counts.index],
+        edgecolor=P.SURFACE, linewidth=2, height=0.55)
+for k, v in counts.items():
+    ax.annotate(f"  {v}", xy=(v, k), va="center", fontsize=9, color=P.INK_2)
+ax.set_xlabel("protocol questions"); ax.grid(axis="y", visible=False)
+ax.set_title("Most questions do not separate the arms at all")
+plt.show()
+print(f"{counts.get('TIE', 0)} of {len(frame)} questions sit inside the seed spread")
 """),
             md("""
 Read the `verdict` column carefully. Most questions are **ties** — the gap

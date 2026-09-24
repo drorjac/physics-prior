@@ -752,3 +752,320 @@ def fig_eigen_convergence(states, exact, title=None):
             f"{e:.2f}%", xy=(xi, 1.3e-4), ha="center", fontsize=7.5, color=INK_MUTED
         )
     return fig
+
+
+# ---------------------------------------------------------------------------
+# method anatomy: what the two PINN forms actually compute
+# ---------------------------------------------------------------------------
+
+
+def _box(ax, xy, w, h, text, face, edge, fontsize=9, weight="normal", ink=None):
+    from matplotlib.patches import FancyBboxPatch
+
+    ax.add_patch(
+        FancyBboxPatch(
+            xy,
+            w,
+            h,
+            boxstyle="round,pad=0.012,rounding_size=0.03",
+            facecolor=face,
+            edgecolor=edge,
+            linewidth=1.6,
+            zorder=2,
+        )
+    )
+    ax.text(
+        xy[0] + w / 2,
+        xy[1] + h / 2,
+        text,
+        ha="center",
+        va="center",
+        fontsize=fontsize,
+        color=ink or INK,
+        weight=weight,
+        zorder=3,
+    )
+
+
+def _arrow(
+    ax, start, end, colour=None, label=None, rad=0.0, dy=0.03, dx=0.0, ha="center"
+):
+    from matplotlib.patches import FancyArrowPatch
+
+    ax.add_patch(
+        FancyArrowPatch(
+            start,
+            end,
+            arrowstyle="-|>",
+            mutation_scale=11,
+            linewidth=1.4,
+            color=colour or INK_MUTED,
+            connectionstyle=f"arc3,rad={rad}",
+            zorder=1,
+        )
+    )
+    if label:
+        ax.text(
+            (start[0] + end[0]) / 2 + dx,
+            (start[1] + end[1]) / 2 + dy,
+            label,
+            ha=ha,
+            va="bottom",
+            fontsize=7.6,
+            color=INK_2,
+            zorder=3,
+        )
+
+
+def fig_pinn_anatomy():
+    """The two PINN forms in this package, drawn as what they compute.
+
+    They are not variants of one architecture -- they answer different
+    questions, and the choice follows from whether the law is a differential
+    equation or an algebraic relation. Showing them side by side is the
+    fastest way to see that `w_phys` means something different in each.
+
+    A diagram rather than a plot: there is no data here, only structure, and
+    the structure is the thing that is usually described in three paragraphs
+    of prose and still misunderstood.
+    """
+    use_style()
+    fig, axes = plt.subplots(1, 2, figsize=(11.6, 4.6))
+    for ax in axes:
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.axis("off")
+
+    tint = "#eaf1fb"
+    tint_pinn = "#e6f6f0"
+
+    # --- A: residual PINN -------------------------------------------------
+    ax = axes[0]
+    ax.set_title("A · Residual PINN — the network IS the solution", loc="left")
+    _box(ax, (0.02, 0.62), 0.16, 0.14, "t\ncollocation", SURFACE, INK_MUTED, 8.4)
+    _box(
+        ax, (0.26, 0.62), 0.22, 0.14, "NN$_\\theta$(t)", tint, ARM_COLOR["physics"], 10
+    )
+    _box(ax, (0.58, 0.62), 0.18, 0.14, "y(t)", SURFACE, INK_MUTED, 10)
+    _arrow(ax, (0.18, 0.69), (0.26, 0.69))
+    _arrow(ax, (0.48, 0.69), (0.58, 0.69))
+
+    _box(ax, (0.58, 0.40), 0.18, 0.13, "dy/dt", SURFACE, INK_MUTED, 9)
+    # beside the arrow, not under it: the box below occludes a centred label
+    _arrow(
+        ax,
+        (0.67, 0.62),
+        (0.67, 0.53),
+        label="autograd",
+        dy=-0.012,
+        dx=0.015,
+        ha="left",
+    )
+    _box(
+        ax,
+        (0.22, 0.17),
+        0.54,
+        0.16,
+        "residual   R = dy/dt − f(y; $\\theta_{phys}$)",
+        tint_pinn,
+        ARM_COLOR["pinn"],
+        9.6,
+    )
+    _arrow(ax, (0.58, 0.465), (0.50, 0.33), rad=-0.15)
+    _arrow(ax, (0.58, 0.62), (0.40, 0.33), rad=0.18)
+    ax.text(
+        0.49,
+        0.08,
+        "loss  =  data MSE  +  $w_{phys}\\,\\overline{R^2}$",
+        ha="center",
+        fontsize=10,
+        color=INK,
+        weight="bold",
+    )
+    ax.text(
+        0.02,
+        0.90,
+        "the physical constant $\\theta_{phys}$ lives INSIDE the residual,\n"
+        "so it receives a gradient through the physics term",
+        fontsize=8.4,
+        color=INK_2,
+        va="top",
+    )
+    ax.text(
+        0.02,
+        0.02,
+        "used where the law is a differential equation:  gw150914, T1, T5",
+        fontsize=8.2,
+        color=INK_MUTED,
+    )
+
+    # --- B: law + correction ---------------------------------------------
+    ax = axes[1]
+    ax.set_title("B · Law + correction — the network is the residue", loc="left")
+    _box(ax, (0.02, 0.62), 0.14, 0.14, "x", SURFACE, INK_MUTED, 9)
+    _box(
+        ax,
+        (0.24, 0.72),
+        0.30,
+        0.14,
+        "law(x; $\\theta$)",
+        tint_pinn,
+        ARM_COLOR["pinn"],
+        10,
+    )
+    _box(
+        ax,
+        (0.24, 0.50),
+        0.30,
+        0.14,
+        "$\\sigma_y\\cdot$NN(x)",
+        tint,
+        ARM_COLOR["physics"],
+        10,
+    )
+    _arrow(ax, (0.16, 0.71), (0.24, 0.79), rad=0.12)
+    _arrow(ax, (0.16, 0.67), (0.24, 0.57), rad=-0.12)
+    _box(ax, (0.64, 0.61), 0.14, 0.14, "y", SURFACE, INK_MUTED, 10)
+    _arrow(ax, (0.54, 0.79), (0.64, 0.71), rad=0.12)
+    _arrow(ax, (0.54, 0.57), (0.64, 0.65), rad=-0.12)
+    ax.text(
+        0.49,
+        0.36,
+        "loss  =  $\\dfrac{\\mathrm{MSE}}{\\sigma_y^2}$  +  "
+        "$w_{phys}\\,\\overline{\\mathrm{NN}^2}$",
+        ha="center",
+        fontsize=10,
+        color=INK,
+        weight="bold",
+    )
+    ax.text(
+        0.02,
+        0.24,
+        "$w_{phys}\\to\\infty$   the correction is crushed → the arm IS the classical fit\n"
+        "$w_{phys}=0$        the correction is free → a black box in a physics hat",
+        fontsize=8.6,
+        color=INK_2,
+        va="top",
+    )
+    ax.text(
+        0.02,
+        0.02,
+        "used where the law is an algebraic relation:  kepler, hydrogen, cmb",
+        fontsize=8.2,
+        color=INK_MUTED,
+    )
+    return fig
+
+
+def fig_ablation_effect(summary, title=None):
+    """Which switches help, which hurt, and by how much.
+
+    Form: a dot plot on a log ratio axis with 1.0 as the reference. Not bars
+    -- a ratio has no zero, and a bar drawn from one would be arithmetic
+    nonsense. Left of the line is better, right is worse, and the distance is
+    the effect size.
+
+    The verdict rides in the tick label rather than as a right-hand column,
+    which is the only placement that cannot collide with a clipped point.
+    """
+    use_style()
+    options = list(dict.fromkeys(summary.option))
+    fig, ax = plt.subplots(figsize=(8.6, 0.56 * len(options) + 2.4))
+    ax.axvline(1.0, color=INK_2, lw=1.4, zorder=1)
+
+    labels = []
+    for i, option in enumerate(options):
+        y = len(options) - 1 - i
+        sub = summary[summary.option == option]
+        helped = int((sub.ratio < 0.9).sum())
+        hurt = int((sub.ratio > 1.1).sum())
+        ships = bool(helped) and not hurt
+        colour = ARM_COLOR["pinn"] if ships else ARM_COLOR["sr"]
+        verdict = (
+            f"ships · helps {helped}"
+            if ships
+            else (f"hurts {hurt}" if hurt else "no effect")
+        )
+        labels.append((y, f"{option}\n{verdict}"))
+        ax.scatter(
+            sub.ratio.clip(1e-2, 1e2),
+            np.full(len(sub), y),
+            s=64,
+            color=colour,
+            edgecolor=SURFACE,
+            linewidth=1.4,
+            zorder=3,
+        )
+
+    ax.set_yticks([y for y, _ in labels], [t for _, t in labels], fontsize=8.6)
+    ax.set_xscale("log")
+    ax.set_xlim(4e-2, 3e2)
+    ax.set_ylim(-0.9, len(options) - 0.4)
+    ax.set_xlabel("error ratio to the unswitched arm  (log) — left is better")
+    ax.grid(axis="y", visible=False)
+    ax.set_title(title or "One switch at a time, on the tuning seeds")
+    ax.annotate(
+        "no effect",
+        xy=(1.0, len(options) - 0.45),
+        xytext=(6, 0),
+        textcoords="offset points",
+        fontsize=8.4,
+        color=INK_2,
+        va="center",
+    )
+    ax.scatter([], [], s=64, color=ARM_COLOR["pinn"], label="shipped")
+    ax.scatter([], [], s=64, color=ARM_COLOR["sr"], label="rejected")
+    ax.legend(loc="lower center", ncols=2, bbox_to_anchor=(0.5, -0.30))
+    return fig
+
+
+def fig_alpha_convergence(rows, published=1.0, title=None):
+    """A result that is still moving with step size is not a result.
+
+    One point per (stencil order, step), with the published value as a rule.
+    The y axis is the distance from that value, logarithmic, because the
+    interesting range spans five decades -- and the eye should read "how far
+    from Einstein", not "what number came out".
+    """
+    use_style()
+    fig, ax = plt.subplots(figsize=(7.2, 4.2))
+    orders = sorted({int(r["fd_order"]) for r in rows})
+    palette = {2: ARM_COLOR["nn"], 4: ARM_COLOR["sr"], 6: ARM_COLOR["pinn"]}
+    for order in orders:
+        pts = [r for r in rows if int(r["fd_order"]) == order]
+        steps = [float(str(r["step"]).rstrip("m")) for r in pts]
+        dev = [abs(float(r["alpha_GR"]) - published) for r in pts]
+        idx = np.argsort(steps)
+        ax.plot(
+            np.array(steps)[idx],
+            np.array(dev)[idx],
+            "-o",
+            color=palette.get(order, INK_MUTED),
+            markersize=8,
+            markeredgecolor=SURFACE,
+            markeredgewidth=1.3,
+            label=f"{order}{ {2: 'nd', 4: 'th', 6: 'th'}.get(order, 'th') } order stencil".replace(
+                " ", ""
+            ),
+        )
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    # Plain minutes: a reader should not have to decode "2 x 10^2" back into
+    # the step size they chose.
+    steps_all = sorted({float(str(r["step"]).rstrip("m")) for r in rows})
+    ax.set_xticks(steps_all, [f"{int(v)}" for v in steps_all])
+    ax.minorticks_off()
+    ax.set_xlabel("finite-difference step (minutes, log scale)")
+    ax.set_ylabel("|alpha − 1|   (log)")
+    ax.set_title(title or "The 56-sigma refutation was truncation error")
+    ax.legend(loc="lower right")
+    ax.annotate(
+        "a 13% violation of GR\nat 56 formal sigma",
+        xy=(180, 0.134),
+        xytext=(18, -34),
+        textcoords="offset points",
+        fontsize=8.4,
+        color=INK_2,
+        arrowprops={"arrowstyle": "-", "color": INK_MUTED, "linewidth": 0.8},
+    )
+    return fig
