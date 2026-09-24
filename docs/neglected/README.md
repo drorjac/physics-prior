@@ -183,27 +183,55 @@ is evidence of a missing term.** That sentence is the study.
 ![derivative accuracy](../../figures/neglected/13_derivative_accuracy.png)
 
 Fit the same network to the data **alone**, with no residual term, and read
-the derivatives off the result:
+the derivatives off the result
+(`results/neglected/tune_derivative_accuracy.csv`):
 
-| | mean \|u_t\| | mean \|u_xx\| | implied `α` |
+| | mean \|u_xx\| | implied `α` | `α` · \|u_xx\| |
 |---|---|---|---|
-| exact solution | 0.190 | **3.79** | **0.05000** |
-| network, data loss 8.4×10⁻⁴ | 0.201 | **6.09** | 0.0334 |
+| exact solution | **3.59** | **0.0500** | 0.1793 |
+| network, data loss 8.4×10⁻⁴ | **5.52** | 0.0322 | 0.1778 |
 
-The field is excellent. `u_t` is right to 6 %. The **second derivative is
-60 % too large**, and since `α` is exactly the ratio `|u_t| / |u_xx|`, it is
-a third low before any physics term has spoken.
+The field is excellent — a data loss of 8.4×10⁻⁴ — and the **second
+derivative is 54 % too large**. Since `α` is exactly the ratio
+`|u_t| / |u_xx|`, it comes out **36 % low** before any physics term has
+spoken.
 
-Three controls say the excess is the network's own, not the data's: at zero
-noise the error is unchanged, at eight times the data it is slightly worse,
-and the least-squares estimator returns 0.05000 exactly on the analytic
-field.
+The third column is the proof that it is the *second* derivative and not the
+first. The product `α·|u_xx|` is the `u_t` scale, and the network's is 0.1778
+against the exact 0.1793 — **agreement to 0.8 %**. The first derivative is
+right; the whole error is in the second, where nothing in the data loss can
+see it.
+
+Three controls say the excess curvature is the network's own rather than the
+data's: at zero noise the error is unchanged, at eight times the data it is
+slightly worse, and the least-squares estimator returns 0.05000 exactly on
+the analytic field (`test_implied_alpha_is_exact_on_the_exact_field`).
 
 **A network's accuracy in the k-th derivative is not controlled by its
 accuracy in the value.** High-frequency content costs almost nothing in
 function space and is amplified by every differentiation — which is why a
 PINN can report a small residual and a wrong constant simultaneously, and why
 "the residual converged" is not evidence that the physics was identified.
+
+### The remedy, and the limit of it
+
+Penalise the wiggle one derivative **above** the one the equation reads:
+
+| curvature penalty | mean \|u_xx\| (exact 3.59) | implied `α` | error |
+|---|---|---|---|
+| 0 | 5.52 | 0.0322 | 36 % low |
+| 0.003 | 3.92 | **0.0466** | **6.8 % low** |
+| 0.01 | 3.65 | 0.0568 | 14 % high |
+| 0.03 | 4.08 | 0.0652 | 30 % high |
+
+Reading `α` off the field by least squares, the penalty takes it from 36 %
+wrong to under 7 %, and the curvature it targets moves monotonically toward
+the truth. **It does not transfer to the trained arm.** Inside the full
+fitter, where `α` is optimised through the residual rather than read off the
+field, the same sweep on the tuning seeds
+(`results/neglected/tune_pde_smooth.csv`) moves the error only from 76 % to
+68 % across a 33× range of the weight. So excess curvature is *a* real cause
+and demonstrably not the only remaining one.
 
 The full post-mortem, including what was tried and did not work (gradient-norm
 balancing, a data-only warmup, a hard initial condition, a curriculum in `t`,

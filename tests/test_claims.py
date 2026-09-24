@@ -204,10 +204,16 @@ def _meta_topic(topic):
 
 @pytest.fixture(scope="module")
 def neglected_doc() -> str:
+    """The page with its whitespace collapsed.
+
+    Prose wraps, so a quoted phrase like "76 % to 68 %" can straddle a
+    newline and a naive substring check fails on formatting rather than on
+    content. Collapsing whitespace makes these tests about the numbers.
+    """
     p = get_settings().root / "docs" / "neglected" / "README.md"
     if not p.exists():
         pytest.skip("docs/neglected/README.md missing")
-    return p.read_text()
+    return " ".join(p.read_text().split())
 
 
 def _neglected(name):
@@ -283,3 +289,82 @@ def test_doc_does_not_report_the_unconverged_pinn_as_a_result(neglected_doc):
     """Invariant 4: a non-converged arm is marked, not quoted."""
     assert "converged=False" in neglected_doc
     assert "does not depend on it" in neglected_doc
+
+
+def _derivative_table():
+    import pandas as pd
+
+    p = get_settings().results_dir / "neglected" / "tune_derivative_accuracy.csv"
+    if not p.exists():
+        pytest.skip("run `physprior neglected derivative`")
+    return pd.read_csv(p).set_index("w_smooth")
+
+
+def test_derivative_accuracy_numbers(neglected_doc):
+    """The diagnostic table in docs/neglected, re-derived."""
+    d = _derivative_table()
+    exact_uxx = float(d.mean_abs_uxx_exact.iloc[0])
+    assert f"{exact_uxx:.2f}" in neglected_doc, (
+        f"the exact |u_xx| drifted to {exact_uxx:.4f}"
+    )
+    for w in (0.0, 0.003, 0.01, 0.03):
+        row = d.loc[w]
+        assert f"{row.mean_abs_uxx:.2f}" in neglected_doc, (
+            f"|u_xx| at w_smooth={w} drifted to {row.mean_abs_uxx:.4f}"
+        )
+        assert f"{row.implied_alpha:.4f}" in neglected_doc, (
+            f"implied alpha at w_smooth={w} drifted to {row.implied_alpha:.6f}"
+        )
+
+
+def test_the_first_derivative_is_the_one_that_is_right(neglected_doc):
+    """The claim the whole diagnosis rests on.
+
+    alpha = |u_t| / |u_xx|, so alpha * |u_xx| recovers the u_t scale. If the
+    network's product matches the exact one, the first derivative is right
+    and the entire error is in the second -- which is what makes this a
+    statement about DERIVATIVE accuracy rather than about the fit.
+    """
+    d = _derivative_table()
+    row = d.loc[0.0]
+    net = row.implied_alpha * row.mean_abs_uxx
+    exact = row.alpha_true * row.mean_abs_uxx_exact
+    assert abs(net / exact - 1) < 0.05, (
+        f"u_t is no longer right: product {net:.4f} vs exact {exact:.4f}"
+    )
+    for value in (net, exact):
+        assert f"{value:.4f}" in neglected_doc, (
+            f"the quoted product drifted: {value:.4f}"
+        )
+    # and the curvature really is the thing that is wrong
+    assert row.mean_abs_uxx > 1.3 * row.mean_abs_uxx_exact, (
+        "the excess curvature has gone away; the doc's diagnosis no longer holds"
+    )
+
+
+def test_the_curvature_penalty_helps_the_least_squares_reading(neglected_doc):
+    d = _derivative_table()
+    err = (d.implied_alpha / d.alpha_true - 1).abs()
+    assert err.loc[0.003] < err.loc[0.0] / 3, (
+        f"the penalty no longer helps: {err.loc[0.0]:.3f} -> {err.loc[0.003]:.3f}"
+    )
+    assert f"{err.loc[0.003] * 100:.1f} %" in neglected_doc, (
+        f"the best-case error drifted to {err.loc[0.003] * 100:.2f}%"
+    )
+
+
+def test_doc_admits_the_remedy_does_not_transfer(neglected_doc):
+    """Invariant 7. The penalty works on the least-squares reading and
+    largely fails inside the trained arm, and the page must say so."""
+    assert "does not transfer" in neglected_doc.lower()
+    import pandas as pd
+
+    p = get_settings().results_dir / "neglected" / "tune_pde_smooth.csv"
+    if not p.exists():
+        pytest.skip("run `physprior neglected tune`")
+    t = pd.read_csv(p)
+    lo, hi = t.err_pct.min(), t.err_pct.max()
+    assert lo > 50, f"the trained arm now reaches {lo:.1f}% -- the page is stale"
+    assert f"{hi:.0f} % to {lo:.0f} %" in neglected_doc, (
+        f"the quoted range drifted to {hi:.0f}-{lo:.0f}%"
+    )
