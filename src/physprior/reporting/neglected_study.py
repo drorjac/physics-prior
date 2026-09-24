@@ -367,12 +367,16 @@ def tune(quick: bool = False) -> None:
             a.append(al)
         arr = np.asarray(a)
         rows.append(
-            dict(
-                w_smooth=w,
-                alpha_mean=arr.mean(),
-                alpha_std=arr.std(),
-                err_pct=abs(arr.mean() / true - 1) * 100,
-            )
+            {
+                "w_smooth": w,
+                "alpha_mean": float(arr.mean()),
+                "alpha_std": float(arr.std()),
+                "err_pct": float(abs(arr.mean() / true - 1) * 100),
+                # per seed as well: a mean of three hides whether a weight
+                # helped everywhere or rescued one seed, and that difference
+                # decided which weight shipped.
+                **{f"seed_{sd}": float(v) for sd, v in zip(seeds, a, strict=True)},
+            }
         )
         print(
             f"  w_smooth={w:<7g} alpha {arr.mean():.5f} "
