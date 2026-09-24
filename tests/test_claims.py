@@ -397,3 +397,65 @@ def test_the_correction_network_hypothesis_stays_refuted(neglected_doc):
         assert f"{row.alpha_mean:.5f}" in neglected_doc, (
             f"a quoted alpha drifted to {row.alpha_mean:.6f}"
         )
+
+
+def test_the_optimiser_is_self_consistent(neglected_doc):
+    """The measurement the whole PDE diagnosis rests on.
+
+    With C removed, the trained alpha must equal the least-squares alpha of
+    the field the training produced. If it does, the optimiser is doing what
+    it was asked and the error is entirely in the FIELD -- which is what
+    makes "the physics term degrades the field" a conclusion rather than a
+    guess. If a future change breaks that equality, the diagnosis in
+    docs/METHOD.md no longer follows and this test says so.
+    """
+    import pandas as pd
+
+    p = get_settings().results_dir / "neglected" / "tune_pde_consistency.csv"
+    if not p.exists():
+        pytest.skip("run `physprior neglected consistency`")
+    d = pd.read_csv(p)
+
+    removed = d[d.setting.str.contains("removed")]
+    assert len(removed) >= 3
+    assert (removed.ratio > 0.97).all() and (removed.ratio < 1.03).all(), (
+        "the optimiser is no longer self-consistent with C removed: ratios "
+        f"{removed.ratio.round(3).tolist()}"
+    )
+
+    # invariant 5: the finite-difference reading must be converged
+    assert (d.fd_drift < 1e-4).all(), (
+        f"the derivative estimate is still moving with h: max drift {d.fd_drift.max():.1e}"
+    )
+
+    # and the contrast that shows C breaks the consistency
+    free = d[d.setting.str.contains("free")]
+    assert free.ratio.max() < 0.8, (
+        f"C no longer absorbs the discrepancy: ratios {free.ratio.round(2).tolist()}"
+    )
+
+    for value in removed.ratio:
+        assert f"{value:.2f}×" in neglected_doc, (
+            f"a quoted consistency ratio drifted to {value:.3f}"
+        )
+
+
+def test_the_residual_makes_the_field_worse(neglected_doc):
+    """The conclusion itself: turning the physics term on costs field
+    accuracy. The data-only field implies an alpha closer to the truth than
+    the residual-trained field does."""
+    import pandas as pd
+
+    pc = get_settings().results_dir / "neglected" / "tune_pde_consistency.csv"
+    pd_ = get_settings().results_dir / "neglected" / "tune_derivative_accuracy.csv"
+    if not (pc.exists() and pd_.exists()):
+        pytest.skip("run `physprior neglected consistency derivative`")
+    trained = pd.read_csv(pc)
+    trained = trained[trained.setting.str.contains("removed")].field_implies.mean()
+    data_only = pd.read_csv(pd_).set_index("w_smooth").loc[0.0].implied_alpha
+    true = 0.05
+    assert abs(data_only - true) < abs(trained - true), (
+        "the residual no longer degrades the field: data-only implies "
+        f"{data_only:.4f}, residual-trained {trained:.4f}, true {true}"
+    )
+    assert f"{data_only:.3f}" in neglected_doc
