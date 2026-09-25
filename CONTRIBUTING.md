@@ -3,7 +3,7 @@
 ## Getting set up
 
 ```bash
-git clone https://github.com/drorjacoby/physics-prior
+git clone https://github.com/drorjac/physics-prior
 cd physics-prior
 python -m venv .venv && source .venv/bin/activate
 pip install -e '.[dev]'

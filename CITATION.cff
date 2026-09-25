@@ -7,10 +7,10 @@ abstract: >-
   measured data from LIGO, COBE/FIRAS, NIST and JPL, and on simulations where
   the governing law is known exactly.
 type: software
-version: 0.1.0
-date-released: "2026-09-21"
+version: 0.2.0
+date-released: "2026-09-25"
 license: MIT
-repository-code: "https://github.com/drorjacoby/physics-prior"
+repository-code: "https://github.com/drorjac/physics-prior"
 keywords:
   - physics-informed machine learning
   - symbolic regression

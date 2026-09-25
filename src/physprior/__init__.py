@@ -23,7 +23,7 @@ import os as _os
 import warnings as _warnings
 from contextlib import suppress as _suppress
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = ["PhysPriorError", "__version__", "get_settings"]
 
 # PySR's Julia runtime must be initialised BEFORE torch or the process can

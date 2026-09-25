@@ -1,6 +1,6 @@
 # physprior — what does a physics prior buy you?
 
-[![CI](https://github.com/drorjacoby/physics-prior/actions/workflows/ci.yml/badge.svg)](https://github.com/drorjacoby/physics-prior/actions/workflows/ci.yml)
+[![CI](https://github.com/drorjac/physics-prior/actions/workflows/ci.yml/badge.svg)](https://github.com/drorjac/physics-prior/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/lint-ruff-261230)](https://docs.astral.sh/ruff/)

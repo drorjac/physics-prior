@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-25
+
 ### Added
 
 - **`physprior neglected`** — the neglected-terms study is now reproducible by
@@ -109,5 +111,6 @@ First public release.
   the dense solution, which the 5e-7 rad per orbit effect requires.
 - The noise sweep now scores against clean held-out values, not noisy ones.
 
-[Unreleased]: https://github.com/drorjacoby/physics-prior/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/drorjacoby/physics-prior/releases/tag/v0.1.0
+[Unreleased]: https://github.com/drorjac/physics-prior/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/drorjac/physics-prior/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/drorjac/physics-prior/releases/tag/v0.1.0
