@@ -15,6 +15,16 @@ you can watch**, where the governing law is known exactly.
 > the ability to hand back a physical constant and a closed-form law — **and
 > measure what it costs when the prior is wrong.**
 
+> **The answer so far.** A physics-informed network (law + learned
+> correction) pays off **when the law is incomplete in a way the law itself
+> cannot imitate**. Then the correction has something real to learn. When the
+> law is already right, the correction only adds error out of range. When
+> what is missing has the law's own shape, the fit absorbs it into the law's
+> constant, and the constant comes out wrong while the curve looks fine. This
+> holds in controlled simulations and on one real track so far. The questions,
+> their evidence and what would refute them are in
+> [`docs/HYPOTHESES.md`](docs/HYPOTHESES.md).
+
 The package is organised along the two axes that question needs:
 
 ```text
@@ -216,7 +226,12 @@ And three times the argument was worth having:
   13.4% violation of general relativity at **56 formal sigma**. It is entirely
   finite-difference truncation error. With a 6th-order stencil α agrees with
   Einstein to one part in **10⁴**. *The result is not α; it is α once it has
-  stopped moving.*
+  stopped moving.* What is left, **α − 1 = +1.2×10⁻⁴**, is not numerical:
+  halving the step again moves α by only 2×10⁻⁵. It is not the Sun's shape
+  either. Putting back the solar oblateness and frame dragging that DE441
+  itself uses moves α *away* from 1, to +4.7×10⁻⁴. The model is missing
+  physics at the 10⁻⁴ level of the GR term, and which physics is an open
+  question ([relativity](docs/relativity/)).
 
 **4 · The network eats the physics if you let it.** `w_phys` is the weight on
 the physics term in the PINN's loss, and it decides whether the recovered
@@ -292,7 +307,9 @@ the notebooks stay small.
 
 | | |
 |---|---|
+| [`docs/HYPOTHESES.md`](docs/HYPOTHESES.md) | the physical questions, the evidence for each, and what would refute it |
 | [`docs/neglected/`](docs/neglected) | **when** a physics prior helps — the controlled study, on an algebraic law, an ODE and a PDE. Start here |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | what was decided, against what, and why — and what is still open |
 | [`docs/gravity/`](docs/gravity) · [`docs/relativity/`](docs/relativity) · [`docs/quantum/`](docs/quantum) | one folder per physics topic: its simulations, its tracks, its figures and its caveats |
 | [`docs/plans/`](docs/plans) | the audit, the Phase 2 outcome, and the phases waiting at their approval gates |
 | [`docs/TOOLING.md`](docs/TOOLING.md) | which package does what, and **exactly how a formula comes out of symbolic regression** |

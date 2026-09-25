@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`docs/HYPOTHESES.md`** — the six physical questions the project answers,
+  the evidence for each, and what would refute it. H3 (a correction helps
+  when the missing physics is distinguishable from the law) is the open one,
+  with predictions written down before the helium track exists.
+- **`docs/DECISIONS.md`** — the research decisions taken, and the open ones
+  gathered from the phase plans.
+- **Mercury: what the converged residual is, and is not.**
+  `neglected_terms()` and `richardson_truncation()` in
+  `problems/relativity/mercury.py`, and
+  `results/relativity/mercury/neglected_terms.csv`. The step study shows
+  the remaining α − 1 is not numerical. Putting back DE441's own solar
+  oblateness and frame dragging (new sourced constants, `[DE440]`) moves α
+  *away* from 1. The model is missing physics; the leading candidate
+  (barycentric n-body GR terms) is stated as untested.
+
 ## [0.2.0] - 2026-09-25
 
 ### Added
