@@ -65,6 +65,7 @@ def test_three_body_is_measurably_chaotic():
     assert ly["separation"][-1] > 100 * ly["separation"][0]
 
 
+@pytest.mark.sr
 def test_force_law_recovered_from_simulated_orbit():
     """The controlled twin of the real-data tracks: truth is exactly -2."""
     from physprior.problems.gravity import discovery as discover
@@ -194,6 +195,7 @@ def test_split_operator_is_unitary():
     assert 0.0 < wp["transmission"] < 1.0
 
 
+@pytest.mark.sr
 def test_spectrum_laws_recovered():
     from physprior.problems.quantum import discovery as discover
 

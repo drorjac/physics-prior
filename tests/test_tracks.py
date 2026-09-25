@@ -3,6 +3,10 @@
 import numpy as np
 import pytest
 
+# Every test here reads a real dataset from data/raw/, which is not committed:
+# on a cold cache that is a download.
+pytestmark = pytest.mark.network
+
 
 def test_gravity_pn_ablation_reduces_the_bias():
     """0PN must be biased and 2PN must not. This is track G's headline."""
