@@ -321,25 +321,43 @@ def build() -> dict:
     return h
 
 
+# Physical constants are compared digit by digit against their published
+# values: 6 significant figures turns 109678.7774 into "109679" and loses the
+# entire point of track A. Every other column is an error, a ratio or a
+# sigma, and three significant figures is all a reader can use of those.
+_PRECISE_COLUMNS = {"published", "recovered"}
+
+
+def _fmt_precise(v) -> str:
+    if v is None or not np.isfinite(v):
+        return ""
+    a = abs(v)
+    if a == 0:
+        return "0"
+    if a >= 1e6 or a < 1e-4:
+        return f"{v:.6e}"
+    return f"{v:.10g}" if a >= 1e3 else f"{v:.6g}"
+
+
+def _fmt_metric(v) -> str:
+    """Three significant figures; scientific notation only outside 1e-3..1e5."""
+    if v is None or not np.isfinite(v):
+        return ""
+    a = abs(v)
+    if a == 0:
+        return "0"
+    if a < 1e-3 or a >= 1e5:
+        return f"{v:.2e}"
+    return f"{float(f'{v:.3g}'):,.{max(0, 2 - int(np.floor(np.log10(a))))}f}"
+
+
 def _md_table(rows: list[dict]) -> str:
     if not rows:
         return "_(not yet computed)_\n"
     df = pd.DataFrame(rows)
     for c in df.columns:
         if df[c].dtype.kind == "f":
-            # 6 significant figures turns 109678.7774 into "109679" and loses
-            # the entire point of track A. Large magnitudes get more digits.
-            def _fmt(v):
-                if v is None or not np.isfinite(v):
-                    return ""
-                a = abs(v)
-                if a == 0:
-                    return "0"
-                if a >= 1e6 or a < 1e-4:
-                    return f"{v:.6e}"
-                return f"{v:.10g}" if a >= 1e3 else f"{v:.6g}"
-
-            df[c] = df[c].map(_fmt)
+            df[c] = df[c].map(_fmt_precise if c in _PRECISE_COLUMNS else _fmt_metric)
     df = df.fillna("")
     head = "| " + " | ".join(df.columns) + " |"
     sep = "| " + " | ".join("---" for _ in df.columns) + " |"

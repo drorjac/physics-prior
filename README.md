@@ -153,41 +153,41 @@ calibrated on *injected* signals with known answers.
 <!-- RESULTS:START -->
 | track | quantity | published | recovered | sigma | deviation |
 | --- | --- | --- | --- | --- | --- |
-| relativity | chirp mass Mc [0PN (Newtonian)] | 31.174 | 40.075 | 4.05724 | +8.90 Msun (+2.19 sigma) |
+| relativity | chirp mass Mc [0PN (Newtonian)] | 31.174 | 40.075 | 4.06 | +8.90 Msun (+2.19 sigma) |
 | relativity | chirp mass Mc [1PN] | 31.174 |  |  | fit pinned to bound (did not converge) |
-| relativity | chirp mass Mc [1.5PN (+tail)] | 31.174 | 31.9656 | 2.77995 | +0.79 Msun (+0.28 sigma) |
-| relativity | chirp mass Mc [2PN] | 31.174 | 30.7547 | 2.63462 | -0.42 Msun (-0.16 sigma) |
-| quantum | CMB temperature T [K] | 2.72548 | 2.72502 | 7.577835e-06 | -170 ppm (partly by construction - see caveat) |
-| quantum | Rydberg R vs NIST ionisation limit [cm^-1] | 109678.7717 | 109678.7774 | 0.000153377 | +51 ppb |
-| quantum | Rydberg R vs Bohr prediction [cm^-1] | 109677.5834 | 109678.7774 | 0.000153377 | +10.89 ppm = QED + relativistic |
-| gravity | GM_sun from Kepler [m^3/s^2] | 1.327124e+20 | 1.327203e+20 | 3.377371e+15 | +59.3 ppm |
-| relativity | GR coefficient alpha (Mercury) | 1 | 1.00012 | 1.654817e-05 | +1.21e-04 |
+| relativity | chirp mass Mc [1.5PN (+tail)] | 31.174 | 31.9656 | 2.78 | +0.79 Msun (+0.28 sigma) |
+| relativity | chirp mass Mc [2PN] | 31.174 | 30.7547 | 2.63 | -0.42 Msun (-0.16 sigma) |
+| quantum | CMB temperature T [K] | 2.72548 | 2.72502 | 7.58e-06 | -170 ppm (partly by construction - see caveat) |
+| quantum | Rydberg R vs NIST ionisation limit [cm^-1] | 109678.7717 | 109678.7774 | 1.53e-04 | +51 ppb |
+| quantum | Rydberg R vs Bohr prediction [cm^-1] | 109677.5834 | 109678.7774 | 1.53e-04 | +10.89 ppm = QED + relativistic |
+| gravity | GM_sun from Kepler [m^3/s^2] | 1.327124e+20 | 1.327203e+20 | 3.38e+15 | +59.3 ppm |
+| relativity | GR coefficient alpha (Mercury) | 1 | 1.00012 | 1.65e-05 | +1.21e-04 |
 | relativity | perihelion advance [arcsec/century] | 42.98 | 42.9852 |  | +0.005 |
 
 Extrapolation — error outside the training range relative to inside:
 
 | track | arm | nrmse_in | nrmse_out | out/in |
 | --- | --- | --- | --- | --- |
-| gravity/kepler | oracle | 1.537401e-08 | 7.615129e-05 | 4953.250058 |
-| gravity/kepler | physics | 1.144904e-08 | 7.558060e-05 | 6601.477587 |
-| gravity/kepler | pinn | 1.163204e-08 | 6.208668e-05 | 5337.558048 |
-| gravity/kepler | sr | 8.926247e-09 | 7.781677e-05 | 8717.748162 |
-| gravity/kepler | nn | 2.123769e-05 | 1.66047 | 78185.25462 |
-| relativity/gw150914 | oracle | 0.31518 | 0.0858235 | 0.2723 |
-| relativity/gw150914 | physics | 0.267932 | 13.447 | 50.1881 |
-| relativity/gw150914 | pinn | 0.193351 | 0.456796 | 2.36252 |
-| relativity/gw150914 | sr | 0.128819 | 6.36421 | 49.4044 |
-| relativity/gw150914 | nn | 0.0013106 | 0.682004 | 520.376 |
-| quantum/hydrogen | oracle | 6.258366e-05 | 6.794815e-05 | 1.08572 |
-| quantum/hydrogen | physics | 1.711022e-06 | 8.122348e-07 | 0.474707 |
-| quantum/hydrogen | pinn | 1.823908e-06 | 0.0001624 | 89.0396 |
-| quantum/hydrogen | sr | 2.247598e-07 | 5.033930e-07 | 2.23969 |
-| quantum/hydrogen | nn | 0.00757562 | 0.336 | 44.3528 |
-| quantum/cmb | oracle | 0.00100435 | 0.00114864 | 1.14367 |
-| quantum/cmb | physics | 0.000134423 | 0.000572361 | 4.2579 |
-| quantum/cmb | pinn | 0.000133712 | 0.000635673 | 4.75405 |
-| quantum/cmb | sr | 0.000484725 | 16.1954 | 33411.52162 |
-| quantum/cmb | nn | 0.00146101 | 2.08173 | 1424.85661 |
+| gravity/kepler | oracle | 1.54e-08 | 7.62e-05 | 4,950 |
+| gravity/kepler | physics | 1.14e-08 | 7.56e-05 | 6,600 |
+| gravity/kepler | pinn | 1.16e-08 | 6.21e-05 | 5,340 |
+| gravity/kepler | sr | 8.93e-09 | 7.78e-05 | 8,720 |
+| gravity/kepler | nn | 2.12e-05 | 1.66 | 78,200 |
+| relativity/gw150914 | oracle | 0.315 | 0.0858 | 0.272 |
+| relativity/gw150914 | physics | 0.268 | 13.4 | 50.2 |
+| relativity/gw150914 | pinn | 0.193 | 0.457 | 2.36 |
+| relativity/gw150914 | sr | 0.129 | 6.36 | 49.4 |
+| relativity/gw150914 | nn | 0.00131 | 0.682 | 520 |
+| quantum/hydrogen | oracle | 6.26e-05 | 6.79e-05 | 1.09 |
+| quantum/hydrogen | physics | 1.71e-06 | 8.12e-07 | 0.475 |
+| quantum/hydrogen | pinn | 1.82e-06 | 1.62e-04 | 89.0 |
+| quantum/hydrogen | sr | 2.25e-07 | 5.03e-07 | 2.24 |
+| quantum/hydrogen | nn | 0.00758 | 0.336 | 44.4 |
+| quantum/cmb | oracle | 0.00100 | 0.00115 | 1.14 |
+| quantum/cmb | physics | 1.34e-04 | 5.72e-04 | 4.26 |
+| quantum/cmb | pinn | 1.34e-04 | 6.36e-04 | 4.75 |
+| quantum/cmb | sr | 4.85e-04 | 16.2 | 33,400 |
+| quantum/cmb | nn | 0.00146 | 2.08 | 1,420 |
 
 <!-- RESULTS:END -->
 
