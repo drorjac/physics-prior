@@ -51,7 +51,9 @@ jobs:
       - run: python -m pip install --upgrade pip
       # torch CPU wheels only: the GPU builds are ~2 GB and nothing here needs one.
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
-      - run: pip install -e '.[nn]' pytest pytest-cov
+      # [notebooks]: the notebook and tutorial builders import nbformat at module
+      # level, and their structure tests are offline tests like any other.
+      - run: pip install -e '.[nn,notebooks]' pytest pytest-cov
       - name: tests that need neither the network nor Julia
         run: pytest -m "not slow and not network and not sr" --cov --cov-report=term-missing
 
