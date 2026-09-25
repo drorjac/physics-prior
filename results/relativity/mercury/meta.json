@@ -130,6 +130,26 @@
     {
       "J2_fitted": NaN,
       "J2_fitted_sigma": NaN,
+      "alpha_GR": 0.9996482689222027,
+      "alpha_minus_one_sigmas": -19.135812902531836,
+      "alpha_sigma": 1.8380775334125123e-05,
+      "fd_order": 6,
+      "model": "EIH",
+      "step": "180m"
+    },
+    {
+      "J2_fitted": NaN,
+      "J2_fitted_sigma": NaN,
+      "alpha_GR": 1.000001803206114,
+      "alpha_minus_one_sigmas": 0.1276582451441362,
+      "alpha_sigma": 1.4125261646403627e-05,
+      "fd_order": 6,
+      "model": "EIH_minus_J2_and_LT",
+      "step": "180m"
+    },
+    {
+      "J2_fitted": NaN,
+      "J2_fitted_sigma": NaN,
       "alpha_GR": 1.0000985218773217,
       "alpha_minus_one_sigmas": 7.7159931074716495,
       "alpha_sigma": 1.2768528425243326e-05,
@@ -165,6 +185,26 @@
       "alpha_sigma": 1.2918677355948346e-05,
       "fd_order": 6,
       "model": "J2_free",
+      "step": "90m"
+    },
+    {
+      "J2_fitted": NaN,
+      "J2_fitted_sigma": NaN,
+      "alpha_GR": 0.9996263026391237,
+      "alpha_minus_one_sigmas": -26.71665166683227,
+      "alpha_sigma": 1.3987432464834895e-05,
+      "fd_order": 6,
+      "model": "EIH",
+      "step": "90m"
+    },
+    {
+      "J2_fitted": NaN,
+      "J2_fitted_sigma": NaN,
+      "alpha_GR": 0.9999797093219589,
+      "alpha_minus_one_sigmas": -1.8138734977295439,
+      "alpha_sigma": 1.1186379902732915e-05,
+      "fd_order": 6,
+      "model": "EIH_minus_J2_and_LT",
       "step": "90m"
     }
   ],

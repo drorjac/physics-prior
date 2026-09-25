@@ -119,13 +119,15 @@ def _sci(x: float, digits: int) -> str:
     return f"{mant}×10{str(int(exp)).translate(sup)}"
 
 
-def test_mercury_residual_is_not_numerical_and_not_the_suns_shape(readme):
+def test_mercury_residual_is_two_omissions_that_nearly_cancel(readme):
     """README + docs/relativity: what is left of alpha - 1 once it has converged.
 
-    Three physical statements, each re-derived:
+    Four physical statements, each re-derived:
     - the residual is much larger than what the derivative can still move;
     - putting back DE441's own solar J2 and frame dragging moves alpha AWAY
-      from 1 -- if that ever flips, the prose's conclusion is wrong;
+      from 1, and the n-body (EIH) term alone moves it the other way;
+    - both together -- DE441's own model -- give alpha = 1 within 2 sigma
+      at both steps; if that ever fails, the prose's conclusion is wrong;
     - the quoted numbers are the recorded ones.
     """
     meta = _meta("relativity/mercury")
@@ -140,15 +142,33 @@ def test_mercury_residual_is_not_numerical_and_not_the_suns_shape(readme):
     rows = {
         (r["step"], r["model"]): r["alpha_GR"] - 1.0 for r in meta["neglected_terms"]
     }
+    sigmas = {
+        (r["step"], r["model"]): r["alpha_minus_one_sigmas"]
+        for r in meta["neglected_terms"]
+    }
     for step in ("180m", "90m"):
         assert rows[(step, "minus_J2_and_LT")] > rows[(step, "as_shipped")] > 0, (
             f"at {step}, removing the Sun's J2 and frame dragging no longer "
             "moves alpha away from 1 -- rewrite the Mercury paragraph"
         )
+        assert rows[(step, "EIH")] < 0, f"at {step}, EIH alone no longer overshoots"
+        assert abs(sigmas[(step, "EIH_minus_J2_and_LT")]) < 2, (
+            f"at {step}, DE441's own model no longer gives alpha = 1 within 2 sigma"
+        )
     relativity = (get_settings().root / "docs" / "relativity" / "README.md").read_text()
     for text in (" ".join(readme.split()), " ".join(relativity.split())):
         assert f"+{_sci(resid, 1)}" in text
         assert f"+{_sci(rows[('180m', 'minus_J2_and_LT')], 1)}" in text
+        assert _sci(rows[("180m", "EIH")], 1).replace("-", "−") in text
+        full = next(
+            r
+            for r in meta["neglected_terms"]
+            if r["step"] == "180m" and r["model"] == "EIH_minus_J2_and_LT"
+        )
+        assert (
+            f"+{_sci(full['alpha_GR'] - 1.0, 1)} ± {_sci(full['alpha_sigma'], 1)}"
+            in text
+        )
     assert f"by only {_sci(tr['step_change'], 0)}" in " ".join(readme.split())
     assert f"about {_sci(tr['fine_truncation_estimate'], 1)}" in " ".join(
         relativity.split()

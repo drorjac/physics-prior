@@ -14,14 +14,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with predictions written down before the helium track exists.
 - **`docs/DECISIONS.md`** — the research decisions taken, and the open ones
   gathered from the phase plans.
-- **Mercury: what the converged residual is, and is not.**
-  `neglected_terms()` and `richardson_truncation()` in
-  `problems/relativity/mercury.py`, and
-  `results/relativity/mercury/neglected_terms.csv`. The step study shows
-  the remaining α − 1 is not numerical. Putting back DE441's own solar
-  oblateness and frame dragging (new sourced constants, `[DE440]`) moves α
-  *away* from 1. The model is missing physics; the leading candidate
-  (barycentric n-body GR terms) is stated as untested.
+- **Mercury: the converged residual explained.** The remaining α − 1 is
+  not numerical (Richardson). It is two omissions of opposite sign, each
+  about 4×10⁻⁴, which nearly cancel: the Sun's oblateness and frame dragging,
+  and the Sun's barycentric motion in the n-body relativistic (EIH)
+  equations. With DE441's own model, α = 1 within its error.
+  `neglected_terms()`, `_eih_1pn()` and `richardson_truncation()` in
+  `problems/relativity/mercury.py`; `horizons.vectors(..., centre="ssb")`;
+  new sourced constants `[DE440]`; `results/relativity/mercury/
+  neglected_terms.csv`; `tests/test_mercury_model.py` checks EIH against its
+  Schwarzschild limit.
 
 ## [0.2.0] - 2026-09-25
 

@@ -79,28 +79,39 @@ Einstein to one part in 10⁴.
 
 The converged α still sits **+1.2×10⁻⁴** above 1, at 7 formal σ. That is
 0.005″ per century out of 43″. The physical question is what produces it.
+The answer is two pieces of physics our model leaves out, which push α in
+opposite directions and nearly cancel.
 
 - **Not the derivative.** Halving the step with the 6th-order stencil moves
   α by 2×10⁻⁵. A 6th-order error shrinks 64× per halving, so what remains of
   it at the finer step is about 3.5×10⁻⁷, far below the residual.
-- **Not the Sun's shape or spin.** DE441 gives the Sun an oblateness (J2)
-  and includes frame dragging (Lense–Thirring), and our model has neither.
-  Putting back the ephemeris' *own* values moves α further from 1, to
-  **+4.7×10⁻⁴**. Letting the data choose J2 gives about half DE441's value,
-  and α still does not reach 1. So the oblateness was partly *hiding* a
-  larger discrepancy, not causing it.
-- **Leading candidate, untested.** DE441 integrates the full n-body
-  relativistic (EIH) equations in the solar-system barycentric frame. Our GR
-  term is the one-body Schwarzschild term about the Sun. The Sun moves about
-  13 m/s around the barycentre, mostly because of Jupiter, and terms in that
-  velocity enter at about 10⁻³ of the GR term. That is the right size. The
-  test is to write the EIH term with barycentric velocities and see whether
-  α goes to 1.
+- **The Sun is not a point.** DE441 gives the Sun an oblateness (J2) and
+  includes frame dragging (Lense–Thirring); our model has neither. Putting
+  back the ephemeris' own values moves α *away* from 1, to **+4.7×10⁻⁴**.
+  The oblateness was hiding something larger.
+- **The Sun is not at rest.** DE441 integrates the n-body relativistic
+  (Einstein–Infeld–Hoffmann) equations in the solar-system barycentric
+  frame. Our GR term is the one-body Schwarzschild term about the Sun. The
+  Sun moves at about 15 m/s around the barycentre, mostly because of
+  Jupiter, and the relativistic terms feel that motion. Using the EIH terms
+  alone overshoots, to **−3.5×10⁻⁴**.
+- **Both together are DE441's own model**, and α − 1 =
+  **+1.8×10⁻⁶ ± 1.4×10⁻⁵**, inside its error. At the finer step it is −1.8σ,
+  so the two steps agree with GR and with each other to about 2×10⁻⁵.
+
+Two caveats. First, this is a *consistency* result, not a new test of GR:
+DE441 was built assuming general relativity (β = γ = 1), so recovering
+α = 1 from it shows the model is now complete, not that Einstein was right.
+Second, the EIH code is checked against its one exact limit
+(`tests/test_mercury_model.py`): a massless body around a static Sun
+recovers the Schwarzschild term to 10⁻¹².
 
 The rows are in `results/relativity/mercury/neglected_terms.csv`, produced
 by `neglected_terms()` in the track. This is the neglected-terms question of
-[the study](../neglected/) meeting real data: a model can fit to 10⁻¹⁰ and
-still be missing physics that its one free coefficient quietly absorbs.
+[the study](../neglected/) meeting real data. A model can fit to 10⁻¹⁰
+while its one free coefficient quietly absorbs two missing effects. Here the
+two had opposite signs, so the coefficient looked *nearly* right, which is
+harder to notice than looking wrong.
 
 Provenance for GWOSC and DE441 is in [`docs/DATA.md`](../DATA.md); the
 post-mortem is in [`docs/METHOD.md`](../METHOD.md).

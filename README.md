@@ -227,11 +227,13 @@ And three times the argument was worth having:
   finite-difference truncation error. With a 6th-order stencil α agrees with
   Einstein to one part in **10⁴**. *The result is not α; it is α once it has
   stopped moving.* What is left, **α − 1 = +1.2×10⁻⁴**, is not numerical:
-  halving the step again moves α by only 2×10⁻⁵. It is not the Sun's shape
-  either. Putting back the solar oblateness and frame dragging that DE441
-  itself uses moves α *away* from 1, to +4.7×10⁻⁴. The model is missing
-  physics at the 10⁻⁴ level of the GR term, and which physics is an open
-  question ([relativity](docs/relativity/)).
+  halving the step again moves α by only 2×10⁻⁵. It is **two omitted pieces
+  of physics that nearly cancel**. Putting back the Sun's oblateness and spin
+  moves α to +4.7×10⁻⁴. Replacing the one-body GR term with the n-body
+  equations DE441 integrates moves it the other way, to −3.5×10⁻⁴. With both,
+  α − 1 = **+1.8×10⁻⁶ ± 1.4×10⁻⁵**. That is a consistency check, not a new
+  test of GR, because DE441 itself assumes GR: it shows the model is now
+  complete ([relativity](docs/relativity/)).
 
 **4 · The network eats the physics if you let it.** `w_phys` is the weight on
 the physics term in the PINN's loss, and it decides whether the recovered

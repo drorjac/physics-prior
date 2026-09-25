@@ -22,14 +22,16 @@ times 1e-9 and alpha comes out 1.13 with a formal error of 0.002 -- a 13%
 "violation of general relativity" at 56 sigma, entirely numerical. The
 convergence study is not an appendix, it is the result.
 
-WHAT IS LEFT, AND WHAT IT IS NOT. Once the derivative has converged, alpha
-still sits about 1e-4 above 1, at 7 formal sigma. `neglected_terms` asks
-which physics the model leaves out. The Sun's oblateness (J2) and its
-frame dragging, both of which DE441 includes, move alpha the WRONG way
-when put back. So the residual is neither numerical nor the Sun's shape.
-The leading remaining candidate is that DE441 integrates the n-body
-relativistic equations in the barycentric frame, while the GR column here
-is the one-body Schwarzschild term about the Sun. That is untested.
+WHAT IS LEFT, AND WHAT IT WAS. Once the derivative has converged, alpha
+still sits about 1e-4 above 1, at 7 formal sigma. `neglected_terms` puts
+back, one at a time, what DE441 has and this model does not:
+  - the Sun's oblateness (J2) and frame dragging -- alpha moves AWAY from 1;
+  - the n-body relativistic (EIH) equations in the barycentric frame, in
+    place of the one-body Schwarzschild term -- alpha overshoots the other
+    way;
+  - both together, i.e. DE441's own model -- alpha = 1 within its error.
+Two omissions of opposite sign, each ~4e-4, had nearly cancelled. A model
+can fit to 1e-10 while its one free coefficient absorbs both.
 
 The companion simulation is `physprior.problems.relativity.spacetime`, which integrates the
 Schwarzschild orbit equation directly and gets the same 43 arcsec/century from
@@ -57,6 +59,7 @@ from physprior.constants import (
 )
 from physprior.data.sources import horizons as eph
 from physprior.io import save_json, save_table
+from physprior.units import require
 
 TRACK = "relativity/mercury"
 
@@ -220,28 +223,106 @@ def _lstsq(y: np.ndarray, cols: list[np.ndarray]) -> tuple[np.ndarray, np.ndarra
     return coef, np.sqrt(np.diag(cov))
 
 
+def _eih_1pn(R: np.ndarray, V: np.ndarray, mu: np.ndarray) -> np.ndarray:
+    """The 1PN part of the Einstein-Infeld-Hoffmann acceleration, beta = gamma = 1.
+
+    R, V: (B, N, 3) barycentric positions and velocities; mu: (B,) GMs.
+    This is the point-mass relativistic part of the equations DE441
+    integrates (Park et al. 2021, eq. 1 with beta = gamma = 1). The Newtonian
+    accelerations inside it are the point-mass ones, which is exact at 1PN.
+    """
+    n_bodies = len(mu)
+    c2 = C_LIGHT**2
+
+    def dot(a, b):
+        return np.sum(a * b, axis=-1)[..., None]
+
+    a_n = np.zeros_like(R)
+    pot = np.zeros((*R.shape[:2], 1))  # sum over k of mu_k / r_ik
+    for i in range(n_bodies):
+        for j in range(n_bodies):
+            if i != j:
+                d = R[j] - R[i]
+                rij = np.linalg.norm(d, axis=1)[:, None]
+                a_n[i] += mu[j] * d / rij**3
+                pot[i] += mu[j] / rij
+    a1 = np.zeros_like(R)
+    for i in range(n_bodies):
+        vi2 = dot(V[i], V[i])
+        for j in range(n_bodies):
+            if i == j:
+                continue
+            rji = R[j] - R[i]
+            rij = np.linalg.norm(rji, axis=1)[:, None]
+            nij = -rji / rij
+            bracket = (
+                -4 * pot[i]
+                - pot[j]
+                + vi2
+                + 2 * dot(V[j], V[j])
+                - 4 * dot(V[i], V[j])
+                - 1.5 * dot(nij, V[j]) ** 2
+                + 0.5 * dot(rji, a_n[j])
+            )
+            a1[i] += mu[j] * rji / rij**3 * bracket / c2
+            a1[i] += (
+                mu[j] / rij**3 * dot(-rji, 4 * V[i] - 3 * V[j]) * (V[i] - V[j]) / c2
+            )
+            a1[i] += 3.5 * mu[j] * a_n[j] / rij / c2
+    return a1
+
+
+def _eih_heliocentric(d: dict, step: str) -> np.ndarray:
+    """Mercury's heliocentric relativistic acceleration from the n-body EIH terms.
+
+    Heliocentric acceleration is barycentric Mercury minus barycentric Sun,
+    so the relativistic part is the difference of their 1PN terms. Every
+    barycentric state is (heliocentric state + the Sun's barycentric state),
+    so the Sun is the only body fetched about the barycentre.
+    """
+    sun = eph.vectors("10", SPAN[0], SPAN[1], step, centre="ssb")
+    require(bool(np.allclose(sun.jd, d["jd"])), "Mercury: barycentre grid mismatch")
+    zero = np.zeros_like(d["r"])
+    r_h, v_h = [zero, d["r"]], [zero, d["v"]]
+    for cmd in PERTURBERS:
+        other = eph.vectors(cmd, SPAN[0], SPAN[1], step)
+        r_h.append(other.r_m)
+        v_h.append(other.v_ms)
+    R = np.array(r_h) + sun.r_m[None]
+    V = np.array(v_h) + sun.v_ms[None]
+    mu = np.array([GM_SUN, GM_MERCURY] + [gm * 1e9 for gm in PERTURBERS.values()])
+    a1 = _eih_1pn(R, V, mu)
+    return a1[1] - a1[0]
+
+
 def neglected_terms(configs=(("180m", 6), ("90m", 6))) -> list[dict]:
     """Does putting back what the model leaves out bring alpha to 1?
 
-    Four models of the same acceleration, per converged derivative:
-    as shipped; minus DE441's solar J2; minus J2 and Lense-Thirring; and J2
-    left free, so the data say how much oblateness they want.
+    Six models of the same acceleration, per converged derivative: as
+    shipped; minus DE441's solar J2; minus J2 and Lense-Thirring; J2 left
+    free, so the data say how much oblateness they want; the barycentric
+    n-body relativistic term in place of the one-body one; and that term with
+    J2 and Lense-Thirring removed -- DE441's own model.
     """
     rows = []
     for step, order in configs:
         d = _assemble(step, order)
         m, r, rn = d["mask"], d["r"], d["rn"]
         a_j2, a_lt = _solar_figure_terms(r, d["v"], rn)
+        a_eih = _eih_heliocentric(d, step)
         base = d["a_obs"] - d["a_pert"]
+        figure = base - J2_SUN * a_j2 - a_lt
         newton = (-r / rn**3)[m].ravel()
-        gr = d["a_gr"][m].ravel()
-        for model, y, extra in (
-            ("as_shipped", base, []),
-            ("minus_J2", base - J2_SUN * a_j2, []),
-            ("minus_J2_and_LT", base - J2_SUN * a_j2 - a_lt, []),
-            ("J2_free", base, [a_j2[m].ravel()]),
+        gr, eih = d["a_gr"][m].ravel(), a_eih[m].ravel()
+        for model, y, rel, extra in (
+            ("as_shipped", base, gr, []),
+            ("minus_J2", base - J2_SUN * a_j2, gr, []),
+            ("minus_J2_and_LT", figure, gr, []),
+            ("J2_free", base, gr, [a_j2[m].ravel()]),
+            ("EIH", base, eih, []),
+            ("EIH_minus_J2_and_LT", figure, eih, []),
         ):
-            coef, err = _lstsq(y[m].ravel(), [newton, gr, *extra])
+            coef, err = _lstsq(y[m].ravel(), [newton, rel, *extra])
             rows.append(
                 {
                     "step": step,

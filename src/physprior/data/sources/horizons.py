@@ -26,6 +26,9 @@ from ..cache import cached_get, provenance
 
 URL = "https://ssd.jpl.nasa.gov/api/horizons.api"
 SUN_CENTRE = "500@10"
+# The solar-system barycentre. Only the Sun's own motion is fetched against
+# it: every other barycentric state is (heliocentric state + the Sun's).
+SSB_CENTRE = "500@0"
 
 # Horizons body ids and GM in km^3/s^2 (DE441 / IAU 2015 nominal).
 BODIES = {
@@ -121,19 +124,25 @@ def _grab(record: str, key: str) -> float:
 class Vectors:
     jd: np.ndarray  # Julian date, TDB
     t_s: np.ndarray  # seconds from the first epoch
-    r_m: np.ndarray  # (N,3) heliocentric position, metres
-    v_ms: np.ndarray  # (N,3) heliocentric velocity, m/s
+    r_m: np.ndarray  # (N,3) position relative to the centre, metres
+    v_ms: np.ndarray  # (N,3) velocity relative to the centre, m/s
     body: str
     provenance: dict
 
 
-def vectors(body: str, start: str, stop: str, step: str = "0.5d") -> Vectors:
+def vectors(
+    body: str, start: str, stop: str, step: str = "0.5d", centre: str = "sun"
+) -> Vectors:
     """`body` is a key of BODIES, or a raw Horizons id.
 
     Raw ids matter: "3" is the Earth-Moon BARYCENTRE and "399" is the Earth
     alone. The perturbation model pairs each body with a system GM, so it must
     ask for the barycentre, not the planet.
+
+    `centre` is "sun" (heliocentric, the default) or "ssb" (the solar-system
+    barycentre, which the relativistic n-body equations are written in).
     """
+    require(centre in ("sun", "ssb"), f"Horizons: unknown centre {centre!r}")
     cmd = BODIES[body][0] if body in BODIES else str(body)
     p = {
         "format": "text",
@@ -141,7 +150,7 @@ def vectors(body: str, start: str, stop: str, step: str = "0.5d") -> Vectors:
         "OBJ_DATA": "NO",
         "MAKE_EPHEM": "YES",
         "EPHEM_TYPE": "VECTORS",
-        "CENTER": SUN_CENTRE,
+        "CENTER": SUN_CENTRE if centre == "sun" else SSB_CENTRE,
         "START_TIME": start,
         "STOP_TIME": stop,
         "STEP_SIZE": step,
@@ -150,7 +159,9 @@ def vectors(body: str, start: str, stop: str, step: str = "0.5d") -> Vectors:
         "OUT_UNITS": "AU-D",
         "CSV_FORMAT": "YES",
     }
-    fn = f"horizons_vec_{body.lower()}_{start}_{stop}_{step}.txt"
+    # The heliocentric name is unchanged, so every existing cache still hits.
+    tag = "" if centre == "sun" else "ssb_"
+    fn = f"horizons_vec_{tag}{body.lower()}_{start}_{stop}_{step}.txt"
     txt = _horizons(p, fn)
     rows = []
     for ln in _block(txt):
@@ -167,8 +178,10 @@ def vectors(body: str, start: str, stop: str, step: str = "0.5d") -> Vectors:
     d = np.diff(jd)
     require(bool(np.ptp(d) < 1e-6 * np.mean(d)), "Horizons: time grid is not even")
     rr = np.linalg.norm(r, axis=1) / AU_M
+    # About the barycentre the Sun wanders within ~2 solar radii (0.01 AU).
+    lo, hi = (0.05, 60.0) if centre == "sun" else (0.0, 60.0)
     require(
-        bool(rr.min() > 0.05 and rr.max() < 60.0),
+        bool(rr.min() > lo and rr.max() < hi),
         f"Horizons: {body} r = {rr.min():.3f}-{rr.max():.3f} AU is not sane",
     )
     return Vectors(
@@ -180,6 +193,7 @@ def vectors(body: str, start: str, stop: str, step: str = "0.5d") -> Vectors:
         provenance=provenance(
             cached_get(URL, fn, params=p),
             URL,
-            f"DE441 vectors {body} {start}..{stop} {step}",
+            f"DE441 vectors {body} {start}..{stop} {step}"
+            + ("" if centre == "sun" else " about the barycentre"),
         ),
     )

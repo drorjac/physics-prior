@@ -67,8 +67,11 @@ whose law is a truncated expansion (Newtonian vs post-Newtonian), and it is
 the PINN's only decisive out-of-range win. On the three tracks where the law
 is complete (Kepler, hydrogen, CMB), the correction costs accuracy out of
 range, as H3 predicts. Mercury is a real-data example of the *degenerate*
-case. Something the model leaves out, at the 10⁻⁴ level of the GR term, is
-absorbed into the GR coefficient α (see [relativity](relativity/)).
+case. The model left out two effects: the Sun's oblateness, and the Sun's
+own motion in the n-body relativistic equations. Both are shaped enough
+like the GR term that the GR coefficient α absorbed them. They have opposite
+signs, so α looked *nearly* right. Putting both back takes α to 1 within its
+error (see [relativity](relativity/)).
 
 **Next test: helium** (`quantum/helium`, planned). Hydrogen's `E = −R/n²` is
 exact for one electron. In helium the second electron screens the nucleus,
@@ -115,8 +118,9 @@ well and still return a confidently wrong physical constant?
 - **GW150914.** The Newtonian law fits the chirp about as well as the
   post-Newtonian one, but it returns a biased chirp mass.
 - **Mercury.** A 4th-order derivative produced a many-sigma "violation of
-  general relativity" that was entirely numerical. After that is fixed, a
-  smaller residual remains that the fit also absorbs (H3).
+  general relativity" that was entirely numerical. After that was fixed, the
+  fit was still excellent, while its coefficient silently absorbed two
+  omitted physical effects (H3).
 
 **Refuted if** goodness of fit were found to separate the right law from the
 wrong one on these tracks.
