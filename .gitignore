@@ -26,3 +26,5 @@ data/raw/
 
 # Run logs
 *.log
+
+# Private research-gap notes for the agent; not part of the published docs.
