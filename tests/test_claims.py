@@ -112,6 +112,49 @@ def test_converged_gr_agrees_with_einstein(readme):
     assert "10⁴" in readme or "10^4" in readme
 
 
+def _sci(x: float, digits: int) -> str:
+    """1.2e-04 -> '1.2×10⁻⁴', the way the prose prints it."""
+    mant, exp = f"{x:.{digits}e}".split("e")
+    sup = str.maketrans("-0123456789", "⁻⁰¹²³⁴⁵⁶⁷⁸⁹")
+    return f"{mant}×10{str(int(exp)).translate(sup)}"
+
+
+def test_mercury_residual_is_not_numerical_and_not_the_suns_shape(readme):
+    """README + docs/relativity: what is left of alpha - 1 once it has converged.
+
+    Three physical statements, each re-derived:
+    - the residual is much larger than what the derivative can still move;
+    - putting back DE441's own solar J2 and frame dragging moves alpha AWAY
+      from 1 -- if that ever flips, the prose's conclusion is wrong;
+    - the quoted numbers are the recorded ones.
+    """
+    meta = _meta("relativity/mercury")
+    if "neglected_terms" not in meta:
+        pytest.skip("relativity/mercury predates neglected_terms -- rerun it")
+    tr = meta["truncation"]
+    resid = meta["gr"]["alpha_GR"] - 1.0
+    assert abs(tr["fine_truncation_estimate"]) < 0.01 * abs(resid), (
+        "the derivative's remaining error is no longer negligible against the "
+        "residual: the 'not numerical' conclusion does not hold"
+    )
+    rows = {
+        (r["step"], r["model"]): r["alpha_GR"] - 1.0 for r in meta["neglected_terms"]
+    }
+    for step in ("180m", "90m"):
+        assert rows[(step, "minus_J2_and_LT")] > rows[(step, "as_shipped")] > 0, (
+            f"at {step}, removing the Sun's J2 and frame dragging no longer "
+            "moves alpha away from 1 -- rewrite the Mercury paragraph"
+        )
+    relativity = (get_settings().root / "docs" / "relativity" / "README.md").read_text()
+    for text in (" ".join(readme.split()), " ".join(relativity.split())):
+        assert f"+{_sci(resid, 1)}" in text
+        assert f"+{_sci(rows[('180m', 'minus_J2_and_LT')], 1)}" in text
+    assert f"by only {_sci(tr['step_change'], 0)}" in " ".join(readme.split())
+    assert f"about {_sci(tr['fine_truncation_estimate'], 1)}" in " ".join(
+        relativity.split()
+    )
+
+
 def test_physics_weight_table(readme):
     """README: the w_phys table's 'error at w=0' column."""
     import pandas as pd

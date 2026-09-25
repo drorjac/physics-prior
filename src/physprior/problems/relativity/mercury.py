@@ -22,6 +22,15 @@ times 1e-9 and alpha comes out 1.13 with a formal error of 0.002 -- a 13%
 "violation of general relativity" at 56 sigma, entirely numerical. The
 convergence study is not an appendix, it is the result.
 
+WHAT IS LEFT, AND WHAT IT IS NOT. Once the derivative has converged, alpha
+still sits about 1e-4 above 1, at 7 formal sigma. `neglected_terms` asks
+which physics the model leaves out. The Sun's oblateness (J2) and its
+frame dragging, both of which DE441 includes, move alpha the WRONG way
+when put back. So the residual is neither numerical nor the Sun's shape.
+The leading remaining candidate is that DE441 integrates the n-body
+relativistic equations in the barycentric frame, while the GR column here
+is the one-body Schwarzschild term about the Sun. That is untested.
+
 The companion simulation is `physprior.problems.relativity.spacetime`, which integrates the
 Schwarzschild orbit equation directly and gets the same 43 arcsec/century from
 the other direction.
@@ -37,7 +46,14 @@ from physprior.constants import (
     C_LIGHT,
     DAY_S,
     GM_SUN,
+    J2_SUN,
     MERCURY_GR_PRECESSION_ARCSEC_CY,
+    OBLIQUITY_J2000_DEG,
+    R_SUN_DE440_M,
+    SUN_C_OVER_MR2,
+    SUN_POLE_DEC_DEG,
+    SUN_POLE_RA_DEG,
+    SUN_ROTATION_DEG_PER_DAY,
 )
 from physprior.data.sources import horizons as eph
 from physprior.io import save_json, save_table
@@ -105,6 +121,7 @@ def _assemble(step: str = FD_STEP, order: int = FD_ORDER, span=SPAN):
         a_pert=a_pert,
         a_gr=a_gr,
         r=r,
+        v=v,
         rn=rn,
         mask=m,
         jd=me.jd,
@@ -163,6 +180,102 @@ def gr_regression(step: str = FD_STEP, order: int = FD_ORDER, span=SPAN) -> dict
     }
 
 
+def _sun_pole_ecliptic() -> np.ndarray:
+    """The Sun's spin axis in the ecliptic J2000 frame the vectors come in."""
+    ra, dec, eps = np.radians([SUN_POLE_RA_DEG, SUN_POLE_DEC_DEG, OBLIQUITY_J2000_DEG])
+    x, y, z = np.cos(dec) * np.cos(ra), np.cos(dec) * np.sin(ra), np.sin(dec)
+    return np.array(
+        [x, np.cos(eps) * y + np.sin(eps) * z, -np.sin(eps) * y + np.cos(eps) * z]
+    )
+
+
+def _solar_figure_terms(r: np.ndarray, v: np.ndarray, rn: np.ndarray):
+    """Accelerations from the Sun's oblateness (J2) and its spin (Lense-Thirring).
+
+    Both are in DE441 and neither is in `gr_regression`. Values are the
+    ephemeris' own (`constants.py`, [DE440]); nothing here is fitted.
+    """
+    k = _sun_pole_ecliptic()
+    z = (r @ k)[:, None]
+    a_j2_per_unit = (1.5 * GM_SUN * R_SUN_DE440_M**2 / rn**5) * (
+        (5 * z**2 / rn**2 - 1) * r - 2 * z * k
+    )
+    # G * S_sun, with S_sun = C M R^2 omega -- so G M enters, never G alone.
+    omega = np.radians(SUN_ROTATION_DEG_PER_DAY) / DAY_S
+    gs = SUN_C_OVER_MR2 * GM_SUN * R_SUN_DE440_M**2 * omega * k
+    a_lt = (2 / (C_LIGHT**2 * rn**3)) * (
+        3 * (r @ gs)[:, None] * np.cross(r, v) / rn**2 + np.cross(v, gs)
+    )
+    return a_j2_per_unit, a_lt
+
+
+def _lstsq(y: np.ndarray, cols: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    A = np.stack(cols, axis=1)
+    cs = np.linalg.norm(A, axis=0)
+    coef, *_ = np.linalg.lstsq(A / cs, y, rcond=None)
+    coef = coef / cs
+    res = y - A @ coef
+    s2 = res @ res / (len(y) - A.shape[1])
+    cov = s2 * np.linalg.inv((A / cs).T @ (A / cs)) / np.outer(cs, cs)
+    return coef, np.sqrt(np.diag(cov))
+
+
+def neglected_terms(configs=(("180m", 6), ("90m", 6))) -> list[dict]:
+    """Does putting back what the model leaves out bring alpha to 1?
+
+    Four models of the same acceleration, per converged derivative:
+    as shipped; minus DE441's solar J2; minus J2 and Lense-Thirring; and J2
+    left free, so the data say how much oblateness they want.
+    """
+    rows = []
+    for step, order in configs:
+        d = _assemble(step, order)
+        m, r, rn = d["mask"], d["r"], d["rn"]
+        a_j2, a_lt = _solar_figure_terms(r, d["v"], rn)
+        base = d["a_obs"] - d["a_pert"]
+        newton = (-r / rn**3)[m].ravel()
+        gr = d["a_gr"][m].ravel()
+        for model, y, extra in (
+            ("as_shipped", base, []),
+            ("minus_J2", base - J2_SUN * a_j2, []),
+            ("minus_J2_and_LT", base - J2_SUN * a_j2 - a_lt, []),
+            ("J2_free", base, [a_j2[m].ravel()]),
+        ):
+            coef, err = _lstsq(y[m].ravel(), [newton, gr, *extra])
+            rows.append(
+                {
+                    "step": step,
+                    "fd_order": order,
+                    "model": model,
+                    "alpha_GR": float(coef[1]),
+                    "alpha_sigma": float(err[1]),
+                    "alpha_minus_one_sigmas": float((coef[1] - 1.0) / err[1]),
+                    "J2_fitted": float(coef[2]) if extra else float("nan"),
+                    "J2_fitted_sigma": float(err[2]) if extra else float("nan"),
+                }
+            )
+    return rows
+
+
+def richardson_truncation(rows: list[dict], order: int = FD_ORDER) -> dict:
+    """How much of alpha is still the derivative, from two steps a factor 2 apart.
+
+    If the stencil's error goes as h^p, halving h divides it by 2^p, so the
+    finer value's remaining error is (difference) / (2^p - 1).
+    """
+    at = {r["step"]: r["alpha_GR"] for r in rows if r.get("fd_order") == order}
+    coarse, fine = at["180m"], at["90m"]
+    diff = coarse - fine
+    return {
+        "order": order,
+        "alpha_coarse": coarse,
+        "alpha_fine": fine,
+        "step_change": diff,
+        "fine_truncation_estimate": diff / (2**order - 1),
+        "alpha_extrapolated": fine - diff / (2**order - 1),
+    }
+
+
 def derivative_convergence(
     configs=(
         ("360m", 4),
@@ -209,5 +322,8 @@ def run(quick: bool = False) -> dict:
     meta: dict[str, Any] = {"gr": gr_regression()}
     meta["gr_convergence"] = derivative_convergence()
     save_table(pd.DataFrame(meta["gr_convergence"]), TRACK, "gr_convergence")
+    meta["truncation"] = richardson_truncation(meta["gr_convergence"])
+    meta["neglected_terms"] = neglected_terms()
+    save_table(pd.DataFrame(meta["neglected_terms"]), TRACK, "neglected_terms")
     save_json(meta, TRACK, "meta")
     return meta

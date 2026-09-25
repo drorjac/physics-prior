@@ -75,5 +75,32 @@ Einstein to one part in 10⁴.
 
 > **The result is not α; it is α once it has stopped moving.**
 
+### What is left once it has stopped moving
+
+The converged α still sits **+1.2×10⁻⁴** above 1, at 7 formal σ. That is
+0.005″ per century out of 43″. The physical question is what produces it.
+
+- **Not the derivative.** Halving the step with the 6th-order stencil moves
+  α by 2×10⁻⁵. A 6th-order error shrinks 64× per halving, so what remains of
+  it at the finer step is about 3.5×10⁻⁷, far below the residual.
+- **Not the Sun's shape or spin.** DE441 gives the Sun an oblateness (J2)
+  and includes frame dragging (Lense–Thirring), and our model has neither.
+  Putting back the ephemeris' *own* values moves α further from 1, to
+  **+4.7×10⁻⁴**. Letting the data choose J2 gives about half DE441's value,
+  and α still does not reach 1. So the oblateness was partly *hiding* a
+  larger discrepancy, not causing it.
+- **Leading candidate, untested.** DE441 integrates the full n-body
+  relativistic (EIH) equations in the solar-system barycentric frame. Our GR
+  term is the one-body Schwarzschild term about the Sun. The Sun moves about
+  13 m/s around the barycentre, mostly because of Jupiter, and terms in that
+  velocity enter at about 10⁻³ of the GR term. That is the right size. The
+  test is to write the EIH term with barycentric velocities and see whether
+  α goes to 1.
+
+The rows are in `results/relativity/mercury/neglected_terms.csv`, produced
+by `neglected_terms()` in the track. This is the neglected-terms question of
+[the study](../neglected/) meeting real data: a model can fit to 10⁻¹⁰ and
+still be missing physics that its one free coefficient quietly absorbs.
+
 Provenance for GWOSC and DE441 is in [`docs/DATA.md`](../DATA.md); the
 post-mortem is in [`docs/METHOD.md`](../METHOD.md).

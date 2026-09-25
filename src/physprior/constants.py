@@ -12,6 +12,10 @@ IAU2015    IAU 2015 Resolution B3 nominal solar conversion constants.
 FIXSEN09   Fixsen, ApJ 707, 916 (2009): T_CMB from COBE/FIRAS + WMAP.
 GWTC1      Abbott et al., Phys. Rev. X 9, 031040 (2019), GWTC-1 catalogue,
            values as served by the GWOSC event API for GW150914-v3.
+DE440      Park et al., AJ 161, 105 (2021), the DE440/DE441 ephemeris paper
+           (Sun's radius, moment of inertia, rotation and pole, sec. 3.4),
+           and the J2SUN constant in the DE440 header file,
+           ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de440/header.440.
 """
 
 from __future__ import annotations
@@ -61,6 +65,17 @@ JULIAN_CENTURY_D = 36525.0  # days
 
 # Einstein's 1915 result for Mercury, the number the track is aimed at.
 MERCURY_GR_PRECESSION_ARCSEC_CY = 42.98  # " / century   [Einstein 1915; Will 2014]
+
+# What DE441 puts into the Sun beyond a point mass. Used only to ask whether
+# the terms the Mercury model leaves out explain its residual -- never fitted.
+J2_SUN = 2.1961391516529825e-7  # dimensionless             [DE440 header]
+R_SUN_DE440_M = 6.96e8  # m, equatorial radius      [DE440]
+SUN_C_OVER_MR2 = 0.068842  # polar moment of inertia   [DE440]
+SUN_ROTATION_DEG_PER_DAY = 14.1844  # deg / day                  [DE440]
+SUN_POLE_RA_DEG = 286.13  # ICRF, J2000              [DE440; Archinal 2018]
+SUN_POLE_DEC_DEG = 63.87  # ICRF, J2000              [DE440; Archinal 2018]
+# 84381.448 arcsec: the obliquity Horizons uses for its "ECLIPTIC" frame.
+OBLIQUITY_J2000_DEG = 23.4392911  # ecliptic vs ICRF equator  [IAU 1976]
 
 # --------------------------------------------------------------------------
 # Gravitational waves (track G -- LIGO GW150914)
