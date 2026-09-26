@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`docs/RELATED_WORK.md`** and a checked **`docs/references.bib`**: PINNs,
+  failure modes, loss balancing, APHYNITY and model discrepancy, PySR and AI
+  Feynman, the benchmark suites, and weak baselines — each with what this
+  project does that the cited work does not.
 - **Seed spread in the extrapolation tables.** `physprior report` now gives
   `n_seeds` and the per-seed `out/in` range beside each median. A new table,
   *Against the fitted law, seed by seed*, pairs each arm with `physics` on

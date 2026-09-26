@@ -23,6 +23,7 @@ in advance, and it is the one page to read if you only read one.
 |---|---|
 | [HYPOTHESES.md](HYPOTHESES.md) | the physical questions the project answers, and what would refute each |
 | [DECISIONS.md](DECISIONS.md) | the research decisions taken, and the ones still open |
+| [RELATED_WORK.md](RELATED_WORK.md) | the prior work, and what this project adds to it |
 | [METHOD.md](METHOD.md) | the design decisions, and the ones made *after* something went wrong |
 | [DATA.md](DATA.md) | provenance, units, and the caveats stated up front |
 | [TOOLING.md](TOOLING.md) | which package does what, and exactly how a formula comes out of symbolic regression |

@@ -312,6 +312,7 @@ the notebooks stay small.
 | [`docs/HYPOTHESES.md`](docs/HYPOTHESES.md) | the physical questions, the evidence for each, and what would refute it |
 | [`docs/neglected/`](docs/neglected) | **when** a physics prior helps — the controlled study, on an algebraic law, an ODE and a PDE. Start here |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | what was decided, against what, and why — and what is still open |
+| [`docs/RELATED_WORK.md`](docs/RELATED_WORK.md) | the prior work — PINNs, APHYNITY, PySR, the benchmark suites — and what this project adds ([`references.bib`](docs/references.bib)) |
 | [`docs/gravity/`](docs/gravity) · [`docs/relativity/`](docs/relativity) · [`docs/quantum/`](docs/quantum) | one folder per physics topic: its simulations, its tracks, its figures and its caveats |
 | [`docs/plans/`](docs/plans) | the audit, the Phase 2 outcome, and the phases waiting at their approval gates |
 | [`docs/TOOLING.md`](docs/TOOLING.md) | which package does what, and **exactly how a formula comes out of symbolic regression** |
@@ -354,6 +355,14 @@ ApJ 473, 576) · NIST ASD v5.12 (Kramida et al.) · JPL Horizons / DE441.
 Each loader records the URL, byte count and SHA-256 of the file it read, in
 that problem's `meta.json`. Raw downloads are ~20 MB and are **not**
 committed — `physprior data fetch` re-obtains them.
+
+## Sibling project
+
+[`qphys`](https://github.com/drorjac/qphys) asks a different question under
+the same rules: whether quantum formalism is an efficient modelling language
+for a real time series, and whether a law can be read out of a network
+trained on slow motion. Both touch Mercury; they are kept separate on purpose
+([`docs/DECISIONS.md`](docs/DECISIONS.md)).
 
 ## Citation
 
