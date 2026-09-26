@@ -287,7 +287,7 @@ discarded it every time. A five-member ensemble does help, and stacked with
 balancing helps most, but only by a further 1.3–1.4× for five times the
 compute on all 210 PINN fits of a reporting run.
 
-`relativity/gw150914` does not move, and that is the honest result rather
+`relativity/gw150914` does not move, and this is expected rather
 than a gap: its arm is the ODE-residual PINN, a different model, and it
 reports the option as **not engaged** instead of returning a baseline number
 under the option's name.

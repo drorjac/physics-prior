@@ -35,7 +35,7 @@ T7  controlled   law INCOMPLETE by a known amount -- the dial the others lack
 By T5 the "prior" is the entire problem statement, and the failure modes that
 were cosmetic in T3 are fatal.
 
-## What the course is honest about
+## Limitations
 
 A PINN is **the wrong tool** for T1's harmonic oscillator (an integrator is
 microseconds and exact) and for T5's square well (a tridiagonal

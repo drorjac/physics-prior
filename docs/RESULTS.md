@@ -82,6 +82,6 @@ The oracle is the published law with published constants. An arm that beats it I
 | track | oracle nRMSE in | oracle nRMSE out | beat oracle in-range | beat oracle out-of-range | explanation |
 | --- | --- | --- | --- | --- | --- |
 | gravity/kepler | 1.54e-08 | 7.62e-05 | physics, pinn, sr | physics, pinn | the oracle carries the IAU nominal GM_sun; a fitted GM absorbs the planet masses and the osculating-vs-mean semi-major axis, both omitted from P = 2 pi sqrt(a^3/GM). |
-| relativity/gw150914 | 0.315 | 0.0858 | nn, physics, pinn, sr | none | in-range: 4-5 training points against 2+ free parameters is an overfit, as expected. Out-of-range nothing beats it, which is the honest test. |
+| relativity/gw150914 | 0.315 | 0.0858 | nn, physics, pinn, sr | none | in-range: 4-5 training points against 2+ free parameters is an overfit, as expected. Out-of-range nothing beats it, which is the real test. |
 | quantum/hydrogen | 6.26e-05 | 6.79e-05 | physics, pinn, sr | physics, sr | the oracle carries Bohr's R_H, which the data says is 10.8 ppm low. Beating it is the QED result, not overfitting. |
 | quantum/cmb | 0.00100 | 0.00115 | physics, pinn, sr | physics, pinn | the oracle carries T = 2.72548 K (Fixsen 2009) while the distributed FIRAS monopole is built on a 2.725 K blackbody, so a fitted T is closer to THIS dataset by construction. |

@@ -204,7 +204,7 @@ P.fig_pinn_anatomy(); plt.show()
             md("""
 ## The answer, in one figure
 
-The honest scorecard across the four real-data tracks: **most protocol
+The scorecard across the four real-data tracks: **most protocol
 questions do not separate the arms at all**, and the `pinn` arm wins one cell
 in twelve.
 """),

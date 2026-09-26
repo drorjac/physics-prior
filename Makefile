@@ -9,7 +9,7 @@ export OMP_NUM_THREADS ?= 2
 
 .PHONY: help install dev all run quick gravity relativity quantum report figures \
         notebooks test test-all test-offline lint format typecheck hooks kernel \
-        palette build clean clean-figs
+        palette build clean clean-figs reproduce reproduce-quick check-report
 
 help:  ## show this help
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) \
@@ -45,6 +45,30 @@ figures:  ## write figures/ from results/
 
 notebooks:  ## build and execute the notebooks
 	physprior notebooks --execute
+
+# The reproduction contract. `reproduce` re-runs the pipeline into a scratch
+# directory -- nothing committed is touched -- and then compares every number
+# with the committed results/. Wall-clock seconds and environment.json are
+# expected to move; anything else that moves is a finding.
+REPRO ?= build/reproduce
+
+reproduce:  ## re-run everything into build/reproduce and compare with results/ (hours)
+	rm -rf $(REPRO)
+	PHYSPRIOR_RESULTS_DIR=$(REPRO)/results PHYSPRIOR_FIGURES_DIR=$(REPRO)/figures \
+	  physprior run all
+	PHYSPRIOR_RESULTS_DIR=$(REPRO)/results PHYSPRIOR_FIGURES_DIR=$(REPRO)/figures \
+	  physprior neglected
+	physprior verify $(REPRO)/results
+	physprior report --check
+
+reproduce-quick:  ## the same pipeline with short sweeps: exercises the plumbing, will not match
+	rm -rf $(REPRO)-quick
+	PHYSPRIOR_RESULTS_DIR=$(REPRO)-quick/results PHYSPRIOR_FIGURES_DIR=$(REPRO)-quick/figures \
+	  physprior run all --quick
+	-physprior verify $(REPRO)-quick/results
+
+check-report:  ## the generated README/RESULTS tables match results/ (seconds)
+	physprior report --check
 
 test:  ## fast tests: no network, no Julia
 	$(PYTHON) -m pytest -m "not slow and not network and not sr"

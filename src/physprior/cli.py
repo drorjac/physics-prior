@@ -1,7 +1,8 @@
 """Command-line interface.
 
     physprior run [gravity|relativity|quantum|all] [--quick]
-    physprior report
+    physprior report [--check]
+    physprior verify CANDIDATE [--reference DIR]
     physprior figures
     physprior notebooks [--execute] [NAME]
     physprior data list
@@ -59,7 +60,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--quick", action="store_true", help="short sweeps, for a smoke test"
     )
 
-    sub.add_parser("report", help="results/ -> headline.json, docs, README")
+    rep = sub.add_parser("report", help="results/ -> headline.json, docs, README")
+    rep.add_argument(
+        "--check",
+        action="store_true",
+        help="write nothing; exit 1 if a generated file is out of date",
+    )
+
+    ver = sub.add_parser(
+        "verify",
+        help="compare a regenerated results directory with the committed one",
+    )
+    ver.add_argument("candidate", help="the regenerated results directory")
+    ver.add_argument(
+        "--reference",
+        default=None,
+        help="the directory to compare against (default: the resolved results dir)",
+    )
+    ver.add_argument("--rtol", type=float, default=None, help="relative tolerance")
+    ver.add_argument("--atol", type=float, default=None, help="absolute tolerance")
     sub.add_parser("figures", help="write figures/ from results/")
 
     nb = sub.add_parser("notebooks", help="build (and optionally run) notebooks")
@@ -149,6 +168,54 @@ def _tune(track: str | None, quick: bool, what: str) -> int:
     return 0
 
 
+def _report(check: bool) -> int:
+    from physprior.config import short_path
+    from physprior.reporting import report
+
+    if not check:
+        report.build()
+        return 0
+    stale = report.check()
+    for path in stale:
+        log.error("out of date: %s -- run `physprior report`", short_path(path))
+    if not stale:
+        log.info("the generated tables match results/")
+    return 1 if stale else 0
+
+
+def _verify(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from physprior.reporting import verify
+
+    reference = Path(args.reference) if args.reference else get_settings().results_dir
+    candidate = Path(args.candidate)
+    for d in (reference, candidate):
+        if not d.is_dir():
+            log.error("not a directory: %s", d)
+            return 2
+    results = verify.compare_dirs(
+        reference,
+        candidate,
+        rtol=verify.RTOL if args.rtol is None else args.rtol,
+        atol=verify.ATOL if args.atol is None else args.atol,
+    )
+    for r in results:
+        if r.status != "identical":
+            print(f"  {r.status:16s} {r.path}  {r.detail}".rstrip())
+    print(verify.summary(results))
+    return 1 if any(r.failed for r in results) else 0
+
+
+def _record_environment() -> None:
+    import json
+
+    from physprior.environment import snapshot
+
+    path = get_settings().results_dir / "environment.json"
+    path.write_text(json.dumps(snapshot(), indent=2, sort_keys=True) + "\n")
+
+
 def _run(problem: str, quick: bool) -> int:
     problem = _ALIASES.get(problem, problem)
     names = list(PROBLEMS) if problem == "all" else [problem]
@@ -158,6 +225,7 @@ def _run(problem: str, quick: bool) -> int:
                 "unknown problem %r; choose from %s or 'all'", name, list(PROBLEMS)
             )
             return 2
+    _record_environment()
     for name in names:
         module = __import__(f"physprior.problems.{name}.run", fromlist=["run"])
         started = time.monotonic()
@@ -212,10 +280,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "run":
             return _run(args.problem, args.quick)
         if args.command == "report":
-            from physprior.reporting.report import build as build_report
-
-            build_report()
-            return 0
+            return _report(args.check)
+        if args.command == "verify":
+            return _verify(args)
         if args.command == "figures":
             from physprior.reporting.figures import main as figures_main
 
@@ -238,6 +305,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "neglected":
             from physprior.reporting.neglected_study import main as neglected_main
 
+            _record_environment()
             neglected_main(quick=args.quick, only=args.stage)
             return 0
         if args.command == "info":

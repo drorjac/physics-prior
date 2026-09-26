@@ -1,8 +1,7 @@
 # Phase 5 - EM propagation, atmosphere, and loss discovery
 
-Read CONTRIBUTING.md, docs/METHOD.md and docs/PLAN.md first.
-Every invariant in CONTRIBUTING.md applies. If anything below conflicts with one,
-the invariant wins and you stop and tell me.
+The Phase 5 specification, as written. Every invariant in `CONTRIBUTING.md`
+applies; where anything below conflicts with one, the invariant wins.
 
 ## 0. Precondition
 

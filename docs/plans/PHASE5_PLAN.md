@@ -19,7 +19,7 @@ said "no" to both rows below):
 
 ### 1.1 The three new tracks fit `Problem` — including B3
 
-I expected B3 to hit the limitation recorded in `docs/plans/PLAN.md` §4, where a PDE
+B3 was expected to hit the limitation recorded in `docs/plans/PLAN.md` §4, where a PDE
 track has no `physics` arm and no `sr` arm in the present sense. It does not,
 because the spec measures **probes**, not fields: with `x = (x_probe, t)` and
 `y = E_z`, a 1D Maxwell track is an ordinary `Problem` with a 2-D input, the
@@ -57,9 +57,9 @@ exactly as `physprior report` already demands of the oracle arm.
 
 ### 2.1 No conflict with the invariants — the spec anticipates them
 
-I checked each instruction in `phase5.md` against `CONTRIBUTING.md` and found
-nothing that needs overriding. Three places where the spec is *stricter* than
-the invariants, and I intend to keep its version:
+Each instruction in `phase5.md` was checked against `CONTRIBUTING.md`, and
+nothing needs overriding. Three places where the spec is *stricter* than
+the invariants; its version is kept:
 
 - §2.6 forbids optimising the loss on real data at all, not merely on a
   reporting seed;
@@ -70,7 +70,7 @@ the invariants, and I intend to keep its version:
 ### 2.2 Data availability is the largest risk, and it is not resolvable from here
 
 Both real-data tracks depend on archives whose canonical URL and checksum the
-spec asks me to verify myself:
+spec requires to be verified directly:
 
 | track | archive | risk |
 |---|---|---|
@@ -80,7 +80,7 @@ spec asks me to verify myself:
 `ssd.jpl.nasa.gov` already needed `requests` rather than `curl` on this machine
 because of an intercepting TLS proxy (`docs/DATA.md`). The same may apply to
 these hosts. **Proposal:** the first implementation step for each track is a
-loader that fetches, checksums and unit-asserts *one* file, reported to you
+loader that fetches, checksums and unit-asserts *one* file, reported
 before any modelling, so a bad archive fails in minutes rather than after a
 simulation half is built.
 
@@ -105,10 +105,10 @@ The repo's dependency discipline is strict (heavy things are optional extras,
 and the committed results record the version that produced them). An in-repo
 Mie series is ~40 lines, has no install story, and gets a convergence study on
 its truncation anyway — which the spec already requires. **Recommendation:**
-write it in `numerics/`, no new dependency. Say if you would rather have
+write it in `numerics/`, no new dependency. The alternative is
 `miepython` as a `[mie]` extra.
 
-### 2.5 An ordering conflict you need to resolve
+### 2.5 An ordering conflict to resolve
 
 You approved Phase 3 as `quantum/helium` + `gravity/pulsar_spindown` — the two
 "law is wrong by design" tracks, chosen because the PINN's only decisive win
@@ -117,7 +117,7 @@ tracks plus Part A. Five new tracks is more than the repo's headline can
 absorb at once, and B1 is *also* a "law is an approximation" track, so it
 tests the same mechanism as helium.
 
-Options, in the order I would pick them:
+Options, in order of preference:
 
 1. **B1 replaces `pulsar_spindown` in Phase 3.** Keep `helium` (cleanest
    wrong-prior case, no signal processing), add `em/rain_attenuation` (same
@@ -170,7 +170,7 @@ Two structural notes:
 
 ---
 
-## 5 · What I need from you
+## 5 · Decisions required
 
 1. **§2.5 ordering** — which of the three options.
 2. **§2.4 Mie** — in-repo series (recommended) or a `miepython` extra.

@@ -70,8 +70,8 @@ the remaining truncation error by roughly a factor of 2. The README's claim is
 error bar attached to it is not the honest uncertainty. **Proposed:** report
 the converged α with a systematic term from the step-halving difference
 (`α = 1.00012 ± 0.0000165 (stat) ± 0.000022 (step)`), and add the convergence
-assertion to `test_claims.py`. Flagged rather than fixed: it changes a
-published number and needs your call.
+assertion to `test_claims.py`. Flagged rather than fixed, because it changes a
+published number.
 
 ---
 
@@ -128,8 +128,8 @@ Three patterns, all consistent:
 
 **Implication for the repositioning.** On this evidence, "a PINN architecture
 for physics problems" is a claim the current tracks do not support. What they
-support is sharper and more defensible: *a PINN buys you out-of-distribution
-accuracy exactly when the physics prior is incomplete, and costs you one to
+support is sharper and more defensible: *a PINN buys out-of-distribution
+accuracy exactly when the physics prior is incomplete, and costs one to
 four orders of magnitude when it is not.* That is a finding, and it dictates
 the track roadmap in §4 — the honest way to make the PINN the headline is to
 **add tracks where its mechanism applies**, not to tune it into winning races
@@ -163,7 +163,7 @@ Ranked by whether the mechanism addresses a loss we actually measured:
 | 5 | **Fourier features** | spectral bias — only `gw150914` has structure at multiple scales | small; may *hurt* the three smooth tracks |
 | 6 | **RAR / causal weighting** | only applies to `fit_pinn_ode` (gw150914) and the new PDE tracks | defer to Phase 3 |
 
-I propose implementing 1–3 first and reporting the ablation before touching
+Proposed: implement 1–3 first and reporting the ablation before touching
 4–6, because 1 and 2 target the measured failure directly and 5 plausibly
 makes three of four tracks worse.
 
@@ -203,7 +203,8 @@ finding 4 sharpened.
 ## 4 · Phase 3 — new tracks
 
 The brief asks to start with `cosmology/pantheon` and `pde/burgers`. Given
-§2.1 I recommend **changing that order**, and will not start until you decide.
+§2.1 the recommendation is to **change that order**, and no track starts
+before that is decided.
 
 | track | tests the PINN mechanism? | verdict |
 |---|---|---|
@@ -246,8 +247,8 @@ change × track × metric table the brief asks for, evaluated on reporting seeds
 
 `pytest` needs `-p no:faulthandler` here (sandbox `PermissionError` before
 collection). The `Makefile` targets do not pass it; either export
-`PYTEST_ADDOPTS` or add it to `addopts` in `pyproject.toml` — worth doing, and
-it is a one-line change I have not made without asking, since it affects CI.
+`PYTEST_ADDOPTS` or add it to `addopts` in `pyproject.toml` — a one-line change,
+but one that affects CI. Decided against: see `docs/DECISIONS.md`.
 
 ---
 
@@ -313,6 +314,6 @@ sweep, which is a reported measurement on 11/23/42, is untouched.
    `pantheon` + `burgers` as originally specified?
 4. **Repositioning (§2.1)** — headline the PINN as asked, or headline the
    sharper claim the data supports ("a PINN buys OOD accuracy exactly when the
-   prior is incomplete")? I can write the README either way, but the first
-   needs the new tracks landed before it is true.
+   prior is incomplete")? The first needs the new tracks landed before it is
+   true.
 5. **`-p no:faulthandler` in `pyproject.toml`** (§5.3) — yes/no.

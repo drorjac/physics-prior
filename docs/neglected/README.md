@@ -51,7 +51,7 @@ The three arms are `physics` (the law, constants fitted), `pinn`
 
 `ε` is how big the missing bump is. At `ε = 0` **the law is exact and
 `physics` wins**, as it must: 0.0010 against the PINN's 0.0051. The PINN pays
-5× for a correction it does not need, and that is the honest cost of the
+5× for a correction it does not need, and that is the cost of the
 prior being *more* flexible than the truth.
 
 From `ε = 0.1` the ordering inverts and never comes back: at `ε = 0.8`,
@@ -275,7 +275,7 @@ What is wrong with the field:
 
 **Turning the physics term on makes the field about twice as bad at
 identifying the constant as having no physics term at all.** The residual is
-self-defeating here — it degrades the very field it needs. The honest
+self-defeating here — it degrades the very field it needs. The accurate
 statement is not "the PINN did not converge" but: *on this problem, in this
 configuration, the physics term costs more field accuracy than the physics
 constraint buys.* See [METHOD.md](../METHOD.md).

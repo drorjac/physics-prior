@@ -8,6 +8,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The reproduction contract.**
+  - `physprior verify CANDIDATE` compares a regenerated results directory with
+    the committed one, number by number (relative tolerance 1e-9). It
+    ignores only wall-clock `seconds` and `environment.json`, and exits 1 on
+    any other difference.
+  - `make reproduce` re-runs the pipeline into `build/reproduce/`, touching
+    nothing committed, then verifies.
+  - `physprior report --check` fails if the README or `docs/RESULTS.md`
+    tables no longer match `results/`. The test suite runs it, so CI does too.
+  - `physprior run` and `physprior neglected` write `results/environment.json`:
+    git commit and dirty flag, Python, platform, package versions, torch
+    device, and the `requirements.lock` hash.
 - **`docs/RELATED_WORK.md`** and a checked **`docs/references.bib`**: PINNs,
   failure modes, loss balancing, APHYNITY and model discrepancy, PySR and AI
   Feynman, the benchmark suites, and weak baselines — each with what this
@@ -71,7 +83,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- the project brief's "Current state" claimed two commits at twenty-four, and
+- The project brief's "Current state" section claimed two commits at twenty-four, and
   mentioned neither the arm that does not converge nor the GPU situation.
 - `methods/device.py` previously argued that a float32 second derivative
   "loses about half its digits" and that the GPU was therefore unsafe for a

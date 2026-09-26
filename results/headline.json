@@ -451,7 +451,7 @@
       "oracle nRMSE out": 0.0858234919729638,
       "beat oracle in-range": "nn, physics, pinn, sr",
       "beat oracle out-of-range": "none",
-      "explanation": "in-range: 4-5 training points against 2+ free parameters is an overfit, as expected. Out-of-range nothing beats it, which is the honest test."
+      "explanation": "in-range: 4-5 training points against 2+ free parameters is an overfit, as expected. Out-of-range nothing beats it, which is the real test."
     },
     {
       "track": "quantum/hydrogen",

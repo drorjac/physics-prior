@@ -27,7 +27,7 @@ exists to bound the others. When an arm beats it, that is a claim about the
 correct: the oracle carries Bohr's `R_H`, which the data says is 10.8 ppm low.
 
 **`physics` before `pinn`.** The classical parametric inverse problem is the
-honest baseline for "physics-informed", and most of the time it wins. A PINN
+right baseline for "physics-informed", and most of the time it wins. A PINN
 that cannot beat `curve_fit` on a one-parameter law is not evidence of
 anything; reporting `physics` separately keeps that visible.
 
@@ -349,7 +349,7 @@ arm only from 76 % to 68 %, because it fixes curvature and does nothing about
 the residual wrecking the fit — the data loss goes from 8.4×10⁻⁴ to order 1
 once the physics term is enabled.
 
-The honest statement of the failure is therefore **not** "the PINN did not
+The accurate statement of the failure is therefore **not** "the PINN did not
 converge". It is: *on this problem, in this configuration, the physics term
 costs more field accuracy than the physics constraint buys.* Whether that is
 fixable — by a different residual scaling, by solving for `alpha` in closed

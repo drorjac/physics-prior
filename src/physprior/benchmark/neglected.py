@@ -3,7 +3,7 @@
 Every real-data track in this package has a law that is either **exact**
 (Kepler on a two-body system) or **unidentifiable from the band observed**
 (Planck on FIRAS). Neither is where a physics-informed model earns its keep,
-and the honest scorecard in `docs/plans/PLAN.md` says so: the `pinn` arm wins
+and the scorecard in `docs/plans/PLAN.md` says so: the `pinn` arm wins
 one cell out of twelve.
 
 The case it was built for is the third one, and it was missing: **the law is

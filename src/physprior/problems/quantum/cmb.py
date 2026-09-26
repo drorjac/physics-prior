@@ -9,7 +9,7 @@ LAW      Planck:  B_nu(T) = (2 h nu^3 / c^2) / (exp(h nu / k T) - 1)
 PARAM    T, the CMB temperature. And, holding T at the published value, the
          amplitude gives h -- Planck's constant, from the sky.
 
-HONEST CAVEAT   The distributed monopole spectrum is built as "a 2.725 K
+CAVEAT   The distributed monopole spectrum is built as "a 2.725 K
          blackbody plus the measured residual", so recovering T = 2.725 K is
          partly by construction and is NOT scored as a discovery. What is not
          by construction, and is what this track measures, is: that the SHAPE

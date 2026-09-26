@@ -18,7 +18,7 @@ Two products:
 The track is short on purpose and by necessity. GW150914's matched-filter SNR
 of 24 is accumulated over the whole waveform; the per-cycle SNR is a few, so a
 model-free frequency can only be measured for the last handful of cycles. That
-is the honest data the methods have to compete on -- roughly ten noisy points.
+is the data the methods actually compete on -- roughly ten noisy points.
 """
 
 from __future__ import annotations

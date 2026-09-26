@@ -5,15 +5,15 @@ the cited work does not. BibTeX for every entry is in
 [`references.bib`](references.bib), each checked against its DOI or arXiv
 record.
 
-## What is different here, in one paragraph
+## Scope
 
 Most physics-informed ML papers ask whether a PINN *solves* an equation, on
-simulated data. This project asks what a physics prior is *worth* — and what
-it costs when the prior is wrong — on **real measured data** (LIGO, COBE/FIRAS,
+simulated data. This project asks what a physics prior is worth, and what
+it costs when the prior is wrong, on **real measured data** (LIGO, COBE/FIRAS,
 NIST, JPL) **paired with simulations** where the law is known exactly, so a
-method's own error can be separated from the data's. Its measured quantity is
-not only prediction error but **identifiability**: whether an arm returns a
-physical constant a physicist can argue with. The black box it is compared
+method's own error can be separated from the data's. Besides prediction error
+it measures **identifiability**: whether an arm returns a physical constant
+with a meaningful uncertainty. The black box it is compared
 against is tuned, and negative results are reported at the same size.
 
 ## Physics-informed neural networks

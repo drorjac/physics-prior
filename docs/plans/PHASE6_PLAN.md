@@ -12,8 +12,8 @@ Written at the gate `phase6.md` stop point 1, which requires this document
 | Q1 real-data verified | **yes — done below, and the answer is negative** |
 
 Phase 6 depends on Phase 5 only through Q4, which feeds the Phase 5 Part A
-loss search. Q1, Q2 and Q3 do not. So Phase 6 can run before Phase 5 if you
-would rather have the interference tracks first — that is a real option,
+loss search. Q1, Q2 and Q3 do not. So Phase 6 can run before Phase 5 if the
+interference tracks are wanted first — that is a real option,
 because Q1 needs no new data loader at all.
 
 ---
@@ -21,7 +21,7 @@ because Q1 needs no new data loader at all.
 ## 1 · Q1 real-data verification (required before approval)
 
 The spec says: do not assume a dataset exists; digitising a printed figure
-fails the provenance invariant. I checked all three candidates.
+fails the provenance invariant. All three candidates were checked.
 
 | candidate | what exists | verdict |
 |---|---|---|
@@ -29,8 +29,8 @@ fails the provenance invariant. I checked all three candidates.
 | **Tonomura et al. 1989**, *Demonstration of single-electron buildup*, Am. J. Phys. 57 117 | The result is a 1989 film from Hitachi. No public archive of the frame data is discoverable; the searchable record is the paper and the movie | **fails** — no archive, no checksum, no URL |
 | **Jönsson 1961 / Zeilinger 1988** | As the spec anticipated, published as figures | **fails** |
 
-**Conclusion: Q1 ships simulation-only**, which `phase6.md` explicitly allows
-and which I agree with — the track's value is the Fresnel dial, and that needs
+**Conclusion: Q1 ships simulation-only**, which `phase6.md` explicitly allows.
+The track's value is the Fresnel dial, and that needs
 a controlled truth regardless. `docs/RESULTS.md` will say so in those words.
 
 This also means **Q4 is the only interference track with a real-data path**,
@@ -121,8 +121,8 @@ sweeps); the whole offline test suite is 11 s.
 | ablation grid: {baseline, fourier, causal, RAR} × 3 seeds | 12 fits → **8–20 hours** | above |
 
 Q1 + Q4 + Q3 together are minutes-to-a-few-hours. **Q2 alone exceeds them by
-roughly an order of magnitude**, which by stop point 3 is your decision, not
-mine. My recommendation: land Q1, Q4 and Q3 first, then decide on Q2 with the
+roughly an order of magnitude**, which by stop point 3 needs a separate decision.
+Recommendation: land Q1, Q4 and Q3 first, then decide on Q2 with the
 Fresnel crossover already in hand — it may well answer the spectral-bias
 question more cheaply than the 2D solver would.
 
@@ -132,16 +132,15 @@ question more cheaply than the 2D solver would.
 
 **No invariant conflicts.** As with Phase 5, the spec is stricter than
 `CONTRIBUTING.md` in places (analytic tests computed in code, the FIM rank
-assertion, the missing-orders structural check) and I intend to keep its
-version.
+assertion, the missing-orders structural check); its version is kept.
 
 Three risks worth stating:
 
 1. **The ordering in `phase6.md` §0 vs Q4's dependency on Phase 5.** Q4 needs
    an asymmetric loss family that Phase 5 Part A as specified does not have.
    Either Q1+Q4 come first and Part A is designed with both families from the
-   start, or Part A ships symmetric-only and is revisited. I recommend the
-   former.
+   start, or Part A ships symmetric-only and is revisited. The former is
+   recommended.
 2. **Q2's absorbing boundary sets the floor on every conservation
    diagnostic.** The spec already says to report how much norm leaves the
    domain. That number must be measured *before* the Ehrenfest results are
@@ -168,9 +167,9 @@ Given §3 and §4, and that Phase 5's two real-data tracks are its long pole:
 | 4 | Phase 5 Part A, both loss families | now specified correctly by Q4 |
 | 5 | Phase 5 B1 `em/rain_attenuation` | the long pole: 318 MB archive, wet-antenna and wet/dry calibration |
 | 6 | Phase 5 B2, then B3 | — |
-| 7 | Q2, if you approve the compute | — |
+| 7 | Q2, if the compute is approved | — |
 
-## 7 · What I need
+## 7 · Decisions required
 
 1. **Approve Phase 6** (stop point 1), with Q1 simulation-only as verified.
 2. **Order**: §6 as proposed, or `phase5.md`'s original A → B1 → B2 → B3 then

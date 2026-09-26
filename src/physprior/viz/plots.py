@@ -488,7 +488,7 @@ def fig_phase2_improvement(df, title=None):
     One hue throughout, because every row is the same arm; the row labels
     carry identity, so there is nothing for a second colour to say.
     `relativity/gw150914` shows as a point rather than a dumbbell, which is
-    the honest picture: its arm is the ODE-residual PINN, the option does not
+    correct: its arm is the ODE-residual PINN, the option does not
     apply to it, and it reports itself not engaged rather than moving.
     """
     use_style()

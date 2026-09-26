@@ -838,7 +838,7 @@ lobe into four means crossing a barrier in function space, and networks learn
 low frequencies long before high ones. That is spectral bias, and it is why
 Fourier features exist.
 
-The honest response is not to hide it. `fit_spectrum` measures the overlap,
+The collapse is detected, not hidden: `fit_spectrum` measures the overlap,
 retries from another seed, and returns a still-collapsed level with
 `converged = False`.
 
@@ -872,7 +872,7 @@ one.
 
 This is why every track in this repository is checked against something
 independent — a closed form, a second method, or an injection with a known
-answer. It is also the honest answer to "how do you know your PINN worked?":
+answer. It is also the answer to "how do you know your PINN worked?":
 *you do not, from the inside*.
 
 ## The reality check
@@ -964,7 +964,7 @@ the ones its potential actually has. Differentiating through
 `torch.linalg.eigvalsh` leaves nothing to approximate on the forward side and
 puts every bit of the optimisation into `V`.
 
-**That is the honest scope of a PINN.** It is not a better eigensolver. It is
+**That is the scope of a PINN.** It is not a better eigensolver. It is
 what remains when there is no eigensolver — an unmeshable geometry, a forward
 model you cannot differentiate, a physical law known only as a residual. Both
 methods are kept in this repository so that claim stays a measurement rather
@@ -1523,8 +1523,8 @@ capacity — and the next thing to try is the collocation sampling and a
 curriculum in `t`, not more weight tuning.
 
 So the PDE section above rests entirely on the `physics` arm — whose result
-is a closed-form identity and needs no network at all. That is the honest
-position: the finding does not depend on the thing that failed.
+is a closed-form identity and needs no network at all, so the finding
+does not depend on the thing that failed.
 
 What it would take is not a parameter tweak. It is the Phase 2 machinery —
 gradient-norm loss balancing, measured in [T6](T6_when_pinns_fail.ipynb) to
@@ -1564,7 +1564,7 @@ identifiable from the Wien-dominated band FIRAS observed — arriving here from
 a completely different direction, in a system where the answer is known
 exactly.
 
-And it is the honest reading of T6's scorecard. The `pinn` arm wins one cell
+It also explains T6's scorecard. The `pinn` arm wins one cell
 in twelve on the real tracks **because those tracks are mostly the exact-law
 and the degenerate cases**. Given a track in the third regime, it wins by an
 order of magnitude.

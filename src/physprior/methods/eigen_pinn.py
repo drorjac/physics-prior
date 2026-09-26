@@ -422,7 +422,7 @@ def fit_inverse_potential(
 
     `w_smooth` penalises `V''`, which is Tikhonov regularisation: it does not
     add information, it states a preference for the smoothest potential
-    consistent with the data. That is an honest prior and it must be reported
+    consistent with the data. That is a prior, and it must be reported
     as one. The alternative fixes are more levels or a parametric form for
     `V`, and both are better when available.
     """
@@ -495,8 +495,8 @@ def fit_inverse_potential(
                 )
 
         # Tikhonov on V'': the data cannot see V where no state lives, so
-        # something has to choose, and "smooth" is the honest choice to
-        # declare. Scaled by the spectrum so it means the same thing at any
+        # something has to choose, and "smooth" is the assumption
+        # declared here. Scaled by the spectrum so it means the same thing at any
         # energy scale.
         d2v = (v[2:] - 2 * v[1:-1] + v[:-2]) / dx**2
         smooth = _inner(d2v, d2v, dx) / scale**2
