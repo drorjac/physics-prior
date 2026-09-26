@@ -57,11 +57,15 @@ def algebraic(quick: bool = False) -> None:
     """Rung 1: the law is an algebraic relation."""
     import physprior.benchmark.neglected as N
 
-    epochs = 600 if quick else 3000
-    kw: dict = {"epochs": epochs}
+    # These settings are the ones the committed tables were produced with,
+    # recovered by reproducing them to every printed digit (all three arms,
+    # every seed). They were not recorded when the tables were made, and the
+    # first reconstruction guessed 3000 epochs, w_phys = 1 and eps = 0.2 for
+    # the noise and budget sweeps -- all three wrong.
+    epochs = 600 if quick else 2000
+    kw: dict = {"epochs": epochs, "w_phys": 0.01}
     if quick:
         kw["seeds"] = (11,)
-    # The grids are the committed ones; see results/neglected_*.csv.
     eps_grid = [0.0, 0.2] if quick else [0.0, 0.1, 0.2, 0.4, 0.8]
     noise_grid = [0.0, 0.1] if quick else [0.0, 0.02, 0.05, 0.1, 0.2]
     budget_grid = [10, 160] if quick else [10, 20, 40, 80, 160]
@@ -77,7 +81,7 @@ def algebraic(quick: bool = False) -> None:
         ),
         "01_eps",
     )
-    noise = _write(N.sweep(noise_grid, "noise", eps=0.2, **kw), "noise")
+    noise = _write(N.sweep(noise_grid, "noise", eps=0.3, **kw), "noise")
     _save(
         P.fig_neglected_sweep(
             noise,
@@ -88,7 +92,7 @@ def algebraic(quick: bool = False) -> None:
         "02_noise",
     )
     budget = _write(
-        N.sweep(budget_grid, "n_train", eps=0.2, noise=0.02, **kw), "budget"
+        N.sweep(budget_grid, "n_train", eps=0.3, noise=0.02, **kw), "budget"
     )
     _save(
         P.fig_neglected_sweep(
@@ -119,21 +123,31 @@ def ode(quick: bool = False) -> None:
     """Rung 2: the law is an ordinary differential equation."""
     import physprior.benchmark.neglected as N
 
-    epochs = 600 if quick else 3000
+    epochs = 600 if quick else 2500  # the committed table's; see algebraic()
     seeds = (11,) if quick else N.REPORT_SEEDS
     print("rung 2: ODE")
     rows = []
+    # The grid is in DEGREES, as the table reports it; NeglectedODE takes
+    # RADIANS. Passing the degrees straight through simulated a pendulum
+    # released at 30 rad -- spinning over the top -- and every fit failed.
     amps = [10, 60] if quick else [10, 30, 60, 90, 120]
     for shape in ("damping", "anharmonic"):
         for amp in amps:
+            missing_pct = (
+                100
+                * N.NeglectedODE(
+                    amplitude=np.radians(amp), noise=0.02, shape=shape
+                ).missing_fraction
+            )
             for sd in seeds:
                 for res in N.run_ode(
-                    amplitude=amp, shape=shape, seed=sd, epochs=epochs
+                    amplitude=np.radians(amp), shape=shape, seed=sd, epochs=epochs
                 ):
                     rows.append(
                         {
                             "shape": shape,
                             "amplitude_deg": amp,
+                            "missing_pct": missing_pct,
                             "seed": sd,
                             "arm": res.arm,
                             "nrmse": res.nrmse_in,
@@ -182,7 +196,7 @@ def pde(quick: bool = False) -> None:
     print("rung 3: PDE")
     rows = []
     for shape in ("diffusive", "advective"):
-        for eps in [0.0, 0.3] if quick else [0.0, 0.15, 0.3]:
+        for eps in [0.0, 0.3] if quick else [0.0, 0.15, 0.3, 0.6]:
             for sd in seeds:
                 for res in N.run_pde(eps=eps, shape=shape, seed=sd, epochs=epochs):
                     rows.append(
@@ -259,7 +273,7 @@ def detail(quick: bool = False) -> None:
             "A missing force shaped like the law: absorbed into omega",
         ),
     ):
-        ode_sys = N.NeglectedODE(amplitude=amp, noise=0.02, shape=shape)
+        ode_sys = N.NeglectedODE(amplitude=np.radians(amp), noise=0.02, shape=shape)
         t, theta = ode_sys.sample(60, seed=11)
         predict, _, _, force, hist = N._ode_fit_pinn(
             ode_sys, t, theta, w_phys=1e-3, epochs=epochs, seed=11

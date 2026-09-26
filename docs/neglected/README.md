@@ -77,7 +77,7 @@ converged" are different claims** and only the second one is physics.
 
 ![noise](../../figures/neglected/02_noise.png)
 
-At `ε = 0.2`, against added noise:
+At `ε = 0.3`, against added noise:
 
 | noise | `physics` | `pinn` | who wins |
 |---|---|---|---|
