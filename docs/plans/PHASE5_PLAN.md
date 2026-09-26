@@ -4,13 +4,14 @@ Written at the gate `phase5.md` §0 defines: **Phase 2 is still open**, so this
 document is the whole deliverable and no Phase 5 code is written until it is
 approved (§5.1).
 
-Status of the precondition:
+Status of the precondition (updated 2026-09-26; the table as first written
+said "no" to both rows below):
 
 | requirement | state |
 |---|---|
-| Phase 2 merged | **no** — implemented on `phase2-pinn-ablations`, not merged |
-| PINN default frozen on 3/7/19 | **no** — `physprior tune` is running now; the ablation decides it |
-| Phase 5 numbers read against that frozen config | blocked on the above |
+| Phase 2 merged | **yes** — `phase2-pinn-ablations` is merged into `main` |
+| PINN default frozen on 3/7/19 | **yes** — `FROZEN_PINN = PinnOptions(balance=True)` in `src/physprior/methods/pinn.py`; the ablation is in [`PLAN.md`](PLAN.md) §5A |
+| Phase 5 numbers read against that frozen config | unblocked; Phase 5 itself still awaits approval (§5) |
 
 ---
 
