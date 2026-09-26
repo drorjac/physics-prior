@@ -18,7 +18,7 @@ import re
 import pytest
 
 from physprior.config import get_settings
-from physprior.io import load_json
+from physprior.io import load_json, load_table
 
 
 @pytest.fixture(scope="module")
@@ -205,6 +205,23 @@ def test_extrapolation_gap_is_orders_of_magnitude(headline):
         assert by[tr]["nn"] / by[tr]["physics"] > 100, (
             f"track {tr}: nn/physics out-of-range ratio is only "
             f"{by[tr]['nn'] / by[tr]['physics']:.1f}"
+        )
+
+
+def test_extrapolation_gap_holds_on_every_seed(headline):
+    """The same claim, paired by seed: a median can hide a seed that
+    disagrees, so the gap must exceed 100x on each reporting seed."""
+    tracks = {r["track"] for r in headline["extrapolation_summary"]}
+    for tr in ("quantum/cmb", "quantum/hydrogen", "gravity/kepler"):
+        if tr not in tracks:
+            continue
+        wide = load_table(tr, "extrapolation").pivot_table(
+            index="seed", columns="arm", values="nrmse_out"
+        )
+        ratio = wide["nn"] / wide["physics"]
+        assert (ratio > 100).all(), (
+            f"track {tr}: nn/physics out-of-range ratio per seed is "
+            f"{ratio.round(1).to_dict()}"
         )
 
 

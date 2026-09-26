@@ -149,7 +149,25 @@ def parameter_recovery() -> list[dict]:
     return rows
 
 
+def _ratio(num, den):
+    return num / den if den > 0 and np.isfinite(num) else np.inf
+
+
+def _span(values) -> str:
+    """`lo – hi` over the reporting seeds, in the table's own number format."""
+    v = np.asarray(values, dtype=float)
+    if len(v) < 2:
+        return ""
+    return f"{_fmt_metric(v.min())} – {_fmt_metric(v.max())}"
+
+
 def extrapolation_summary() -> list[dict]:
+    """Median over the reporting seeds, with the per-seed spread beside it.
+
+    A median of three seeds on its own hides whether the seeds agree, and a
+    reader cannot tell a 5,000x gap that holds on every seed from one that
+    holds on two. `out/in range` is the per-seed min and max of the same ratio.
+    """
     rows = []
     for key in TRACKS:
         ex = _try(lambda k=key: load_table(k, "extrapolation"))
@@ -160,13 +178,62 @@ def extrapolation_summary() -> list[dict]:
             if arm not in g.index:
                 continue
             a, b = float(g.loc[arm, "nrmse_in"]), float(g.loc[arm, "nrmse_out"])
+            per_seed = ex[ex["arm"] == arm]
+            ratios = [
+                _ratio(o, i)
+                for i, o in zip(per_seed["nrmse_in"], per_seed["nrmse_out"])
+            ]
             rows.append(
                 {
                     "track": key,
                     "arm": arm,
+                    "n_seeds": int(per_seed["seed"].nunique()),
                     "nrmse_in": a,
                     "nrmse_out": b,
-                    "out/in": (b / a if a > 0 and np.isfinite(b) else np.inf),
+                    "out/in": _ratio(b, a),
+                    "out/in range": _span(ratios),
+                }
+            )
+    return rows
+
+
+def extrapolation_vs_physics() -> list[dict]:
+    """Each arm against `physics` out of range, paired seed by seed.
+
+    `ratio` is arm error / physics error on the same seed and split, so a
+    value above 1 means the arm is worse. The verdict is stated only when
+    every reporting seed falls on the same side of 1; otherwise it is
+    `mixed`. With three seeds a p-value would mean little; sign agreement on
+    every seed is the claim this table can actually support.
+    """
+    rows = []
+    for key in TRACKS:
+        ex = _try(lambda k=key: load_table(k, "extrapolation"))
+        if ex is None:
+            continue
+        wide = ex.pivot_table(index="seed", columns="arm", values="nrmse_out")
+        if "physics" not in wide.columns:
+            continue
+        for arm in ("pinn", "sr", "nn"):
+            if arm not in wide.columns:
+                continue
+            r = (wide[arm] / wide["physics"]).dropna().to_numpy()
+            if len(r) == 0:
+                continue
+            if np.all(r > 1):
+                verdict = "physics better on every seed"
+            elif np.all(r < 1):
+                verdict = f"{arm} better on every seed"
+            else:
+                verdict = "mixed"
+            rows.append(
+                {
+                    "track": key,
+                    "arm": arm,
+                    "n_seeds": len(r),
+                    "ratio (median)": float(np.median(r)),
+                    "ratio range": _span(r),
+                    "verdict": verdict,
                 }
             )
     return rows
@@ -307,6 +374,7 @@ def build() -> dict:
     h = {
         "parameter_recovery": parameter_recovery(),
         "extrapolation_summary": extrapolation_summary(),
+        "extrapolation_vs_physics": extrapolation_vs_physics(),
         "capability_matrix": capability_matrix(),
         "budget_crossover": budget_crossover(),
         "oracle_sanity": oracle_sanity(),
@@ -379,6 +447,11 @@ def _write_results_md(h: dict) -> None:
         "`out/in` is the factor by which the error grows when the arm is "
         "asked to leave the range it was fitted on.\n\n",
         _md_table(h["extrapolation_summary"]),
+        "\n### Against the fitted law, seed by seed\n",
+        "Each arm's out-of-range error divided by `physics`'s on the same "
+        "seed and split; above 1 means the arm is worse. A verdict is given "
+        "only when every reporting seed agrees.\n\n",
+        _md_table(h["extrapolation_vs_physics"]),
         "\n## Data budget: when does the black box catch up?\n",
         _md_table(h["budget_crossover"]),
         "\n## What each arm can do\n",

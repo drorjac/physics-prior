@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Seed spread in the extrapolation tables.** `physprior report` now gives
+  `n_seeds` and the per-seed `out/in` range beside each median. A new table,
+  *Against the fitted law, seed by seed*, pairs each arm with `physics` on
+  the same seed. It states a verdict only when every reporting seed agrees,
+  and marks the result `mixed` otherwise. The PINN-vs-physics out-of-range
+  result is `mixed` on `gravity/kepler` and `quantum/cmb`.
+  `tests/test_claims.py` now requires the >100× black-box gap on every seed,
+  not only in the median.
 - **`docs/HYPOTHESES.md`** — the six physical questions the project answers,
   the evidence for each, and what would refute it. H3 (a correction helps
   when the missing physics is distinguishable from the law) is the open one,

@@ -166,28 +166,28 @@ calibrated on *injected* signals with known answers.
 
 Extrapolation — error outside the training range relative to inside:
 
-| track | arm | nrmse_in | nrmse_out | out/in |
-| --- | --- | --- | --- | --- |
-| gravity/kepler | oracle | 1.54e-08 | 7.62e-05 | 4,950 |
-| gravity/kepler | physics | 1.14e-08 | 7.56e-05 | 6,600 |
-| gravity/kepler | pinn | 1.16e-08 | 6.21e-05 | 5,340 |
-| gravity/kepler | sr | 8.93e-09 | 7.78e-05 | 8,720 |
-| gravity/kepler | nn | 2.12e-05 | 1.66 | 78,200 |
-| relativity/gw150914 | oracle | 0.315 | 0.0858 | 0.272 |
-| relativity/gw150914 | physics | 0.268 | 13.4 | 50.2 |
-| relativity/gw150914 | pinn | 0.193 | 0.457 | 2.36 |
-| relativity/gw150914 | sr | 0.129 | 6.36 | 49.4 |
-| relativity/gw150914 | nn | 0.00131 | 0.682 | 520 |
-| quantum/hydrogen | oracle | 6.26e-05 | 6.79e-05 | 1.09 |
-| quantum/hydrogen | physics | 1.71e-06 | 8.12e-07 | 0.475 |
-| quantum/hydrogen | pinn | 1.82e-06 | 1.62e-04 | 89.0 |
-| quantum/hydrogen | sr | 2.25e-07 | 5.03e-07 | 2.24 |
-| quantum/hydrogen | nn | 0.00758 | 0.336 | 44.4 |
-| quantum/cmb | oracle | 0.00100 | 0.00115 | 1.14 |
-| quantum/cmb | physics | 1.34e-04 | 5.72e-04 | 4.26 |
-| quantum/cmb | pinn | 1.34e-04 | 6.36e-04 | 4.75 |
-| quantum/cmb | sr | 4.85e-04 | 16.2 | 33,400 |
-| quantum/cmb | nn | 0.00146 | 2.08 | 1,420 |
+| track | arm | n_seeds | nrmse_in | nrmse_out | out/in | out/in range |
+| --- | --- | --- | --- | --- | --- | --- |
+| gravity/kepler | oracle | 3 | 1.54e-08 | 7.62e-05 | 4,950 | 4,950 – 4,950 |
+| gravity/kepler | physics | 3 | 1.14e-08 | 7.56e-05 | 6,600 | 6,600 – 6,600 |
+| gravity/kepler | pinn | 3 | 1.16e-08 | 6.21e-05 | 5,340 | 567 – 6,610 |
+| gravity/kepler | sr | 3 | 8.93e-09 | 7.78e-05 | 8,720 | 8,400 – 10,000 |
+| gravity/kepler | nn | 3 | 2.12e-05 | 1.66 | 78,200 | 78,100 – 78,500 |
+| relativity/gw150914 | oracle | 3 | 0.315 | 0.0858 | 0.272 | 0.272 – 0.272 |
+| relativity/gw150914 | physics | 3 | 0.268 | 13.4 | 50.2 | 50.2 – 50.2 |
+| relativity/gw150914 | pinn | 3 | 0.193 | 0.457 | 2.36 | 2.24 – 3.09 |
+| relativity/gw150914 | sr | 3 | 0.129 | 6.36 | 49.4 | 48.1 – 72.8 |
+| relativity/gw150914 | nn | 3 | 0.00131 | 0.682 | 520 | 474 – 521 |
+| quantum/hydrogen | oracle | 3 | 6.26e-05 | 6.79e-05 | 1.09 | 1.09 – 1.09 |
+| quantum/hydrogen | physics | 3 | 1.71e-06 | 8.12e-07 | 0.475 | 0.475 – 0.475 |
+| quantum/hydrogen | pinn | 3 | 1.82e-06 | 1.62e-04 | 89.0 | 27.0 – 233 |
+| quantum/hydrogen | sr | 3 | 2.25e-07 | 5.03e-07 | 2.24 | 2.16 – 5.48 |
+| quantum/hydrogen | nn | 3 | 0.00758 | 0.336 | 44.4 | 42.4 – 56.9 |
+| quantum/cmb | oracle | 3 | 0.00100 | 0.00115 | 1.14 | 1.14 – 1.14 |
+| quantum/cmb | physics | 3 | 1.34e-04 | 5.72e-04 | 4.26 | 4.26 – 4.26 |
+| quantum/cmb | pinn | 3 | 1.34e-04 | 6.36e-04 | 4.75 | 4.27 – 5.72 |
+| quantum/cmb | sr | 3 | 4.85e-04 | 16.2 | 33,400 | 32,500 – 80,300 |
+| quantum/cmb | nn | 3 | 0.00146 | 2.08 | 1,420 | 1,410 – 1,430 |
 
 <!-- RESULTS:END -->
 
