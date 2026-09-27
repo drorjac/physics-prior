@@ -1,0 +1,117 @@
+{
+  "kmax_fit": {
+    "1": 24,
+    "2": 20,
+    "3": 18
+  },
+  "kmax_truth": {
+    "1": 48,
+    "2": 40,
+    "3": 32
+  },
+  "n_grid": {
+    "1": [
+      4,
+      8,
+      16,
+      32,
+      64,
+      128
+    ],
+    "2": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256,
+      512
+    ],
+    "3": [
+      16,
+      32,
+      64,
+      128,
+      256,
+      512,
+      1024,
+      2048
+    ]
+  },
+  "n_sources": 3,
+  "noise": 0.01,
+  "physics_n_max": 1024,
+  "quick": false,
+  "seeds": [
+    11,
+    23,
+    42
+  ],
+  "source_width": 0.07,
+  "targets": [
+    0.1,
+    0.03
+  ],
+  "threads_per_worker": 1,
+  "timing_seconds": {
+    "convergence": 8.982116222381592,
+    "figures": 19.09909200668335,
+    "sweeps": 1243.3370230197906,
+    "total": 1476.9604861736298,
+    "tuning": 203.47967267036438
+  },
+  "track": "reconstruction",
+  "tune_seeds": [
+    3,
+    7,
+    19
+  ],
+  "verdict": {
+    "box": {
+      "best_black_box_by_d": {
+        "1": "gp",
+        "2": "gp",
+        "3": "interp"
+      },
+      "black_box_3d_censored": false,
+      "black_box_ratio_3d_1d": 59.832866458865084,
+      "criterion_1_black_box_grows": true,
+      "criterion_2_physics_tracks_unknowns": true,
+      "criterion_3_gap_widens": true,
+      "determinate": true,
+      "gap_1d": 0.8922707680698502,
+      "gap_3d": 17.491472687017975,
+      "physics_N_star": {
+        "1": 7.7001392862846245,
+        "3": 23.502208751904348
+      },
+      "physics_censored": false,
+      "physics_scaled_prediction_3d": 15.400278572569249,
+      "supported": true
+    },
+    "free": {
+      "best_black_box_by_d": {
+        "1": "gp",
+        "2": "gp",
+        "3": "interp"
+      },
+      "black_box_3d_censored": false,
+      "black_box_ratio_3d_1d": 42.622810013838524,
+      "criterion_1_black_box_grows": true,
+      "criterion_2_physics_tracks_unknowns": true,
+      "criterion_3_gap_widens": true,
+      "determinate": true,
+      "gap_1d": 0.8615598132902657,
+      "gap_3d": 19.297887441744447,
+      "physics_N_star": {
+        "1": 9.052096427027928,
+        "3": 17.225304757096538
+      },
+      "physics_censored": false,
+      "physics_scaled_prediction_3d": 16.811036221623294,
+      "supported": true
+    },
+    "target": 0.1
+  },
+  "workers": 3
+}

@@ -1,0 +1,47 @@
+{
+  "box": {
+    "best_black_box_by_d": {
+      "1": "gp",
+      "2": "gp",
+      "3": "interp"
+    },
+    "black_box_3d_censored": false,
+    "black_box_ratio_3d_1d": 59.832866458865084,
+    "criterion_1_black_box_grows": true,
+    "criterion_2_physics_tracks_unknowns": true,
+    "criterion_3_gap_widens": true,
+    "determinate": true,
+    "gap_1d": 0.8922707680698502,
+    "gap_3d": 17.491472687017975,
+    "physics_N_star": {
+      "1": 7.7001392862846245,
+      "3": 23.502208751904348
+    },
+    "physics_censored": false,
+    "physics_scaled_prediction_3d": 15.400278572569249,
+    "supported": true
+  },
+  "free": {
+    "best_black_box_by_d": {
+      "1": "gp",
+      "2": "gp",
+      "3": "interp"
+    },
+    "black_box_3d_censored": false,
+    "black_box_ratio_3d_1d": 42.622810013838524,
+    "criterion_1_black_box_grows": true,
+    "criterion_2_physics_tracks_unknowns": true,
+    "criterion_3_gap_widens": true,
+    "determinate": true,
+    "gap_1d": 0.8615598132902657,
+    "gap_3d": 19.297887441744447,
+    "physics_N_star": {
+      "1": 9.052096427027928,
+      "3": 17.225304757096538
+    },
+    "physics_censored": false,
+    "physics_scaled_prediction_3d": 16.811036221623294,
+    "supported": true
+  },
+  "target": 0.1
+}
