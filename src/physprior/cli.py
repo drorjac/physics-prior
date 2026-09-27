@@ -12,6 +12,8 @@
     physprior optim [--quick]
     physprior reconstruct [--quick] [--workers N] [--doc-only]
     physprior dynamics [--quick] [--doc-only]
+    physprior budget-weight [TRACK]
+    physprior summary [--execute]
     physprior info
 
 This is the only module that configures logging or prints; everything under it
@@ -188,6 +190,15 @@ def build_parser() -> argparse.ArgumentParser:
     dyn.add_argument(
         "--doc-only", action="store_true", help="redraw figures and page from results/"
     )
+
+    bw = sub.add_parser(
+        "budget-weight",
+        help="H7: the pinn arm's physics weight chosen per training-set size",
+    )
+    bw.add_argument("track", nargs="?", default=None, help="one track (default: all)")
+
+    sm = sub.add_parser("summary", help="build the one-notebook tour of the results")
+    sm.add_argument("--execute", action="store_true", help="execute it after building")
 
     sub.add_parser("info", help="show resolved paths and configuration")
     return parser
@@ -388,6 +399,18 @@ def main(argv: Sequence[str] | None = None) -> int:
 
                 run_dynamics(quick=args.quick)
             dynamics_doc.render_doc()
+            return 0
+        if args.command == "budget-weight":
+            from physprior.benchmark import budget_weight
+
+            budget_weight.run(only=args.track)
+            v = budget_weight.verdicts()
+            print({k: v[k] for k in v if k != "table"})
+            return 0
+        if args.command == "summary":
+            from physprior.reporting.summary import build as build_summary
+
+            build_summary(execute=args.execute)
             return 0
         if args.command == "info":
             return _info()

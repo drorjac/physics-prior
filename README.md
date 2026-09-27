@@ -28,6 +28,12 @@ you can watch**, where the governing law is known exactly.
 > of range. The questions, their evidence and what would refute them are in
 > [`docs/HYPOTHESES.md`](docs/HYPOTHESES.md).
 
+**Start with the results.** [`docs/MISSIONS.md`](docs/MISSIONS.md) lists every
+task with its goal and conclusion, the clear results first and the open ones
+after them; [`notebooks/summary.ipynb`](notebooks/summary.ipynb) shows the
+data and results of each in plots (`physprior summary --execute`); [`docs/CONTRIBUTIONS.md`](docs/CONTRIBUTIONS.md)
+says what is new.
+
 The package is organised along the two axes that question needs:
 
 ```text

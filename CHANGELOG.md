@@ -8,6 +8,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **H7: the physics weight against the amount of training data**
+  (`physprior budget-weight`). The `pinn` arm's weight is chosen per budget
+  of the data-budget sweep on the tuning seeds and re-scored on the
+  reporting seeds. Predictions committed first; supported, narrowly: the
+  weight for few points is at least the weight for many on 4 of 5 tracks
+  (not on the CMB, where the law is already right), and the per-budget weight
+  is no worse than a single weight at 17 of 25 cells.
+- **`docs/MISSIONS.md`**: every task with its goal, its conclusion for the
+  PINN and the physics prior, and its status; clear results first, open ones
+  after them with what would move each.
+- **`notebooks/summary.ipynb`** (`physprior summary --execute`): the method,
+  a task chooser, and each result mission as its data and results in simple
+  plots, computed from `results/` at run time.
 - **`gravity/pulsar_spindown`**: the braking index `n = ν ν̈ / ν̇²` of the
   ATNF Pulsar Catalogue's young isolated pulsars (v2.8.1, 13 of 4393 by a
   rule fixed before any fit), against the vacuum-dipole value 3, with a
