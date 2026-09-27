@@ -15,6 +15,7 @@ page carries none, so it cannot drift.
 | H4 | Without the physics constraint, does a network absorb the physics and return wrong constants? | **supported** |
 | H5 | Can a good fit hide a wrong law? | **supported, twice on real data** |
 | H6 | Can symbolic regression find a law outside its operator vocabulary? | **supported (negative)** |
+| H7 | Should the physics weight depend on how much data there is? | **open: predictions below, written before the runs** |
 
 ---
 
@@ -185,6 +186,30 @@ prior. See the [quantum](quantum/) page.
 
 **Refuted if** SR recovers Planck's law without an operator set that can
 express it.
+
+## H7 · The physics weight should shrink as the data grow
+
+**Question.** The `pinn` arm's physics weight sets how far the learned
+correction may move away from the law. With few points the law should carry
+the fit; with many, the data can correct it. Each track currently uses one
+weight for every training-set size. Does tuning it per size help?
+
+**Test.** On the tracks with a data-budget sweep (hydrogen, CMB, helium,
+weather in July, and the pulsar control), the weight is chosen for each
+budget on the tuning seeds, from a random quarter of that budget's training
+points held out for validation, the same kind of held-out point the budget
+sweep scores. The `pinn` arm is then re-scored on the reporting seeds with
+the per-budget weight, beside `physics` and `nn` on the same splits.
+Written before the runs:
+
+1. on every track, the weight chosen at the smallest budget is at least the
+   weight chosen at the largest budget;
+2. with the per-budget weight, the `pinn` arm's median held-out error is no
+   worse than with the track's single weight at two thirds or more of the
+   (track, budget) cells.
+
+**Refuted if** prediction 1 fails on more than one track, or prediction 2
+fails at more than a third of the cells.
 
 ---
 
