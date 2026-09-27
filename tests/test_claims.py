@@ -635,3 +635,21 @@ def test_pulsar_predictions_hold_as_written(pulsar, gravity_doc):
     assert f"{min(out.values()):.2f} to {max(out.values()):.2f} times" in gravity_doc
     sim = list(v["pinn_over_physics_sim"].values())
     assert f"{min(sim):.2f} to {max(sim):.2f} of the constant-n fit" in gravity_doc
+
+
+# --- H7: the physics weight against the data budget ---------------------------
+
+
+def test_h7_verdict_as_quoted():
+    from physprior.benchmark import budget_weight as B
+
+    root = get_settings().results_dir
+    if not (root / "quantum" / "helium" / "budget_weight.csv").is_file():
+        pytest.skip("H7 tables missing -- run physprior.benchmark.budget_weight")
+    v = B.verdicts()
+    assert not v["refuted"]
+    text = (get_settings().root / "docs" / "HYPOTHESES.md").read_text()
+    held = len(v["p1_weight_shrinks_or_holds"]) - v["p1_failures"]
+    assert f"holds on {held} of {len(v['p1_weight_shrinks_or_holds'])} tracks" in text
+    assert f"holds at {v['p2_cells_no_worse']} of {v['p2_cells']} cells" in text
+    assert not v["p1_weight_shrinks_or_holds"]["quantum/cmb"]

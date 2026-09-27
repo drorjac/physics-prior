@@ -15,7 +15,7 @@ page carries none, so it cannot drift.
 | H4 | Without the physics constraint, does a network absorb the physics and return wrong constants? | **supported** |
 | H5 | Can a good fit hide a wrong law? | **supported, twice on real data** |
 | H6 | Can symbolic regression find a law outside its operator vocabulary? | **supported (negative)** |
-| H7 | Should the physics weight depend on how much data there is? | **open: predictions below, written before the runs** |
+| H7 | Should the physics weight depend on how much data there is? | **supported, narrowly** |
 
 ---
 
@@ -210,6 +210,16 @@ Written before the runs:
 
 **Refuted if** prediction 1 fails on more than one track, or prediction 2
 fails at more than a third of the cells.
+
+**Result: supported, narrowly.** Prediction 1 holds on 4 of 5 tracks. The
+exception is the CMB, where the chosen weight rises with the data: the law is
+already right there, so more data only confirms it and the rule leans
+further on it. Prediction 2 holds at 17 of 25 cells, just above the
+two-thirds bar. The chosen weights are noisy from one budget to the next, the
+per-budget weight gives small real gains on the weather track, and on the
+pulsar control's larger budgets it does worse than the single weight. Tables:
+`results/<track>/budget_weight.csv` and `budget_w_phys_selection.csv`
+(`benchmark/budget_weight.py`).
 
 ---
 
