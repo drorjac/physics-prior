@@ -100,9 +100,35 @@ be one the network can extrapolate. Symbolic regression, given (n, l, S) and
 no law, did find an l-dependent correction that beats the hydrogenic law out
 of range. Details in [quantum](quantum/).
 
-**Then: pulsars** (`gravity/pulsar_spindown`, planned). A magnetic dipole
-spinning in vacuum slows as `ν̇ ∝ −ν³` (braking index 3). Real pulsars
-measure below 3, so the dipole law is incomplete.
+**Pulsars** (`gravity/pulsar_spindown`). A magnetic dipole spinning in
+vacuum slows as `ν̇ = −K ν^n` with braking index `n = 3`, so each pulsar's
+timing gives `n_obs = ν ν̈ / ν̇²`, which the law says is 3. The data are the
+ATNF catalogue's isolated, non-magnetar pulsars younger than 10⁴ years
+(characteristic age) with `ν̈` measured at 5σ or better, a rule fixed before
+any fit. The inputs are the characteristic age and the surface field, the
+target `n_obs`, and the split trains on the younger half and predicts the
+older half. Unlike helium, what the law misses here is not expected to be a
+function of the inputs: braking indices below 3 are attributed to
+pulsar-specific torque physics (field evolution, particle winds), and the
+older pulsars' indices to glitch recovery and timing noise. The refined H3
+therefore predicts, written before the runs:
+
+1. the fitted `n` on the pulsars in the training half is below 3 by more
+   than its standard error: the dipole law is incomplete;
+2. the learned correction does not beat the constant-`n` fit out of range
+   (the `pinn` arm's out-of-range error is not below `physics`'s on every
+   reporting seed), because the deviation is not distinguishable from the
+   pulsar-to-pulsar scatter using age and field;
+3. out of range every arm's error exceeds the spread of the data
+   (`nrmse_out > 1`), because the older pulsars' indices are dominated by
+   glitch recovery that no arm is given;
+4. in a simulated control where `n` depends on age through a known term, the
+   learned correction does beat the constant-`n` fit out of range, so a
+   failure on the real data is not the method's.
+
+**Refuted if** on pulsars the `pinn` arm beats `physics` out of range on
+every reporting seed (the deviation was learnable after all), or if it fails
+to do so in the simulated control (the method, not the data, is the limit).
 
 **Refuted if** on helium the PINN fails to beat the hydrogenic law out of
 range, or its correction shows no ℓ structure. Either result is reported at
