@@ -67,7 +67,7 @@ By invariant 5 ("a result still moving with step size is not a result"), the
 6th-order α is *not yet converged either* — its formal error underestimates
 the remaining truncation error by roughly a factor of 2. The README's claim is
 "agrees with Einstein to one part in 10⁴", which is true and safe. But the
-error bar attached to it is not the honest uncertainty. **Proposed:** report
+error bar attached to it is not the full uncertainty. **Proposed:** report
 the converged α with a systematic term from the step-halving difference
 (`α = 1.00012 ± 0.0000165 (stat) ± 0.000022 (step)`), and add the convergence
 assertion to `test_claims.py`. Flagged rather than fixed, because it changes a
@@ -131,7 +131,7 @@ for physics problems" is a claim the current tracks do not support. What they
 support is sharper and more defensible: *a PINN buys out-of-distribution
 accuracy exactly when the physics prior is incomplete, and costs one to
 four orders of magnitude when it is not.* That is a finding, and it dictates
-the track roadmap in §4 — the honest way to make the PINN the headline is to
+the track roadmap in §4 — the defensible way to make the PINN the headline is to
 **add tracks where its mechanism applies**, not to tune it into winning races
 it is structurally set up to lose.
 
@@ -288,10 +288,18 @@ losses to 2** (both to `sr` on hydrogen); it now ties `physics` on kepler
 noise and beats it on hydrogen noise and kepler extrapolation, though inside
 the seed spread.
 
-`relativity/gw150914` is unchanged by construction, and that is the honest
+`relativity/gw150914` is unchanged by construction, and that is the expected
 outcome rather than a gap: its arm is the ODE-residual PINN, a different
 model, and it reports the option as **not engaged** instead of returning a
 baseline number under the option's name.
+
+### Later: what `balance` actually does
+
+Measured after this section was written ([`../optimization/`](../optimization/)
+§5): balancing drives the physics weight up without bound and switches the
+correction off, so the gain above is the `pinn` arm converging onto the
+`physics` fit, measured against an unbalanced PINN that overfits. The table
+above stands as a measurement; its reading as "a better PINN" does not.
 
 ### `w_phys` was not re-frozen
 

@@ -23,6 +23,7 @@ documents. The questions the decisions serve are in
 
 | item | where it is argued | what it blocks |
 |---|---|---|
+| The frozen PINN option `balance` raises the physics weight until the learned correction is a negligible fraction of the data's spread, so on the algebraic tracks the `pinn` arm reduces to the `physics` fit. Phase 2 credited `balance` with improving five of eight cells; part or all of that may come from switching the correction off rather than training it better. Keep `balance`, cap the annealed weight, or report `pinn` without it. | [`optimization/`](optimization/), [`plans/PLAN.md`](plans/PLAN.md) §5A | The meaning of every `pinn` number in the tables. Changing the frozen config means re-deciding it on the tuning seeds. |
 | The PDE-rung PINN does not converge: keep it as a documented negative result, or try a weak-form or smoothed-derivative residual. | [`neglected/`](neglected/), [`METHOD.md`](METHOD.md) | Only whether the PDE rung has a PINN result; its conclusion rests on the `physics` arm. |
 | Phase 5 approval, its internal ordering (§2.5), and the Mie implementation (§2.4). | [`plans/PHASE5_PLAN.md`](plans/PHASE5_PLAN.md) §5 | EM, atmosphere and loss-discovery tracks. |
 | Phase 6 approval and ordering against Phase 5; whether to run Q2 (a 2-D PINN, 8–20 h of compute). | [`plans/PHASE6_PLAN.md`](plans/PHASE6_PLAN.md) §7 | Interference tracks. |
