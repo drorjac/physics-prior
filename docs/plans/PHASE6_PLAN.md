@@ -7,7 +7,7 @@ Written at the gate `phase6.md` stop point 1, which requires this document
 
 | precondition | state |
 |---|---|
-| Phase 2 merged, PINN default frozen on 3/7/19 | **yes** (updated 2026-09-26) — merged into `main`; `FROZEN_PINN = PinnOptions(balance=True)` in `src/physprior/methods/pinn.py`. `balance+ens5` was measured and not shipped ([`PLAN.md`](PLAN.md) §5A) |
+| Phase 2 merged, PINN default frozen on 3/7/19 | **yes** (updated 2026-09-26) — merged into `main`; `FROZEN_PINN = PinnOptions(balance=True)` in `src/physprior/methods/pinn.py` (replaced 2026-09-27 by a tuned per-track weight; `docs/DECISIONS.md`). `balance+ens5` was measured and not shipped ([`PLAN.md`](PLAN.md) §5A) |
 | Phase 5 approved | **no** — `docs/plans/PHASE5_PLAN.md` is at its own gate |
 | Q1 real-data verified | **yes — done below, and the answer is negative** |
 

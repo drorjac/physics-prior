@@ -23,14 +23,17 @@ b have no published value. The `oracle` arm therefore holds Gamma at -6.5
 and fits T0, a and b on the training stations; it tests the standard
 lapse rate, and it is not a ceiling.
 
-The `pinn` arm is the project's frozen PINN with its constants scaled so
+The `pinn` arm is the project's PINN with its constants scaled so
 Adam can reach them: T0 starts at the mean training temperature and Gamma is
 optimised in log space from -1 K/km. This was chosen on the tuning seeds by
 one criterion, that the PINN's constants reach the least-squares constants
-on the same training stations. The frozen PINN from fixed starts
+on the same training stations. The same PINN from fixed starts
 (T0 = 10 degC, Gamma = 0) is reported as `PINN, fixed start` on the
 elevation split: an additive constant moves by about one learning rate per
-Adam step, and those constants do not get there in 4000 epochs.
+Adam step, and those constants do not get there in 4000 epochs. Its physics
+weight is tuned per case on the tuning seeds, from the highest of the
+training stations (`tune/w_phys_selection.csv`); where that block prefers no
+correction, the weight is pinned at the top of its grid.
 
 The arms see x = (z, lon, lat). Two held-out splits:
 
@@ -68,8 +71,8 @@ bar allows for stations that share weather. The pull is
 
 | case | physics Gamma | ± (OLS) | pull vs -6.5 (OLS) | PINN Gamma | PINN mean dT/dz | UK Gamma | ± (GLS) | pull vs -6.5 (GLS) |
 |---|---|---|---|---|---|---|---|---|
-| july | -6.709 | 0.097 | -2.143 | -6.587 | -6.587 | -7.045 | 0.163 | -3.349 |
-| january | -5.338 | 0.093 | 12.469 | -5.314 | -5.314 | -5.395 | 0.124 | 8.901 |
+| july | -6.709 | 0.097 | -2.143 | -6.547 | -6.546 | -7.045 | 0.163 | -3.349 |
+| january | -5.338 | 0.093 | 12.469 | -2.936 | -5.337 | -5.395 | 0.124 | 8.901 |
 
 ## Elevation extrapolation
 
@@ -85,7 +88,7 @@ step convergence is tabulated below).
 |---|---|---|---|---|---|
 | oracle (Gamma = -6.5) | 0.172 | 0.265 | 0.265, 0.265, 0.265 | 1.406 | -6.500 |
 | physics | 0.168 | 0.374 | 0.374, 0.374, 0.374 | 1.982 | -5.909 |
-| PINN | 0.168 | 0.375 | 0.375, 0.374, 0.375 | 1.984 | -5.908 |
+| PINN | 0.168 | 0.375 | 0.374, 0.375, 0.376 | 1.987 | -5.905 |
 | PINN, fixed start | 0.921 | 3.434 | 3.434, 3.438, 3.434 | 18.191 | 5.753 |
 | SR | 0.181 | 0.356 | 0.356, 0.356, 0.356 | 1.885 | -5.952 |
 | NN | 0.064 | 0.914 | 1.117, 0.914, 0.591 | 4.843 | -5.436 |
@@ -104,7 +107,7 @@ Lowest median held-out nRMSE among the arms and kriging (oracle and the fixed-st
 |---|---|---|---|---|---|
 | oracle (Gamma = -6.5) | 0.230 | 0.572 | 0.572, 0.572, 0.572 | 2.472 | -6.500 |
 | physics | 0.229 | 0.479 | 0.479, 0.479, 0.479 | 2.069 | -6.238 |
-| PINN | 0.229 | 0.478 | 0.478, 0.478, 0.478 | 2.067 | -6.236 |
+| PINN | 0.018 | 1.125 | 1.125, 1.149, 0.793 | 4.865 | -5.213 |
 | PINN, fixed start | 0.263 | 0.291 | 0.291, 0.289, 0.291 | 1.259 | -4.630 |
 | SR | 0.236 | 1.329 | 1.329, 1.329, 0.816 | 5.745 | -5.288 |
 | NN | 0.163 | 0.865 | 0.688, 0.948, 0.865 | 3.740 | -5.089 |
@@ -129,7 +132,7 @@ Held-out nRMSE per block (block 0 is the westernmost), median over seeds, and th
 |---|---|---|---|---|---|
 | oracle (Gamma = -6.5) | 0.185 | 0.214 | 0.176 | 0.245 | 0.207 |
 | physics | 0.180 | 0.211 | 0.171 | 0.266 | 0.210 |
-| PINN | 0.188 | 0.212 | 0.171 | 0.274 | 0.215 |
+| PINN | 0.193 | 0.213 | 0.173 | 0.286 | 0.220 |
 | SR | 0.195 | 0.224 | 0.179 | 0.264 | 0.223 |
 | NN | 0.298 | 0.182 | 0.201 | 0.347 | 0.293 |
 | ordinary kriging | 0.641 | 0.191 | 0.213 | 0.268 | 0.376 |
@@ -141,7 +144,7 @@ Held-out nRMSE per block (block 0 is the westernmost), median over seeds, and th
 |---|---|---|---|---|---|
 | oracle (Gamma = -6.5) | 0.306 | 0.315 | 0.271 | 0.473 | 0.350 |
 | physics | 0.220 | 0.231 | 0.254 | 0.323 | 0.260 |
-| PINN | 0.217 | 0.231 | 0.256 | 0.312 | 0.256 |
+| PINN | 0.401 | 0.309 | 0.731 | 0.695 | 0.666 |
 | SR | 0.226 | 0.240 | 0.301 | 0.316 | 0.271 |
 | NN | 0.231 | 0.237 | 0.244 | 0.314 | 0.257 |
 | ordinary kriging | 0.280 | 0.232 | 0.275 | 0.684 | 0.411 |
@@ -214,7 +217,7 @@ Median held-out nRMSE. Symbolic regression is left out of the sweeps for compute
 |---|---|---|---|
 | oracle (Gamma = -6.5) | 0.210 | 0.205 | 0.202 |
 | physics | 0.215 | 0.206 | 0.207 |
-| PINN | 0.217 | 0.205 | 0.206 |
+| PINN | 0.219 | 0.203 | 0.205 |
 | NN | 0.348 | 0.256 | 0.198 |
 
 ## Noise sweep (july, random splits)
@@ -225,7 +228,7 @@ Median held-out nRMSE. Symbolic regression is left out of the sweeps for compute
 |---|---|---|
 | oracle (Gamma = -6.5) | 0.199 | 0.199 |
 | physics | 0.197 | 0.198 |
-| PINN | 0.198 | 0.199 |
+| PINN | 0.199 | 0.200 |
 | NN | 0.157 | 0.187 |
 
 ## Derivative convergence

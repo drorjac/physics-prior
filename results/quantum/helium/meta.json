@@ -15,10 +15,10 @@
     "pinn": {
       "expression": "L - R/n**2  + NN(x)",
       "params": {
-        "L": 198393.66396843968,
-        "R": 123242.8149564238
+        "L": 198491.1603377429,
+        "R": 129986.46413222497
       },
-      "seconds": 26.83574080467224,
+      "seconds": 7.402622938156128,
       "sigma": {}
     },
     "sr": {
@@ -31,6 +31,7 @@
   "ionisation_limit_icm": 198310.66637,
   "ionisation_limit_sigma_icm": 0.0002,
   "n_terms": 452,
+  "pinn_w_phys": 0.001,
   "provenance": {
     "bytes": 50414,
     "file": "nist_he_levels.tsv",

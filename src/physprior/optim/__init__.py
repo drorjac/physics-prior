@@ -5,6 +5,6 @@ problems           the tasks (hydrogen, oscillator, heat), the three model
                    families, and Hessian / Lanczos curvature tools
 optimizers_study   optimizers x learning rates x models x tasks
 losses_study       loss functions under three noise models; the w_phys dial
-pinn_balance       what the frozen `balance` option does to the physics weight
+pinn_balance       what the `balance` option does to the physics weight
 report             run_all(), make_figures(), render_doc()
 """

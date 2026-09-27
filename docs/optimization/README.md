@@ -320,9 +320,10 @@ Adam, rate 0.01 (chosen for this PINN on the tuning seeds), 3000 steps, cosine s
 Findings, computed from the table. With gaussian noise the out-of-range error is lowest at w_phys = 1 (0.138, against 1.42 at w = 0) and the damping error at w_phys = 0.01 (1.57%). At w_phys = 100 the residual is smallest (3.56e-04) but the data loss rises to 0.244 and gamma is off by 241%. With outliers noise the out-of-range error is lowest at w_phys = 1 (0.115, against 1.28 at w = 0) and the damping error at w_phys = 1 (-2.2%). At w_phys = 100 the residual is smallest (3.43e-04) but the data loss rises to 0.513 and gamma is off by 229%. The curve is a trade-off with an interior optimum (measured on the reporting seeds; nothing is selected from it): too little weight and the constants are unconstrained, too much and the optimizer satisfies the ODE with a solution that ignores the data, which the initial conditions alone permit for any damping.
 
 
-## 5. The frozen `balance` option drives the physics weight up
+## 5. The `balance` option drives the physics weight up
 
-`FROZEN_PINN = PinnOptions(balance=True)` anneals the physics weight every
+The `pinn` arm was frozen with `PinnOptions(balance=True)` until 2026-09-27;
+this measurement is why it no longer is. `balance` anneals the physics weight every
 100 epochs toward max|grad L_data| / mean|grad L_phys| over the correction
 network's weights (`methods/pinn.py::_annealed_weight`). For shape B,
 L_phys = mean(NN^2), so grad L_phys = 2 mean(NN grad NN) is proportional to
@@ -414,10 +415,10 @@ second copy of `physics`. "The PINN ties `physics`" is then expected by
 construction and is not evidence that a learned correction is harmless or
 helpful. On helium, where the law is incomplete and hypothesis H3 asks what a
 correction learns, the frozen arm cannot answer, which the helium track
-already works around with its `pinn_unbalanced` diagnostic. The frozen
-configuration is not changed here. Re-deciding it is a tuning-seed decision;
-the options are to keep it and describe `pinn` as a regularised `physics`
-fit, to cap the annealed weight, or to report `pinn` without `balance`.
+could not show what a correction learns. The configuration has since been
+changed: `balance` is off by default and each track's physics weight is a
+hyperparameter chosen on the tuning seeds (`benchmark/pinn_tuning.py`,
+`docs/DECISIONS.md`).
 
 
 ## Reproduce

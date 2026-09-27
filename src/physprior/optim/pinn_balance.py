@@ -1,4 +1,7 @@
-"""What the frozen PINN option `balance` does to the physics weight.
+"""What the PINN option `balance` does to the physics weight.
+
+It was the frozen default until 2026-09-27; this measurement is why it no
+longer is (see `methods/pinn.py`, FROZEN_PINN).
 
 `balance` is Wang, Teng & Perdikaris (2021) learning-rate annealing, as
 implemented in `methods.pinn._annealed_weight`: every `balance_every` epochs
@@ -55,7 +58,10 @@ N_TRAIN = {
     "quantum/cmb": 30,
     "quantum/helium": 128,
 }
-VARIANTS = {"balanced": pinn_mod.FROZEN_PINN, "unbalanced": pinn_mod.DEFAULT_PINN}
+VARIANTS = {
+    "balanced": pinn_mod.PinnOptions(balance=True),
+    "unbalanced": pinn_mod.DEFAULT_PINN,
+}
 RECORD_EVERY = 100
 
 

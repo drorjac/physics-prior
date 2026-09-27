@@ -88,13 +88,12 @@ H3 therefore predicts:
    error.
 
 **Result on helium: the refutation criterion below is met.** Predictions 1
-and 3 fail; 2 holds. The
-frozen `pinn` arm reduces to the `physics` fit: loss balancing drives the
-physics weight up until the correction is negligible, so the arm matches the
-hydrogenic fit out of range and carries no defect structure. With balancing
-off, the correction fits the low-n defects but extrapolates in n far worse
-than the law. The defect was distinguishable in l and S, and the correction
-still did not help, because the input that leaves the training range is n,
+and 3 fail; 2 holds. With its physics weight tuned on the tuning seeds, the
+`pinn` arm's correction is active and fits the low-n defects, but it
+extrapolates in n several times worse than the hydrogenic law and carries no
+consistent l structure. The arm as it was frozen before, with loss
+balancing, simply reduced to the hydrogenic fit. The defect was
+distinguishable in l and S, and the correction still did not help, because the input that leaves the training range is n,
 and a network does not carry a 1/n³ tail beyond the range it saw. So
 distinguishability is necessary but not sufficient: the correction must also
 be one the network can extrapolate. Symbolic regression, given (n, l, S) and

@@ -41,6 +41,10 @@ from physprior.methods.pinn import PhysParam
 from physprior.util import first_column
 
 TRACK = "quantum/hydrogen"
+
+# The `pinn` arm's physics weight, chosen on the tuning seeds by
+# `physprior.benchmark.pinn_tuning` (results/quantum/hydrogen/tune/w_phys_selection.csv).
+PINN_W_PHYS = 1
 SR_SCALE = 1.0e5  # cm^-1 -> O(1), so PySR's constants stay sane
 
 
@@ -69,6 +73,7 @@ def problem() -> tuple[Problem, dict]:
     lv = hydrogen.load()
     prob = Problem(
         track=TRACK,
+        pinn_w_phys=PINN_W_PHYS,
         x=lv.n.reshape(-1, 1),
         y=lv.energy_icm,
         law_np=law_np,

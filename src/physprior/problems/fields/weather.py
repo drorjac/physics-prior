@@ -36,7 +36,7 @@ ORACLE   The protocol's oracle is the law with published constants. Only
          T0, a and b on the training split. It is the standard-atmosphere
          lapse rate put to the test, not a ceiling.
 
-PINN     The frozen PINN, with its constants scaled so the optimiser can
+PINN     The project's PINN, with its constants scaled so the optimiser can
          reach them: T0 starts at the training mean, Gamma is optimised in
          log space from -1 K/km (see `pinn_params`). The same PINN from the
          fixed starts of `params()` is reported as `pinn_static`: its
@@ -93,6 +93,12 @@ GAMMA_STD = -6.5
 ELEV_TRAIN_FRAC = 0.75
 N_BLOCKS = 4
 ARMS = ("oracle", "physics", "pinn", "sr", "nn")
+
+# The `pinn` arm's physics weight per case, chosen on the tuning seeds by
+# `physprior.problems.fields.retune` (results/fields/weather/<case>/tune/).
+# July is pinned at the top of the extended grid: its validation block
+# prefers no correction, so the arm is the law by choice.
+PINN_W_PHYS = {"july": 1e6, "january": 0.01}
 # the elevation split also runs the fixed-start PINN, as a diagnostic
 ELEV_ARMS = (*ARMS, "pinn_static")
 SWEEP_CASE = "july"
@@ -213,12 +219,12 @@ def pinn_impl(
     w_phys: float,
     options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> Fit:
-    """The frozen PINN with the scaled constants of `pinn_params`."""
+    """The project's PINN with the scaled constants of `pinn_params`."""
     return _pinn(prob, idx, seed, w_phys, pinn_params(prob.y[idx]), "pinn", options)
 
 
 def pinn_static_impl(prob: Problem, idx: np.ndarray, seed: int, w_phys: float) -> Fit:
-    """The frozen PINN from the fixed starts of `params()`. A diagnostic."""
+    """The project's PINN from the fixed starts of `params()`. A diagnostic."""
     return _pinn(prob, idx, seed, w_phys, params(), "pinn_static", pinn_mod.FROZEN_PINN)
 
 
@@ -318,6 +324,7 @@ def problem(case: str) -> tuple[Problem, dict]:
         NN_CFG[case],
         notes=f"NOAA ISD-Lite, {fld.rule.describe()}",
     )
+    prob.pinn_w_phys = PINN_W_PHYS[case]
     meta = {
         "case": case,
         "rule": fld.rule.describe(),

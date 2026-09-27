@@ -10,7 +10,7 @@ said "no" to both rows below):
 | requirement | state |
 |---|---|
 | Phase 2 merged | **yes** — `phase2-pinn-ablations` is merged into `main` |
-| PINN default frozen on 3/7/19 | **yes** — `FROZEN_PINN = PinnOptions(balance=True)` in `src/physprior/methods/pinn.py`; the ablation is in [`PLAN.md`](PLAN.md) §5A |
+| PINN default frozen on 3/7/19 | **yes** — `FROZEN_PINN = PinnOptions(balance=True)` in `src/physprior/methods/pinn.py` (replaced 2026-09-27 by a tuned per-track weight; `docs/DECISIONS.md`); the ablation is in [`PLAN.md`](PLAN.md) §5A |
 | Phase 5 numbers read against that frozen config | unblocked; Phase 5 itself still awaits approval (§5) |
 
 ---

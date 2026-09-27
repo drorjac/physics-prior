@@ -34,8 +34,8 @@ ARMS     oracle, physics (law fitted, multi-start over the transmitter
          physics fit), nn (tuned MLP), gp (ordinary kriging: constant mean +
          GP), kriging (the fitted law as the mean + GP on its residuals),
          and pinn_free (the pinn with w_phys = 1 fixed, no loss balancing --
-         a diagnostic, as on quantum/helium, because the frozen balancing
-         drives the correction toward zero). A Helmholtz-residual PINN
+         a diagnostic, the arm's fixed-weight reference beside the per-scene
+         tuned weight). A Helmholtz-residual PINN
          (shape A) is run separately on a window of the scene
          (`helmholtz_window_study`), since it needs the refractive-index map
          and a complex field the readings do not contain.
@@ -90,6 +90,12 @@ ROOM_EDGE = 9.0  # x < 9 is the transmitter's room (wall 1 is x = 9..10)
 BEYOND = 10.0  # x > 10 is behind at least one wall
 
 ARMS = ("oracle", "physics", "pinn", "pinn_free", "nn", "gp", "kriging")
+
+# The `pinn` arm's physics weight per scene, chosen on the tuning seeds by
+# `physprior.problems.fields.retune` (results/fields/rf_<scene>/tune/). Both
+# are pinned at the top of the extended grid: the validation block prefers
+# no correction, so the arm is the law by choice.
+PINN_W_PHYS = {"free": 1e6, "walls": 1e6}
 EPOCHS = 4000  # nn and pinn alike
 
 # Fallback when a run is too quick to afford the convergence study.
@@ -360,6 +366,7 @@ def make_problem(sc: Scenario, nn_cfg: dict | None = None) -> Problem:
         ylabel="received power  [dB]",
         nn_cfg=dict(nn_cfg or {"width": 32, "depth": 3, "weight_decay": 1e-4}),
         pinn_epochs=EPOCHS,
+        pinn_w_phys=PINN_W_PHYS[sc.name],
         arm_impl=make_arms(sc.scene),
         notes=f"simulated, 2-D Helmholtz, scene={sc.name}, noise {NOISE_DB} dB",
     )
@@ -723,7 +730,7 @@ ARM_NAME = {
     "physics": "physics (law fitted)",
     "kriging": "kriging (law + GP)",
     "pinn": "PINN (law + NN)",
-    "pinn_free": "PINN, w=1 unbalanced",
+    "pinn_free": "PINN, w=1",
     "nn": "black-box NN",
     "gp": "GP (ordinary kriging)",
     "pinn_helmholtz": "Helmholtz PINN",
@@ -1539,8 +1546,10 @@ def render_doc(path=None) -> str:
         "`physics` fits P = P0 − 10 n log10(d), d the distance to an unknown",
         "transmitter (x_t, y_t), from several starts. `oracle` is the same law with",
         "the true position, n = 1 and the analytic P0. `pinn` is the law plus a",
-        "network correction (started from the physics fit, with the project's frozen",
-        "loss balancing); `pinn_free` is the same with w_phys = 1 and no balancing.",
+        "network correction, started from the physics fit, with a physics weight",
+        "tuned per scene on the tuning seeds (pinned at the top of its grid in both",
+        "scenes, so the arm is the law by choice); `pinn_free` is the same with",
+        "w_phys = 1.",
         "`nn` is a tuned MLP, `gp` is ordinary kriging, `kriging` is the fitted law",
         "plus a GP on its residuals.",
         "",

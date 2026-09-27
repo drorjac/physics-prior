@@ -15,9 +15,9 @@
     "pinn": {
       "expression": "2*h*nu**3/c**2 / (exp(h*nu/(k*T)) - 1)  + NN(x)",
       "params": {
-        "T": 2.7250125326621357
+        "T": 2.725012679203284
       },
-      "seconds": 7.1383750438690186,
+      "seconds": 8.011534929275513,
       "sigma": {}
     },
     "planck_constant": {
@@ -47,6 +47,7 @@
     68.052887966,
     639.457312914
   ],
+  "pinn_w_phys": 100,
   "provenance": {
     "bytes": 2388,
     "file": "firas_monopole_spec_v1.txt",

@@ -51,6 +51,10 @@ from physprior.methods.pinn import PhysParam
 from physprior.util import first_column
 
 TRACK = "quantum/cmb"
+
+# The `pinn` arm's physics weight, chosen on the tuning seeds by
+# `physprior.benchmark.pinn_tuning` (results/quantum/cmb/tune/w_phys_selection.csv).
+PINN_W_PHYS = 100
 MJY_SR = 1.0e-20  # 1 MJy/sr in W m^-2 sr^-1 Hz^-1
 NU_SCALE = 1.0e11  # Hz, for SR
 I_SCALE = 1.0e2  # MJy/sr, for SR
@@ -88,6 +92,7 @@ def problem() -> tuple[Problem, dict]:
     sp = firas.load()
     prob = Problem(
         track=TRACK,
+        pinn_w_phys=PINN_W_PHYS,
         x=sp.nu_hz.reshape(-1, 1),
         y=sp.intensity,
         law_np=law_np,

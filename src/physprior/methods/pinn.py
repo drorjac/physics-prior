@@ -201,32 +201,35 @@ class PinnOptions:
 
 DEFAULT_PINN = PinnOptions()
 
-# The configuration the REPORTED results are produced with, frozen on the
-# tuning seeds (3/7/19) by `physprior tune`, 2026-09-23. See docs/METHOD.md.
+# The configuration the REPORTED results are produced with.
 #
-# Measured, median ratio to the unswitched arm, lower is better:
+# History. On 2026-09-23 `balance` was frozen in after an ablation on the
+# tuning seeds showed it helping on five of eight cells. On 2026-09-27 it was
+# taken out again, for a reason the ablation could not see: in this arm the
+# physics term is the penalty mean(NN^2), whose gradient vanishes as the
+# correction shrinks. Gradient-norm annealing sets the weight to
+# |grad data| / |grad penalty|, so the smaller the correction the larger the
+# weight, without bound -- measured from several hundred to 1e8 across the
+# tracks and still rising at the end of training, with the correction
+# switched off and the arm reduced to the `physics` fit. The
+# ablation's gain was that collapse, measured against an unbalanced arm whose
+# correction overfits (docs/optimization/ section 5). Annealing is meant for
+# PDE residuals that do not vanish with the network; it is still available
+# through PinnOptions, and not on by default.
 #
-#     track / question          balance   ens5   balance+ens5
-#     kepler       interp        0.073    0.157      0.052
-#     kepler       extrap        0.244    0.260      0.227
-#     hydrogen     interp        0.098    0.744      0.092
-#     hydrogen     extrap        0.071    0.264      0.050
-#     cmb          extrap        0.151    0.565      0.129
-#
-# and the recovered constants move by under 2% in every cell, so the gain is
-# not bought out of the physics.
-#
-# `balance` alone takes the bulk of it; adding a 5-member ensemble buys a
-# further 1.3-1.4x for five times the compute on every fit in every sweep --
-# 210 pinn fits per reporting run, so 1.5 hours against 7.3. The ensemble
-# stays available through PinnOptions for the places an uncertainty on the
-# recovered constant is the point, and out of the sweeps.
+# In its place each track carries its own fixed weight, `Problem.pinn_w_phys`,
+# chosen on the tuning seeds by `physprior.benchmark.pinn_tuning` on a
+# validation block cut from the top of the track's own training range. That
+# makes w_phys a tuned hyperparameter of the arm, as width and weight decay
+# are for `nn`.
 #
 # Early stopping and Fourier features were measured and REJECTED: early
 # stopping hurt four cells and helped none, Fourier features made hydrogen
 # interpolation 98x worse. L-BFGS ran on every track and its proposal never
-# lowered the loss, so the revert guard discarded it every time.
-FROZEN_PINN = PinnOptions(balance=True)
+# lowered the loss, so the revert guard discarded it every time. A 5-member
+# ensemble helps modestly for five times the compute and stays available for
+# where an uncertainty on the recovered constant is the point.
+FROZEN_PINN = DEFAULT_PINN
 
 # Below this many training points a validation split cannot be carved without
 # leaving the fit with too little to fit -- track G trains on as few as two.

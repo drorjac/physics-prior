@@ -1110,9 +1110,10 @@ appear only in the residual), so their "error" there is the starting guess.
 """
 
 _BAL_TEXT = """
-## 5. The frozen `balance` option drives the physics weight up
+## 5. The `balance` option drives the physics weight up
 
-`FROZEN_PINN = PinnOptions(balance=True)` anneals the physics weight every
+The `pinn` arm was frozen with `PinnOptions(balance=True)` until 2026-09-27;
+this measurement is why it no longer is. `balance` anneals the physics weight every
 100 epochs toward max|grad L_data| / mean|grad L_phys| over the correction
 network's weights (`methods/pinn.py::_annealed_weight`). For shape B,
 L_phys = mean(NN^2), so grad L_phys = 2 mean(NN grad NN) is proportional to
@@ -1441,10 +1442,10 @@ second copy of `physics`. "The PINN ties `physics`" is then expected by
 construction and is not evidence that a learned correction is harmless or
 helpful. On helium, where the law is incomplete and hypothesis H3 asks what a
 correction learns, the frozen arm cannot answer, which the helium track
-already works around with its `pinn_unbalanced` diagnostic. The frozen
-configuration is not changed here. Re-deciding it is a tuning-seed decision;
-the options are to keep it and describe `pinn` as a regularised `physics`
-fit, to cap the annealed weight, or to report `pinn` without `balance`.
+could not show what a correction learns. The configuration has since been
+changed: `balance` is off by default and each track's physics weight is a
+hyperparameter chosen on the tuning seeds (`benchmark/pinn_tuning.py`,
+`docs/DECISIONS.md`).
 """,
     ]
     return "\n".join(lines)

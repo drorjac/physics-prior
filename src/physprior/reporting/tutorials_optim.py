@@ -328,9 +328,9 @@ load_table("optim", "w_phys_dial").groupby(["noise", "w_phys"])[
     ["nrmse_in", "nrmse_out", "err_gamma_pct"]].median()
 """),
             md("""
-## 6. The frozen `balance` option
+## 6. The `balance` option
 
-The shipped PINN anneals its physics weight from the ratio of gradient norms.
+Until 2026-09-27 the shipped PINN annealed its physics weight from the ratio of gradient norms.
 For the shape-B PINN the physics term is `mean(NN^2)`, whose gradient is
 proportional to the correction itself, so the weight rises as the correction
 shrinks and the correction shrinks as the weight rises. Measured on the real

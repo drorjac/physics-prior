@@ -104,13 +104,16 @@ range the fitted law is 59 times worse than the same law with the published
 constants, because at high n most terms have high l and almost no defect,
 so what hurts is the wrong constant, not the missing term.
 
-**The frozen `pinn` arm is the `physics` fit.** Loss balancing raises the
-physics weight until the correction is below 2×10⁻⁶ of the data's spread on
-every reporting seed, and the out-of-range error matches `physics` to within
-0.3%. Without balancing (reported as a diagnostic, not an arm) the correction
-does fit the low-n defects, but it extrapolates in n badly: out-of-range error
-is 5 to 8 times worse than `physics`. Neither variant reproduces the defect's
-l structure. H3's predictions 1 and 3 are not supported on this track.
+**A learned correction makes it worse.** The `pinn` arm's physics weight is
+chosen on the tuning seeds from the top of the training range; on helium the
+rule picks a small weight, 0.001, and the correction is active, at about 15%
+of the data's spread. It fits the low-n terms closely, but out of range it is
+4.5 to 6.0 times worse than `physics` on every reporting seed. Its implied
+defects have no consistent l structure: the S-minus-high-l gap has a
+different size and sign on each seed. The arm as it was frozen before, with
+loss balancing, is kept as a diagnostic: its correction is below 2×10⁻⁶ of
+the spread and it matches `physics` to within 0.3%. H3's predictions 1 and 3
+are not supported by either.
 
 **Symbolic regression beats the hydrogenic law out of range on every
 reporting seed**, by a factor of 1.3 to 2.5, with an expression that depends

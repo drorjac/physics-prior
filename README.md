@@ -161,8 +161,8 @@ on the reporting seeds only, and generates its page from `results/`.
   closure. Several of the expectations written in advance are refuted.
 - **[Optimization](docs/optimization/).** Optimizers, learning rates and loss
   functions for a physics fit, a PINN and a black box, with the curvature
-  each one lands in. It also measures what the frozen loss-balancing option
-  does to the `pinn` arm.
+  each one lands in. It also measures what loss balancing, the `pinn` arm's
+  setting until 2026-09-27, did to the arm.
 - **[Symbolic regression, in theory and practice](docs/theory/symbolic_regression.md).**
   The size of the search space, a genetic search, PySR's selection rule,
   SINDy, and the operator set as a prior; with a companion page on what
@@ -219,7 +219,7 @@ Extrapolation — error outside the training range relative to inside:
 | --- | --- | --- | --- | --- | --- | --- |
 | gravity/kepler | oracle | 3 | 1.54e-08 | 7.62e-05 | 4,950 | 4,950 – 4,950 |
 | gravity/kepler | physics | 3 | 1.14e-08 | 7.56e-05 | 6,600 | 6,600 – 6,600 |
-| gravity/kepler | pinn | 3 | 1.16e-08 | 6.21e-05 | 5,340 | 567 – 6,610 |
+| gravity/kepler | pinn | 3 | 1.13e-08 | 2.46e-04 | 21,700 | 2,220 – 41,600 |
 | gravity/kepler | sr | 3 | 8.93e-09 | 7.78e-05 | 8,720 | 8,400 – 10,000 |
 | gravity/kepler | nn | 3 | 2.12e-05 | 1.66 | 78,200 | 78,100 – 78,500 |
 | relativity/gw150914 | oracle | 3 | 0.315 | 0.0858 | 0.272 | 0.272 – 0.272 |
@@ -229,17 +229,17 @@ Extrapolation — error outside the training range relative to inside:
 | relativity/gw150914 | nn | 3 | 0.00131 | 0.682 | 520 | 474 – 521 |
 | quantum/hydrogen | oracle | 3 | 6.26e-05 | 6.79e-05 | 1.09 | 1.09 – 1.09 |
 | quantum/hydrogen | physics | 3 | 1.71e-06 | 8.12e-07 | 0.475 | 0.475 – 0.475 |
-| quantum/hydrogen | pinn | 3 | 1.82e-06 | 1.62e-04 | 89.0 | 27.0 – 233 |
+| quantum/hydrogen | pinn | 3 | 3.28e-05 | 0.0142 | 432 | 282 – 1,480 |
 | quantum/hydrogen | sr | 3 | 2.25e-07 | 5.03e-07 | 2.24 | 2.16 – 5.48 |
 | quantum/hydrogen | nn | 3 | 0.00758 | 0.336 | 44.4 | 42.4 – 56.9 |
 | quantum/helium | oracle | 3 | 0.361 | 0.00146 | 0.00405 | 0.00405 – 0.00405 |
 | quantum/helium | physics | 3 | 0.269 | 0.0858 | 0.319 | 0.319 – 0.319 |
-| quantum/helium | pinn | 3 | 0.269 | 0.0859 | 0.319 | 0.318 – 0.320 |
+| quantum/helium | pinn | 3 | 0.00300 | 0.408 | 136 | 96.0 – 194 |
 | quantum/helium | sr | 3 | 0.0456 | 0.0482 | 1.06 | 0.887 – 1.06 |
 | quantum/helium | nn | 3 | 0.00536 | 0.121 | 22.6 | 12.0 – 74.9 |
 | quantum/cmb | oracle | 3 | 0.00100 | 0.00115 | 1.14 | 1.14 – 1.14 |
 | quantum/cmb | physics | 3 | 1.34e-04 | 5.72e-04 | 4.26 | 4.26 – 4.26 |
-| quantum/cmb | pinn | 3 | 1.34e-04 | 6.36e-04 | 4.75 | 4.27 – 5.72 |
+| quantum/cmb | pinn | 3 | 1.33e-04 | 0.00562 | 42.2 | 5.95 – 102 |
 | quantum/cmb | sr | 3 | 4.85e-04 | 16.2 | 33,400 | 32,500 – 80,300 |
 | quantum/cmb | nn | 3 | 0.00146 | 2.08 | 1,420 | 1,410 – 1,430 |
 
@@ -323,24 +323,31 @@ Newtonian bias is post-Newtonian truncation, not an artefact of the pipeline.
 
 ---
 
-### What the PINN arm's default is worth
+### The PINN arm's configuration
 
-![what the frozen default bought the PINN arm](figures/phase2_improvement.png)
+Each track's `pinn` arm now carries its own physics weight, chosen on the
+**tuning** seeds (3/7/19) from a validation block cut from the top of that
+track's training range, so the choice rewards a correction that carries past
+the range it was fitted on without touching the reported test points. The
+rule and every candidate's score are in `results/<track>/tune/w_phys_selection.csv`
+([`benchmark/pinn_tuning.py`](src/physprior/benchmark/pinn_tuning.py)).
 
-The `pinn` arm's configuration was frozen by ablating one switch at a time on
-the **tuning** seeds (3/7/19) and then re-measuring on the reporting seeds
-(11/23/42). Gradient-norm loss balancing (Wang et al. 2021) was the only
-option that shipped: it helps on five of the eight cells that can move, hurts
-none, and shifts the recovered constants by under 2%.
+Until 2026-09-27 the arm used gradient-norm loss balancing (Wang et al.
+2021) instead. In this arm the physics term is a penalty on the correction,
+whose gradient vanishes as the correction shrinks, so balancing raised the
+weight without bound and switched the correction off: the arm was the
+`physics` fit under another name ([`docs/optimization/`](docs/optimization/)
+§5). The ablation that had shipped it measured that collapse as an
+improvement over an unbalanced arm whose correction overfits.
 
-A later measurement changes what that means. Balancing raises the physics
-weight until the learned correction is negligible, so the balanced `pinn` is
-in effect the `physics` fit plus a vanishing correction: it improves on the
-*unbalanced* PINN, whose correction overfits, but never beats `physics` by
-more than a few percent. The frozen `pinn` numbers on the algebraic tracks
-should be read as copies of `physics`. The measurement is in
-[`docs/optimization/`](docs/optimization/) §5; whether to change the frozen
-configuration is an open item in [`docs/DECISIONS.md`](docs/DECISIONS.md).
+With the correction switched back on, the results tables show what it does:
+out of range it is worse than the fitted law on hydrogen, CMB and helium on
+every reporting seed, and on Kepler in the median but not on every seed; and
+where the validation block prefers no correction at all, the weight is
+pinned at the top of its grid and the arm is the law by choice. The
+validation block sits just above the fitted range while the test runs much
+further, so the rule cannot see how far out a correction fails; that is a
+limit of any choice made without the test data.
 
 Rejected, with their measurements: early stopping hurt four cells and helped
 none; Fourier features made hydrogen interpolation **98× worse**; L-BFGS ran

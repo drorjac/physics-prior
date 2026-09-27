@@ -120,10 +120,10 @@
       "track": "gravity/kepler",
       "arm": "pinn",
       "n_seeds": 3,
-      "nrmse_in": 1.1632038672433649e-08,
-      "nrmse_out": 6.208668163480986e-05,
-      "out/in": 5337.558048353713,
-      "out/in range": "567 \u2013 6,610"
+      "nrmse_in": 1.1335685543133365e-08,
+      "nrmse_out": 0.0002464957017892,
+      "out/in": 21745.107594177727,
+      "out/in range": "2,220 \u2013 41,600"
     },
     {
       "track": "gravity/kepler",
@@ -210,10 +210,10 @@
       "track": "quantum/hydrogen",
       "arm": "pinn",
       "n_seeds": 3,
-      "nrmse_in": 1.82390772960882e-06,
-      "nrmse_out": 0.0001623999321367,
-      "out/in": 89.03955474300803,
-      "out/in range": "27.0 \u2013 233"
+      "nrmse_in": 3.277580453046784e-05,
+      "nrmse_out": 0.0141560521454516,
+      "out/in": 431.90555802504775,
+      "out/in range": "282 \u2013 1,480"
     },
     {
       "track": "quantum/hydrogen",
@@ -255,10 +255,10 @@
       "track": "quantum/helium",
       "arm": "pinn",
       "n_seeds": 3,
-      "nrmse_in": 0.2689109209571079,
-      "nrmse_out": 0.0858673340419476,
-      "out/in": 0.3193151610813296,
-      "out/in range": "0.318 \u2013 0.320"
+      "nrmse_in": 0.0029973633996678,
+      "nrmse_out": 0.4075757722891791,
+      "out/in": 135.9780973953145,
+      "out/in range": "96.0 \u2013 194"
     },
     {
       "track": "quantum/helium",
@@ -300,10 +300,10 @@
       "track": "quantum/cmb",
       "arm": "pinn",
       "n_seeds": 3,
-      "nrmse_in": 0.0001337118724277,
-      "nrmse_out": 0.0006356725484862,
-      "out/in": 4.754047168323947,
-      "out/in range": "4.27 \u2013 5.72"
+      "nrmse_in": 0.0001331977939481,
+      "nrmse_out": 0.0056227296125706,
+      "out/in": 42.213383915063,
+      "out/in range": "5.95 \u2013 102"
     },
     {
       "track": "quantum/cmb",
@@ -329,8 +329,8 @@
       "track": "gravity/kepler",
       "arm": "pinn",
       "n_seeds": 3,
-      "ratio (median)": 0.8214632363146244,
-      "ratio range": "0.544 \u2013 1.00",
+      "ratio (median)": 3.2613622051894815,
+      "ratio range": "0.333 \u2013 6.24",
       "verdict": "mixed"
     },
     {
@@ -377,8 +377,8 @@
       "track": "quantum/hydrogen",
       "arm": "pinn",
       "n_seeds": 3,
-      "ratio (median)": 199.94209032847976,
-      "ratio range": "111 \u2013 524",
+      "ratio (median)": 17428.521179295043,
+      "ratio range": "14,000 \u2013 52,800",
       "verdict": "physics better on every seed"
     },
     {
@@ -401,9 +401,9 @@
       "track": "quantum/helium",
       "arm": "pinn",
       "n_seeds": 3,
-      "ratio (median)": 1.0010350668511232,
-      "ratio range": "0.998 \u2013 1.00",
-      "verdict": "mixed"
+      "ratio (median)": 4.751488386271349,
+      "ratio range": "4.49 \u2013 5.98",
+      "verdict": "physics better on every seed"
     },
     {
       "track": "quantum/helium",
@@ -425,9 +425,9 @@
       "track": "quantum/cmb",
       "arm": "pinn",
       "n_seeds": 3,
-      "ratio (median)": 1.1106144677719256,
-      "ratio range": "0.997 \u2013 1.34",
-      "verdict": "mixed"
+      "ratio (median)": 9.82374474241766,
+      "ratio range": "1.38 \u2013 22.9",
+      "verdict": "physics better on every seed"
     },
     {
       "track": "quantum/cmb",
@@ -536,7 +536,7 @@
       "oracle nRMSE in": 1.5374005048383638e-08,
       "oracle nRMSE out": 7.615129140148809e-05,
       "beat oracle in-range": "physics, pinn, sr",
-      "beat oracle out-of-range": "physics, pinn",
+      "beat oracle out-of-range": "physics",
       "explanation": "the oracle carries the IAU nominal GM_sun; a fitted GM absorbs the planet masses and the osculating-vs-mean semi-major axis, both omitted from P = 2 pi sqrt(a^3/GM)."
     },
     {
@@ -568,7 +568,7 @@
       "oracle nRMSE in": 0.0010043509729475,
       "oracle nRMSE out": 0.0011486431883597,
       "beat oracle in-range": "physics, pinn, sr",
-      "beat oracle out-of-range": "physics, pinn",
+      "beat oracle out-of-range": "physics",
       "explanation": "the oracle carries T = 2.72548 K (Fixsen 2009) while the distributed FIRAS monopole is built on a 2.725 K blackbody, so a fitted T is closer to THIS dataset by construction."
     }
   ]

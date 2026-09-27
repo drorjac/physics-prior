@@ -14,9 +14,9 @@
     "pinn": {
       "expression": "R*(1 - 1/n**2)  + NN(x)",
       "params": {
-        "R": 109678.78252142893
+        "R": 109678.8573825054
       },
-      "seconds": 6.415248155593872,
+      "seconds": 9.406141996383667,
       "sigma": {}
     },
     "sr": {
@@ -39,6 +39,7 @@
   "limit_minus_bohr_icm": 1.1883402970561292,
   "limit_minus_bohr_ppm": 10.834851208310676,
   "n_levels": 40,
+  "pinn_w_phys": 1,
   "provenance": {
     "bytes": 5226,
     "file": "nist_h_levels.tsv",

@@ -73,6 +73,9 @@ class Problem:
     sr_transform: Callable | None = None  # (x, y) -> (X_sr, y_sr) if SR sees
     nn_cfg: dict = field(default_factory=dict)
     pinn_epochs: int = 6000
+    # The `pinn` arm's physics weight for this track, chosen on the tuning
+    # seeds by `physprior.benchmark.pinn_tuning`; None means 1.0.
+    pinn_w_phys: float | None = None
     # A track may replace an arm's implementation -- e.g. track G's `pinn` is
     # the ODE-residual PINN, because its law IS a differential equation.
     # Signature: impl(prob, idx, seed, w_phys) -> Fit
@@ -127,14 +130,18 @@ def fit_arm(
     prob: Problem,
     idx: np.ndarray,
     seed: int,
-    w_phys: float = 1.0,
+    w_phys: float | None = None,
     sr_seed: int | None = None,
     sr_fast: bool = False,
     pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> Fit:
     """`pinn_options` is how an ablation turns one switch on without
     touching the arm every other track uses; it defaults to the
-    configuration the committed results were produced with."""
+    configuration the committed results were produced with.
+
+    `w_phys=None` means the track's own tuned weight, `prob.pinn_w_phys`."""
+    if w_phys is None:
+        w_phys = prob.pinn_w_phys if prob.pinn_w_phys is not None else 1.0
     if arm in prob.arm_impl:
         impl = prob.arm_impl[arm]
         # An override that has not opted into the options must not silently
@@ -268,7 +275,7 @@ def sweep_budget(
     budgets,
     seeds=REPORT_SEEDS,
     arms=ARMS,
-    w_phys: float = 1.0,
+    w_phys: float | None = None,
     progress: bool = True,
     pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> pd.DataFrame:
@@ -301,7 +308,7 @@ def sweep_noise(
     seeds=REPORT_SEEDS,
     arms=ARMS,
     n_train: int | None = None,
-    w_phys: float = 1.0,
+    w_phys: float | None = None,
     progress: bool = True,
     pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> pd.DataFrame:
@@ -350,7 +357,7 @@ def study_extrapolation(
     train_frac: float = 0.5,
     seeds=REPORT_SEEDS,
     arms=ARMS,
-    w_phys: float = 1.0,
+    w_phys: float | None = None,
     pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> pd.DataFrame:
     itr, ite = split_extrapolate(prob.x[:, 0], train_frac)

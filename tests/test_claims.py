@@ -572,16 +572,22 @@ def test_helium_rydberg_absorbs_the_defect(helium, quantum_doc):
     assert f"{ratio:.0f} times worse" in quantum_doc
 
 
-def test_helium_pinn_is_the_physics_fit(helium, quantum_doc):
+def test_helium_correction_hurts_out_of_range(helium, quantum_doc):
     p = helium["pinn"]
-    frozen = p[p.variant == "pinn"]
-    assert (frozen.correction_rms_frac < 2e-6).all()
+    tuned = p[p.variant == "pinn"]
+    assert (tuned.correction_rms_frac > 0.1).all()
+    worse = helium["out"]["pinn"] / helium["out"]["physics"]
+    assert (worse > 1).all()
+    assert f"{worse.min():.1f} to {worse.max():.1f} times worse" in quantum_doc
+    balanced = p[p.variant == "pinn_balanced"]
+    assert (balanced.correction_rms_frac < 2e-6).all()
     assert "below 2×10⁻⁶" in quantum_doc
-    gap = (helium["out"]["pinn"] / helium["out"]["physics"] - 1).abs().max()
+    gap = (
+        (balanced.set_index("seed").nrmse_out / helium["out"]["physics"] - 1)
+        .abs()
+        .max()
+    )
     assert gap < 0.003
-    free = p[p.variant == "pinn_unbalanced"].set_index("seed").nrmse_out
-    worse = free / helium["out"]["physics"]
-    assert f"{worse.min():.0f} to {worse.max():.0f} times worse" in quantum_doc
 
 
 def test_helium_sr_beats_the_hydrogenic_law_on_every_seed(helium, quantum_doc):

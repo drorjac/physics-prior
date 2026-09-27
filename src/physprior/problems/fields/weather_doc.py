@@ -279,14 +279,17 @@ b have no published value. The `oracle` arm therefore holds Gamma at -6.5
 and fits T0, a and b on the training stations; it tests the standard
 lapse rate, and it is not a ceiling.
 
-The `pinn` arm is the project's frozen PINN with its constants scaled so
+The `pinn` arm is the project's PINN with its constants scaled so
 Adam can reach them: T0 starts at the mean training temperature and Gamma is
 optimised in log space from -1 K/km. This was chosen on the tuning seeds by
 one criterion, that the PINN's constants reach the least-squares constants
-on the same training stations. The frozen PINN from fixed starts
+on the same training stations. The same PINN from fixed starts
 (T0 = 10 degC, Gamma = 0) is reported as `PINN, fixed start` on the
 elevation split: an additive constant moves by about one learning rate per
-Adam step, and those constants do not get there in 4000 epochs.
+Adam step, and those constants do not get there in 4000 epochs. Its physics
+weight is tuned per case on the tuning seeds, from the highest of the
+training stations (`tune/w_phys_selection.csv`); where that block prefers no
+correction, the weight is pinned at the top of its grid.
 
 The arms see x = (z, lon, lat). Two held-out splits:
 

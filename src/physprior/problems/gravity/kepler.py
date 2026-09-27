@@ -42,6 +42,10 @@ from physprior.util import first_column
 
 TRACK = "gravity/kepler"
 
+# The `pinn` arm's physics weight, chosen on the tuning seeds by
+# `physprior.benchmark.pinn_tuning` (results/gravity/kepler/tune/w_phys_selection.csv).
+PINN_W_PHYS = 100
+
 
 @law("P = 2*pi*sqrt(a**3/(G*M))")
 def law_np(x, GM):
@@ -67,6 +71,7 @@ def problem() -> tuple[Problem, dict]:
     pt = eph.planets()
     prob = Problem(
         track=TRACK,
+        pinn_w_phys=PINN_W_PHYS,
         x=pt.a_au.reshape(-1, 1),
         y=pt.period_d,
         law_np=law_np,

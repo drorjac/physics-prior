@@ -63,5 +63,7 @@ a boundary condition leave it under-determined. Full tables, generated from
   come from the ISD list and are not checked against a terrain model.
 - The radio study is simulation only, in 2-D with a line source, so the
   free-space path-loss exponent is 1, not the 2 of a point source in 3-D.
-- On both tracks the frozen `pinn` arm reduces to the `physics` fit, for the
-  reason measured in [optimization/](../optimization/) §5.
+- The `pinn` arm's physics weight is tuned per case and scene on the tuning
+  seeds. Where the validation block prefers no correction, the weight is
+  pinned at the top of its grid and the arm is the law by choice
+  (`results/fields/*/tune/w_phys_selection.csv`).

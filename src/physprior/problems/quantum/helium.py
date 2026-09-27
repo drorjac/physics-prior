@@ -61,6 +61,10 @@ from physprior.methods.pinn import PhysParam
 from physprior.util import first_column
 
 TRACK = "quantum/helium"
+
+# The `pinn` arm's physics weight, chosen on the tuning seeds by
+# `physprior.benchmark.pinn_tuning` (results/quantum/helium/tune/w_phys_selection.csv).
+PINN_W_PHYS = 0.001
 SR_SCALE = 1.0e5  # cm^-1 -> O(1), so PySR's constants stay sane
 N_TRAIN_MAX = 10  # extrapolation: fit n <= 10, predict n = 11..35
 L_LETTERS = "SPDFGHIK"
@@ -68,6 +72,9 @@ L_LETTERS = "SPDFGHIK"
 # Chosen by `tune_nn()` on the tuning seeds (3/7/19), on a held-out half of
 # the n <= 10 terms, before any reporting seed was run (validation RMSE
 # 335.5 cm^-1). Re-run it to check.
+# The arm as it was frozen before 2026-09-27, kept for the diagnostic above.
+BALANCED = pinn_mod.PinnOptions(balance=True)
+
 NN_CFG = dict(width=32, depth=3, weight_decay=1e-5, epochs=6000)
 
 
@@ -97,6 +104,7 @@ def problem() -> tuple[Problem, dict]:
     x = np.column_stack([he.n, he.l, he.s])
     prob = Problem(
         track=TRACK,
+        pinn_w_phys=PINN_W_PHYS,
         x=x,
         y=he.energy_icm,
         law_np=law_np,
@@ -291,6 +299,44 @@ def defect_structure(table: pd.DataFrame, arm: str) -> dict:
     }
 
 
+def defect_study(prob, itr, ite, ritz, quick: bool = False) -> None:
+    """Prediction 3: the defect structure each arm learned, out of range, per
+    reporting seed, from fits on the extrapolation training split.
+
+    `pinn_balanced` is a diagnostic, not an arm: the arm as it was frozen
+    until 2026-09-27, with loss balancing, which raises the physics weight
+    until the correction vanishes. It shows what the tuned weight changed.
+    Nothing is selected on it.
+    """
+    defect_rows, structure_rows, pinn_rows = [], [], []
+    for seed in REPORT_SEEDS if not quick else REPORT_SEEDS[:1]:
+        fits = {arm: fit_arm(arm, prob, itr, seed) for arm in ("physics", "pinn", "nn")}
+        fits["pinn_balanced"] = fit_arm(
+            "pinn", prob, itr, seed, w_phys=1.0, pinn_options=BALANCED
+        )
+        fits["ritz"] = ritz
+        for name in ("pinn", "pinn_balanced"):
+            e = fits[name].extra
+            pinn_rows.append(
+                {
+                    "seed": seed,
+                    "variant": name,
+                    "w_phys": e.get("w_phys"),
+                    "w_phys_final": e.get("w_phys_final"),
+                    "correction_rms_frac": e.get("correction_rms_frac"),
+                    **_score_out(prob, fits[name], itr, ite),
+                }
+            )
+        table = defect_table(prob, fits, ite)
+        table.insert(0, "seed", seed)
+        defect_rows.append(table)
+        for arm in fits:
+            structure_rows.append({"seed": seed, **defect_structure(table, arm)})
+    save_table(pd.concat(defect_rows, ignore_index=True), TRACK, "defects")
+    save_table(pd.DataFrame(structure_rows), TRACK, "defect_structure")
+    save_table(pd.DataFrame(pinn_rows), TRACK, "pinn_correction")
+
+
 # --------------------------------------------------------------------------
 # The run
 # --------------------------------------------------------------------------
@@ -339,40 +385,7 @@ def run(quick: bool = False) -> dict:
         "L": ritz.params["L"],
     }
 
-    # Prediction 3: the defect structure each arm learned, out of range, per
-    # reporting seed, from fits on the extrapolation training split.
-    #
-    # `pinn_unbalanced` is a diagnostic, not an arm and not a candidate
-    # default: the frozen pinn's loss balancing raises the physics weight
-    # until the correction is ~1e-5 of the data's spread, so the frozen arm
-    # cannot show what a correction would learn. The unbalanced variant
-    # (w_phys = 1, fixed) shows it. Nothing is selected on it.
-    defect_rows, structure_rows, pinn_rows = [], [], []
-    for seed in REPORT_SEEDS if not quick else REPORT_SEEDS[:1]:
-        fits = {arm: fit_arm(arm, prob, itr, seed) for arm in ("physics", "pinn", "nn")}
-        fits["pinn_unbalanced"] = fit_arm(
-            "pinn", prob, itr, seed, pinn_options=pinn_mod.DEFAULT_PINN
-        )
-        fits["ritz"] = ritz
-        for name in ("pinn", "pinn_unbalanced"):
-            e = fits[name].extra
-            pinn_rows.append(
-                {
-                    "seed": seed,
-                    "variant": name,
-                    "w_phys_final": e.get("w_phys_final"),
-                    "correction_rms_frac": e.get("correction_rms_frac"),
-                    **_score_out(prob, fits[name], itr, ite),
-                }
-            )
-        table = defect_table(prob, fits, ite)
-        table.insert(0, "seed", seed)
-        defect_rows.append(table)
-        for arm in fits:
-            structure_rows.append({"seed": seed, **defect_structure(table, arm)})
-    save_table(pd.concat(defect_rows, ignore_index=True), TRACK, "defects")
-    save_table(pd.DataFrame(structure_rows), TRACK, "defect_structure")
-    save_table(pd.DataFrame(pinn_rows), TRACK, "pinn_correction")
+    defect_study(prob, itr, ite, ritz, quick)
 
     # Headline fit on everything, for the recovered constants.
     allidx = np.arange(n)

@@ -61,8 +61,10 @@ Assuming second order (the analytic check above falls as h²), the error of the 
 `physics` fits P = P0 − 10 n log10(d), d the distance to an unknown
 transmitter (x_t, y_t), from several starts. `oracle` is the same law with
 the true position, n = 1 and the analytic P0. `pinn` is the law plus a
-network correction (started from the physics fit, with the project's frozen
-loss balancing); `pinn_free` is the same with w_phys = 1 and no balancing.
+network correction, started from the physics fit, with a physics weight
+tuned per scene on the tuning seeds (pinned at the top of its grid in both
+scenes, so the arm is the law by choice); `pinn_free` is the same with
+w_phys = 1.
 `nn` is a tuned MLP, `gp` is ordinary kriging, `kriging` is the fitted law
 plus a GP on its residuals.
 
@@ -120,7 +122,7 @@ exponent and P0:
 | walls | physics | 256 | 0.14 | 3.56 | -14.65 |
 | walls | pinn | 16 | 0.93 | 3.31 | -19.65 |
 | walls | pinn | 32 | 1.60 | 3.51 | -15.18 |
-| walls | pinn | 64 | 0.36 | 3.52 | -16.21 |
+| walls | pinn | 64 | 0.36 | 3.53 | -16.21 |
 | walls | pinn | 128 | 0.22 | 3.60 | -14.40 |
 | walls | pinn | 256 | 0.14 | 3.56 | -14.65 |
 | walls | pinn_free | 16 | 0.93 | 3.31 | -19.65 |
@@ -153,7 +155,7 @@ exponent and P0:
 | walls | nn | 2.94 | 14.64 | — |
 | walls | oracle | 0.64 | 14.97 | 0.00 |
 | walls | physics | 0.57 | 15.44 | 0.43 |
-| walls | pinn | 0.57 | 15.44 | 0.43 |
+| walls | pinn | 0.57 | 15.43 | 0.43 |
 | walls | pinn_free | 1.04 | 11.25 | 0.43 |
 
 ![extrapolation](../../figures/fields/rf_extrapolation.png)
@@ -174,7 +176,7 @@ exponent and P0:
 | walls | nn | 1.20 | 2.05 | 4.50 | 10.90 |
 | walls | oracle | 11.58 | 11.58 | 11.58 | 11.58 |
 | walls | physics | 4.70 | 4.67 | 4.67 | 4.79 |
-| walls | pinn | 4.59 | 4.58 | 4.59 | 4.79 |
+| walls | pinn | 4.58 | 4.57 | 4.59 | 4.79 |
 | walls | pinn_free | 2.49 | 2.64 | 4.44 | 8.73 |
 
 ## Shape A: a Helmholtz-residual PINN on a window

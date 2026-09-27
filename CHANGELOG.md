@@ -79,13 +79,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The `pinn` arm no longer uses loss balancing; each track has its own
+  physics weight, tuned.** Balancing raised the weight without bound, because
+  this arm's penalty mean(NN²) has a gradient that vanishes with the
+  correction, and switched the correction off. The weight is now a
+  per-track hyperparameter chosen on the tuning seeds from a validation block
+  at the top of the training range (`benchmark/pinn_tuning.py`, and
+  `problems/fields/retune.py` for the fields tracks), with ties to the larger
+  weight and grid edges extended. The `pinn` rows of every committed sweep
+  were recomputed with the settings each sweep was run with; no other arm's
+  rows changed. With the correction back on, the arm extrapolates worse
+  than the fitted law on hydrogen, CMB and helium on every reporting seed,
+  and on Kepler in the median; where the validation block prefers no
+  correction (weather in July, both radio scenes) the weight is pinned high
+  and the arm is the law by choice. Helium's `pinn_unbalanced` diagnostic is
+  replaced by `pinn_balanced`, the old configuration. `optim/pinn_balance.py`
+  now names `balance=True` explicitly instead of the frozen default.
 - **The reading of the frozen `pinn` arm.** Loss balancing drives the physics
   weight up without bound and switches the learned correction off, so on the
   algebraic tracks the balanced `pinn` is the `physics` fit plus a vanishing
   correction. Phase 2's gain was measured against an unbalanced PINN whose
   correction overfits. README, `docs/plans/PLAN.md` §5A and
-  `docs/DECISIONS.md` (an open item) say so; the frozen configuration itself
-  is unchanged.
+  `docs/DECISIONS.md` said so, and the configuration was then changed
+  (above).
 - The notebook helpers moved to `reporting/cells.py`, so topic modules can
   share them without a circular import.
 - `docs/TOOLING.md` versions now match `requirements.lock`.
