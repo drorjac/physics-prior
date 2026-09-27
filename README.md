@@ -75,6 +75,10 @@ physprior optim              # optimizers, loss functions, curvature, loss balan
 physprior theory             # how symbolic regression searches; the fitting packages
 ```
 
+`make reproduce` regenerates everything into `build/reproduce/` and checks
+every number against `results/`; the last run is recorded in
+[`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
+
 Every writable path is overridable — `PHYSPRIOR_RESULTS_DIR`,
 `PHYSPRIOR_DATA_DIR`, `PHYSPRIOR_CACHE_DIR`, `PHYSPRIOR_OFFLINE=1` — so the
 package behaves the same from a checkout, a wheel, or CI.

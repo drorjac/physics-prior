@@ -38,6 +38,7 @@ in advance, and it is the one page to read if you only read one.
 | [METHOD.md](METHOD.md) | the design decisions, and the ones made *after* something went wrong |
 | [DATA.md](DATA.md) | provenance, units, and the caveats stated up front |
 | [TOOLING.md](TOOLING.md) | which package does what, and exactly how a formula comes out of symbolic regression |
+| [REPRODUCTION.md](REPRODUCTION.md) | the last full reproduction: what was re-run, what matched, and on what |
 | [RESULTS.md](RESULTS.md) | **generated** from `results/` by `physprior report` — do not edit |
 
 ## Planning
