@@ -41,11 +41,12 @@ import pandas as pd
 from physprior.config import get_settings
 from physprior.io import load_json
 
-# The four real-data benchmark tracks, by problem.
+# The real-data benchmark tracks, by problem.
 TRACKS_BY_PROBLEM = {
     "gravity": ["gravity/kepler"],
     "relativity": ["relativity/gw150914"],
-    "quantum": ["quantum/hydrogen", "quantum/cmb"],
+    "quantum": ["quantum/hydrogen", "quantum/helium", "quantum/cmb"],
+    "fields": ["fields/weather/july"],
 }
 ALL_TRACKS = [t for ts in TRACKS_BY_PROBLEM.values() for t in ts]
 COMPETITORS = ("physics", "pinn", "sr", "nn")

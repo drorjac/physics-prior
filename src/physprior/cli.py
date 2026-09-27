@@ -8,6 +8,10 @@
     physprior data list
     physprior data fetch NAME
     physprior neglected [STAGE] [--quick]
+    physprior theory [--quick] [--parts P ...]
+    physprior optim [--quick]
+    physprior reconstruct [--quick] [--workers N] [--doc-only]
+    physprior dynamics [--quick] [--doc-only]
     physprior info
 
 This is the only module that configures logging or prints; everything under it
@@ -140,6 +144,49 @@ def build_parser() -> argparse.ArgumentParser:
     )
     neg.add_argument(
         "--quick", action="store_true", help="short training, for a smoke test"
+    )
+
+    th = sub.add_parser(
+        "theory",
+        help="symbolic-regression theory studies: search space, GP, SINDy, packages",
+    )
+    th.add_argument("--quick", action="store_true", help="short runs, for a smoke test")
+    th.add_argument(
+        "--parts",
+        nargs="*",
+        default=None,
+        help="growth tune noise budget pysr vocabulary pareto sindy packages",
+    )
+
+    opt = sub.add_parser(
+        "optim",
+        help="optimizers, loss functions, curvature and the balance diagnostic",
+    )
+    opt.add_argument(
+        "--quick", action="store_true", help="short runs, for a smoke test"
+    )
+
+    rec = sub.add_parser(
+        "reconstruct",
+        help="sparse-sensor field reconstruction in 1-D, 2-D and 3-D",
+    )
+    rec.add_argument(
+        "--quick", action="store_true", help="short runs, for a smoke test"
+    )
+    rec.add_argument("--workers", type=int, default=None, help="parallel processes")
+    rec.add_argument(
+        "--doc-only", action="store_true", help="re-render the page from results/"
+    )
+
+    dyn = sub.add_parser(
+        "dynamics",
+        help="learning the update rule of ODEs and PDEs: learned steppers vs structure",
+    )
+    dyn.add_argument(
+        "--quick", action="store_true", help="short runs, for a smoke test"
+    )
+    dyn.add_argument(
+        "--doc-only", action="store_true", help="redraw figures and page from results/"
     )
 
     sub.add_parser("info", help="show resolved paths and configuration")
@@ -307,6 +354,40 @@ def main(argv: Sequence[str] | None = None) -> int:
 
             _record_environment()
             neglected_main(quick=args.quick, only=args.stage)
+            return 0
+        if args.command == "theory":
+            from physprior.symbolic import studies
+
+            studies.run(quick=args.quick, parts=args.parts)
+            return 0
+        if args.command == "optim":
+            from physprior.optim import report as optim_report
+
+            optim_report.run_all(quick=args.quick)
+            optim_report.make_figures()
+            optim_report.render_doc()
+            return 0
+        if args.command == "reconstruct":
+            if args.doc_only:
+                from physprior.reconstruction.doc import render_doc
+
+                render_doc()
+            else:
+                from physprior.reconstruction.study import run as reconstruct
+
+                reconstruct(quick=args.quick, workers=args.workers)
+            return 0
+        if args.command == "dynamics":
+            from physprior.dynamics import doc as dynamics_doc
+            from physprior.dynamics import figures as dynamics_figures
+
+            if args.doc_only:
+                dynamics_figures.regenerate()
+            else:
+                from physprior.dynamics.study import run as run_dynamics
+
+                run_dynamics(quick=args.quick)
+            dynamics_doc.render_doc()
             return 0
         if args.command == "info":
             return _info()

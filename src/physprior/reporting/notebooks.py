@@ -887,11 +887,106 @@ one of the worst extrapolations.
     )
 
 
+def nb_fields():
+    return _nb(
+        [
+            md("""
+# Problem: fields
+
+Two spatial fields reconstructed from readings at a few places: monthly-mean
+air temperature over the Alps from NOAA stations, and a simulated radio
+field in a building. The question is the project's usual one on a map
+instead of a curve: what does a physical law buy the reconstruction, and
+what does it cost where the law is incomplete?
+"""),
+            code(HEADER),
+            md(f"""
+{section(1, "two laws for two maps")}
+
+**Temperature.** Near the surface, a monthly mean falls with height at a
+nearly constant lapse rate $\\Gamma$, with a weak horizontal gradient:
+
+$$T(\\lambda, \\phi, z) = T_0 + a\\,(\\lambda - \\lambda_0)
+  + b\\,(\\phi - \\phi_0) + \\Gamma z$$
+
+The standard atmosphere gives $\\Gamma = -6.5$ K/km. The test is extrapolation
+up the mountain: fit the lower stations, predict the highest ones.
+
+**Radio.** A transmitter's received power falls with distance as
+
+$$P(d) = P_0 - 10\\,n \\log_{{10}}(d / d_0)$$
+
+with the transmitter position unknown, so fitting the law also locates the
+transmitter. In free space the law is complete; walls make it incomplete.
+"""),
+            md(f"""
+{section(2, "pulled and created")}
+
+**Pulled**: NOAA ISD-Lite hourly station records for 2023, reduced to
+monthly means of the 12 UTC observation by a rule fixed before any fit
+(`physprior.data.sources.isd.SnapshotRule`).
+
+**Created**: the radio field, solved from the 2-D Helmholtz equation with an
+absorbing boundary, and a simulated temperature control at the real station
+positions with a known lapse rate.
+"""),
+            code("""
+st = pd.read_csv(RESULTS / "fields/weather/july/stations.csv")
+print(f"{len(st)} stations, {st.elev_m.min() / 1e3:.2f} to "
+      f"{st.elev_m.max() / 1e3:.2f} km above sea level")
+display(gif("fields/weather_data.png", 620))
+display(gif("fields/rf_scene.png", 620))
+"""),
+            md(
+                f"""
+{section(3, "five arms, plus kriging")}
+
+"""
+                + method_block(
+                    discovers=True,
+                    recovers=True,
+                    arms="oracle, physics, pinn, sr, nn",
+                    note="Kriging (ordinary, and on the law's residuals) is reported "
+                    "beside the arms, not as one. The radio track has no `sr` arm.",
+                )
+            ),
+            md(f"""
+{section(4, "what the numbers say")}
+
+The recovered lapse rate, and each arm's error at the highest stations:
+"""),
+            code("""
+ex = pd.read_csv(RESULTS / "fields/weather/july/extrapolation.csv")
+display(ex.pivot_table(index="arm", columns="seed", values="nrmse_out").round(3))
+display(pd.read_csv(RESULTS / "fields/weather/july/kriging.csv").round(3))
+display(gif("fields/weather_extrapolation_july.png", 620))
+"""),
+            md("""
+The radio field, with walls: each arm's reconstruction and the recovered
+transmitter position.
+"""),
+            code("""
+display(gif("fields/rf_reconstruction_walls.png", 620))
+display(gif("fields/rf_tx_recovery.png", 620))
+"""),
+            md("""
+The conclusion below covers the July temperature track. The radio track
+keeps both scenes in one results file, and a verdict pooled across a scene
+where the law is complete and one where it is not would mean nothing; its
+per-scene tables are in `docs/fields/rf.md`.
+"""),
+            *conclusion_cells("fields"),
+        ],
+        "Problem: fields",
+    )
+
+
 BUILDERS = {
     "00_overview": nb_overview,
     "01_gravity": nb_gravity,
     "02_relativity": nb_relativity,
     "03_quantum": nb_quantum,
+    "04_fields": nb_fields,
 }
 
 

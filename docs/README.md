@@ -10,12 +10,23 @@ planning record.
 | [**gravity**](gravity/) | Newtonian orbits, the three-body problem, the solar system from JPL initial conditions; Kepler's third law from DE441 |
 | [**relativity**](relativity/) | Schwarzschild precession and post-Newtonian inspirals; GW150914 strain and Mercury's ephemeris |
 | [**quantum**](quantum/) | the Schrödinger equation, bound states and tunnelling; NIST hydrogen levels and the COBE/FIRAS blackbody |
+| [**fields**](fields/) | spatial fields: NOAA station temperatures and the lapse rate over the Alps; a simulated radio field and the path-loss law |
 | [**neglected**](neglected/) | the controlled study that cuts across all three: **when** a physics prior helps, on an algebraic law, an ODE and a PDE |
 
-The first three carry that problem's simulations, its real-data tracks, its
+The physics topics carry that problem's simulations, its real-data tracks, its
 figures and animations, and the caveats that belong to it. **neglected** is
 different in kind: it is the controlled experiment where the answer is known
 in advance, and it is the one page to read if you only read one.
+
+## Studies across problems
+
+| Study | What it answers |
+|---|---|
+| [reconstruction/](reconstruction/) | how the value of a physics prior for reconstructing a field from sparse sensors changes from 1-D to 3-D ([hypothesis, written first](reconstruction/HYPOTHESIS.md)) |
+| [dynamics/](dynamics/) | learning the update rule of an ODE or PDE: what structure buys over long rollouts |
+| [optimization/](optimization/) | optimizers, learning rates, loss functions and curvature for physics-constrained models and black boxes; what loss balancing does to the `pinn` arm |
+| [theory/symbolic_regression.md](theory/symbolic_regression.md) | how symbolic regression searches, measured with in-repo implementations, PySR and SINDy |
+| [theory/packages.md](theory/packages.md) | what `curve_fit`, autograd, Adam and SymPy do underneath, checked against the installed versions |
 
 ## Cross-cutting
 

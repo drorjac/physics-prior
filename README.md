@@ -21,8 +21,11 @@ you can watch**, where the governing law is known exactly.
 > law is already right, the correction only adds error out of range. When
 > what is missing has the law's own shape, the fit absorbs it into the law's
 > constant, and the constant comes out wrong while the curve looks fine. This
-> holds in controlled simulations and on one real track so far. The questions,
-> their evidence and what would refute them are in
+> holds in controlled simulations and on GW150914. Helium, the test named in
+> advance, refutes it as stated: the missing quantum defect was
+> distinguishable, yet the correction did not help, because it had to
+> extrapolate in n. The correction must also be one a network can carry out
+> of range. The questions, their evidence and what would refute them are in
 > [`docs/HYPOTHESES.md`](docs/HYPOTHESES.md).
 
 The package is organised along the two axes that question needs:
@@ -64,6 +67,12 @@ physprior data list          # the registered datasets
 physprior neglected          # the neglected-terms study: where a prior actually wins
 physprior neglected tune     # the design sweeps behind it, on the tuning seeds
 physprior info               # resolved paths, and which device torch will use
+
+physprior run fields         # spatial fields: station temperatures, a radio field
+physprior reconstruct        # field reconstruction from sparse sensors, 1-D to 3-D
+physprior dynamics           # learning the update rule of ODEs and PDEs
+physprior optim              # optimizers, loss functions, curvature, loss balancing
+physprior theory             # how symbolic regression searches; the fitting packages
 ```
 
 Every writable path is overridable — `PHYSPRIOR_RESULTS_DIR`,
@@ -85,10 +94,12 @@ the classical fit and a black box. The tutorials build both.
 
 ## Start here: a step-by-step PINN course
 
-Six generated, executable notebooks in
-[`notebooks/tutorials/`](notebooks/tutorials) — built from
-[`tutorials.py`](src/physprior/reporting/tutorials.py) and run in CI, so they
-cannot drift from the code they teach.
+Generated, executable notebooks in
+[`notebooks/tutorials/`](notebooks/tutorials), built from
+[`tutorials.py`](src/physprior/reporting/tutorials.py) and its topic modules,
+so they cannot drift from the code they teach. T1–T7 are the PINN course;
+T8–T13 cover optimisation, spatial fields, symbolic regression and learned
+dynamics.
 
 ```bash
 physprior tutorials --execute
@@ -102,24 +113,56 @@ physprior tutorials --execute
 | **T4** | [relativity](notebooks/tutorials/T4_relativity.ipynb) | the law is a **truncated expansion** — a 9 M☉ bias the RMSE cannot see |
 | **T5** | [quantum](notebooks/tutorials/T5_quantum_wavefunction.ipynb) | **no data at all** — learning ψ and E together, and the four ways it breaks |
 | **T6** | [when PINNs fail](notebooks/tutorials/T6_when_pinns_fail.ipynb) | the failure catalogue, measured: which of seven standard improvements help, and which cost 98× |
+| **T7** | [when the prior wins](notebooks/tutorials/T7_when_the_prior_wins.ipynb) | a law with a **term left out**, where the correction has something real to learn |
+| **T8** | [a network from scratch](notebooks/tutorials/T8_network_from_scratch.ipynb) | an MLP in NumPy with hand-written backprop, a gradient check, and SGD through Adam written by hand |
+| **T9** | [optimizers and loss functions](notebooks/tutorials/T9_optimizers_and_losses.ipynb) | which optimizer reaches a physics fit, a PINN and a black box; curvature; robust losses; what loss balancing does |
+| **T10** | [spatial fields](notebooks/tutorials/T10_spatial_fields.ipynb) | station temperatures and the lapse rate over the Alps; kriging; a radio field where the fit also finds the transmitter |
+| **T11** | [how symbolic regression works](notebooks/tutorials/T11_how_symbolic_regression_works.ipynb) | expression trees, the search space, a genetic search and its Pareto front, SINDy, the operator set as a prior |
+| **T12** | [field reconstruction in 1-D, 2-D, 3-D](notebooks/tutorials/T12_field_reconstruction.ipynb) | a rod, a plate and a 3-D potential from sparse sensors, and how the sensor count each method needs grows with dimension |
+| **T13** | [learning the update rule](notebooks/tutorials/T13_learning_the_update.ipynb) | learned time-steppers for a pendulum, Lorenz and Burgers: energy drift, valid horizons, stability |
 
 The difficulty rises with the physics, and each domain breaks the previous
 one's assumption — by T5 the prior *is* the problem statement.
 
 ---
 
-## The three problems
+## The problems
 
 | Problem | Simulations | Real data |
 |---|---|---|
 | [**gravity**](docs/gravity) | two-body orbits · the three-body problem (figure-eight + chaos) · the solar system from JPL initial conditions · symplectic vs RK4 | Kepler's third law, DE441 |
 | [**relativity**](docs/relativity) | Schwarzschild orbits and perihelion precession · post-Newtonian inspiral waveforms · light bending | GW150914 strain (LIGO); Mercury's ephemeris |
-| [**quantum**](docs/quantum) | the Schrödinger equation: bound states, convergence, tunnelling | NIST hydrogen levels; COBE/FIRAS |
+| [**quantum**](docs/quantum) | the Schrödinger equation: bound states, convergence, tunnelling | NIST hydrogen levels; NIST helium terms; COBE/FIRAS |
+| [**fields**](docs/fields) | a 2-D radio field from the Helmholtz equation, in free space and with walls; a temperature field with a known lapse rate | NOAA ISD station temperatures over the Alps |
 
 **Why both halves.** The simulations are the *control*: when the law is
 exactly what was put in, whatever a method fails to recover is the **method's
 own error**. Every real-data number is read against that floor — and three
 results here exist only because both halves are present.
+
+## Studies across problems
+
+Each of these states its hypotheses before the runs that test them, reports
+on the reporting seeds only, and generates its page from `results/`.
+
+- **[Field reconstruction, 1-D to 3-D](docs/reconstruction/).** How many
+  sensors a physics-constrained reconstruction needs, against a GP, RBF
+  interpolation and a network, as the field's dimension grows. The
+  pre-registered hypothesis, that the physics prior's advantage widens with
+  dimension, is supported on both field families; in 1-D there is no
+  advantage at all.
+- **[Learning the update rule](docs/dynamics/).** Learned time-steppers for
+  ODEs and PDEs over long rollouts: black-box, residual, neural-ODE,
+  Hamiltonian with a symplectic step, and known physics plus a learned
+  closure. Several of the expectations written in advance are refuted.
+- **[Optimization](docs/optimization/).** Optimizers, learning rates and loss
+  functions for a physics fit, a PINN and a black box, with the curvature
+  each one lands in. It also measures what the frozen loss-balancing option
+  does to the `pinn` arm.
+- **[Symbolic regression, in theory and practice](docs/theory/symbolic_regression.md).**
+  The size of the search space, a genetic search, PySR's selection rule,
+  SINDy, and the operator set as a prior; with a companion page on what
+  [the fitting packages](docs/theory/packages.md) do underneath.
 
 ## The five arms
 
@@ -160,6 +203,8 @@ calibrated on *injected* signals with known answers.
 | quantum | CMB temperature T [K] | 2.72548 | 2.72502 | 7.58e-06 | -170 ppm (partly by construction - see caveat) |
 | quantum | Rydberg R vs NIST ionisation limit [cm^-1] | 109678.7717 | 109678.7774 | 1.53e-04 | +51 ppb |
 | quantum | Rydberg R vs Bohr prediction [cm^-1] | 109677.5834 | 109678.7774 | 1.53e-04 | +10.89 ppm = QED + relativistic |
+| quantum | R_He from the hydrogenic law, He I [cm^-1] | 109722.2755 | 123242.8128 | 771 | +12.3% = absorbed quantum defect |
+| quantum | He I limit from Rydberg-Ritz, n <= 10 [cm^-1] | 198310.6664 | 198310.5617 |  | -0.105 cm^-1 |
 | gravity | GM_sun from Kepler [m^3/s^2] | 1.327124e+20 | 1.327203e+20 | 3.38e+15 | +59.3 ppm |
 | relativity | GR coefficient alpha (Mercury) | 1 | 1.00012 | 1.65e-05 | +1.21e-04 |
 | relativity | perihelion advance [arcsec/century] | 42.98 | 42.9852 |  | +0.005 |
@@ -183,6 +228,11 @@ Extrapolation — error outside the training range relative to inside:
 | quantum/hydrogen | pinn | 3 | 1.82e-06 | 1.62e-04 | 89.0 | 27.0 – 233 |
 | quantum/hydrogen | sr | 3 | 2.25e-07 | 5.03e-07 | 2.24 | 2.16 – 5.48 |
 | quantum/hydrogen | nn | 3 | 0.00758 | 0.336 | 44.4 | 42.4 – 56.9 |
+| quantum/helium | oracle | 3 | 0.361 | 0.00146 | 0.00405 | 0.00405 – 0.00405 |
+| quantum/helium | physics | 3 | 0.269 | 0.0858 | 0.319 | 0.319 – 0.319 |
+| quantum/helium | pinn | 3 | 0.269 | 0.0859 | 0.319 | 0.318 – 0.320 |
+| quantum/helium | sr | 3 | 0.0456 | 0.0482 | 1.06 | 0.887 – 1.06 |
+| quantum/helium | nn | 3 | 0.00536 | 0.121 | 22.6 | 12.0 – 74.9 |
 | quantum/cmb | oracle | 3 | 0.00100 | 0.00115 | 1.14 | 1.14 – 1.14 |
 | quantum/cmb | physics | 3 | 1.34e-04 | 5.72e-04 | 4.26 | 4.26 – 4.26 |
 | quantum/cmb | pinn | 3 | 1.34e-04 | 6.36e-04 | 4.75 | 4.27 – 5.72 |
@@ -277,8 +327,16 @@ The `pinn` arm's configuration was frozen by ablating one switch at a time on
 the **tuning** seeds (3/7/19) and then re-measuring on the reporting seeds
 (11/23/42). Gradient-norm loss balancing (Wang et al. 2021) was the only
 option that shipped: it helps on five of the eight cells that can move, hurts
-none, and shifts the recovered constants by under 2% — so the accuracy is not
-bought out of the physics.
+none, and shifts the recovered constants by under 2%.
+
+A later measurement changes what that means. Balancing raises the physics
+weight until the learned correction is negligible, so the balanced `pinn` is
+in effect the `physics` fit plus a vanishing correction: it improves on the
+*unbalanced* PINN, whose correction overfits, but never beats `physics` by
+more than a few percent. The frozen `pinn` numbers on the algebraic tracks
+should be read as copies of `physics`. The measurement is in
+[`docs/optimization/`](docs/optimization/) §5; whether to change the frozen
+configuration is an open item in [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 Rejected, with their measurements: early stopping hurt four cells and helped
 none; Fourier features made hydrogen interpolation **98× worse**; L-BFGS ran
@@ -301,6 +359,7 @@ under the option's name.
 | [`01_gravity`](notebooks/01_gravity.ipynb) | orbits and the three-body problem running; chaos measured; the force law and Kepler's 3/2 recovered from simulation; a PINN learning an orbit |
 | [`02_relativity`](notebooks/02_relativity.ipynb) | Schwarzschild precession; 43″/century twice over; GW150914's strain; the PN ablation; the injection test |
 | [`03_quantum`](notebooks/03_quantum.ipynb) | bound states and tunnelling; SR on the solved spectra; QED from two directions; why SR misses Planck's law |
+| [`04_fields`](notebooks/04_fields.ipynb) | station temperatures and the lapse rate; the radio field and the transmitter's position |
 
 Animations live in `figures/<problem>/` and are referenced, not embedded, so
 the notebooks stay small.
@@ -313,7 +372,8 @@ the notebooks stay small.
 | [`docs/neglected/`](docs/neglected) | **when** a physics prior helps — the controlled study, on an algebraic law, an ODE and a PDE. Start here |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | what was decided, against what, and why — and what is still open |
 | [`docs/RELATED_WORK.md`](docs/RELATED_WORK.md) | the prior work — PINNs, APHYNITY, PySR, the benchmark suites — and what this project adds ([`references.bib`](docs/references.bib)) |
-| [`docs/gravity/`](docs/gravity) · [`docs/relativity/`](docs/relativity) · [`docs/quantum/`](docs/quantum) | one folder per physics topic: its simulations, its tracks, its figures and its caveats |
+| [`docs/gravity/`](docs/gravity) · [`docs/relativity/`](docs/relativity) · [`docs/quantum/`](docs/quantum) · [`docs/fields/`](docs/fields) | one folder per physics topic: its simulations, its tracks, its figures and its caveats |
+| [`docs/reconstruction/`](docs/reconstruction) · [`docs/dynamics/`](docs/dynamics) · [`docs/optimization/`](docs/optimization) · [`docs/theory/`](docs/theory) | the studies across problems |
 | [`docs/plans/`](docs/plans) | the audit, the Phase 2 outcome, and the phases waiting at their approval gates |
 | [`docs/TOOLING.md`](docs/TOOLING.md) | which package does what, and **exactly how a formula comes out of symbolic regression** |
 | [`docs/DATA.md`](docs/DATA.md) | provenance, units, and the caveats stated up front |
@@ -332,19 +392,24 @@ src/physprior/
   constants.py       physical constants, each with its source
   data/              the data layer
     cache.py           download once, checksum, record provenance
-    sources/           gwosc · firas · nist · horizons
+    sources/           gwosc · firas · nist (H I, He I) · horizons · isd
     registry.py        name -> loader
   problems/          the physics
     gravity/           orbits · kepler · discovery · run
     relativity/        spacetime · gw150914 · mercury · discovery · run
-    quantum/           schrodinger · hydrogen · cmb · discovery · run
+    quantum/           schrodinger · hydrogen · helium · cmb · discovery · run
+    fields/            weather (ISD, lapse rate) · kriging · rf (Helmholtz) · run
   methods/           neural · pinn (oracle/physics/pinn) · symbolic
   numerics/          integrators (Verlet, RK4) · stencils (+ Richardson)
   benchmark/         protocol (splits, sweeps, scoring) · metrics
                      neglected.py — the controlled study: three rungs of one ladder
   viz/               plots · animate · palette (validated, not eyeballed)
   methods/device.py  which device and dtype, and why they are not independent
-  reporting/         report · figures · notebooks · neglected_study
+  reconstruction/    sparse-sensor field reconstruction in 1-D, 2-D, 3-D
+  dynamics/          learned time-steppers for ODEs and PDEs
+  optim/             a network from scratch; optimizer, loss and curvature studies
+  symbolic/          expression trees, exhaustive and genetic search, SINDy
+  reporting/         report · figures · notebooks · tutorials · verify
   cli.py             the console script
 ```
 

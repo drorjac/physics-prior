@@ -539,3 +539,59 @@ def test_the_residual_makes_the_field_worse(neglected_doc):
         f"{data_only:.4f}, residual-trained {trained:.4f}, true {true}"
     )
     assert f"{data_only:.3f}" in neglected_doc
+
+
+# --- quantum/helium: docs/quantum/README.md ----------------------------------
+
+
+@pytest.fixture(scope="module")
+def quantum_doc() -> str:
+    return (get_settings().root / "docs" / "quantum" / "README.md").read_text()
+
+
+@pytest.fixture(scope="module")
+def helium() -> dict:
+    root = get_settings().results_dir / "quantum" / "helium"
+    if not (root / "meta.json").is_file():
+        pytest.skip("results/quantum/helium missing -- run the quantum problem")
+    import pandas as pd
+
+    ex = pd.read_csv(root / "extrapolation.csv")
+    return {
+        "meta": json.loads((root / "meta.json").read_text()),
+        "out": ex.pivot_table(index="seed", columns="arm", values="nrmse_out"),
+        "pinn": pd.read_csv(root / "pinn_correction.csv"),
+    }
+
+
+def test_helium_rydberg_absorbs_the_defect(helium, quantum_doc):
+    m = helium["meta"]
+    dev = (m["headline"]["physics"]["params"]["R"] / m["rydberg_he_icm"] - 1) * 100
+    assert f"{dev:.1f}% above" in quantum_doc
+    ratio = float((helium["out"]["physics"] / helium["out"]["oracle"]).median())
+    assert f"{ratio:.0f} times worse" in quantum_doc
+
+
+def test_helium_pinn_is_the_physics_fit(helium, quantum_doc):
+    p = helium["pinn"]
+    frozen = p[p.variant == "pinn"]
+    assert (frozen.correction_rms_frac < 2e-6).all()
+    assert "below 2×10⁻⁶" in quantum_doc
+    gap = (helium["out"]["pinn"] / helium["out"]["physics"] - 1).abs().max()
+    assert gap < 0.003
+    free = p[p.variant == "pinn_unbalanced"].set_index("seed").nrmse_out
+    worse = free / helium["out"]["physics"]
+    assert f"{worse.min():.0f} to {worse.max():.0f} times worse" in quantum_doc
+
+
+def test_helium_sr_beats_the_hydrogenic_law_on_every_seed(helium, quantum_doc):
+    gain = helium["out"]["physics"] / helium["out"]["sr"]
+    assert (gain > 1).all()
+    assert f"factor of {gain.min():.1f} to {gain.max():.1f}" in quantum_doc
+
+
+def test_helium_rydberg_ritz_error(helium, quantum_doc):
+    err = helium["meta"]["rydberg_ritz"]["nrmse_out"]
+    mant, exp = f"{err:.1e}".split("e")
+    sup = str(int(exp[1:])).translate(str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹"))
+    assert f"{mant}×10⁻{sup}" in quantum_doc

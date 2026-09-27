@@ -26,6 +26,7 @@ TRACKS = {
     "gravity/kepler": "gravity · Kepler's third law (JPL DE441)",
     "relativity/gw150914": "relativity · GW150914 inspiral (LIGO)",
     "quantum/hydrogen": "quantum · hydrogen levels (NIST ASD)",
+    "quantum/helium": "quantum · helium terms (NIST ASD)",
     "quantum/cmb": "quantum · CMB blackbody (COBE/FIRAS)",
 }
 
@@ -109,6 +110,35 @@ def parameter_recovery() -> list[dict]:
                 "= QED + relativistic",
             }
         )
+
+    m = _try(lambda: load_json("quantum/helium", "meta"))
+    if m and "headline" in m:
+        p = m["headline"]["physics"]
+        rec = p["params"]["R"]
+        pub = m["rydberg_he_icm"]
+        rows.append(
+            {
+                "track": "quantum",
+                "quantity": "R_He from the hydrogenic law, He I [cm^-1]",
+                "published": pub,
+                "recovered": rec,
+                "sigma": p["sigma"].get("R"),
+                "deviation": f"{(rec - pub) / pub * 100:+.1f}% = absorbed quantum defect",
+            }
+        )
+        ritz = m.get("rydberg_ritz")
+        if ritz:
+            lim = m["ionisation_limit_icm"]
+            rows.append(
+                {
+                    "track": "quantum",
+                    "quantity": "He I limit from Rydberg-Ritz, n <= 10 [cm^-1]",
+                    "published": lim,
+                    "recovered": ritz["L"],
+                    "sigma": None,
+                    "deviation": f"{ritz['L'] - lim:+.3f} cm^-1",
+                }
+            )
 
     m = _try(lambda: load_json("gravity/kepler", "meta"))
     if m and "headline" in m:
@@ -326,6 +356,13 @@ ORACLE_NOTES = {
     "quantum/hydrogen": (
         "the oracle carries Bohr's R_H, which the data says is 10.8 ppm "
         "low. Beating it is the QED result, not overfitting."
+    ),
+    "quantum/helium": (
+        "the oracle is the hydrogenic law with the published limit and "
+        "R_He, which omits the quantum defect by design. Fitted L and R "
+        "absorb part of the low-n defect, so a fitted arm can beat it in "
+        "range; out of range, where most terms have high l and almost no "
+        "defect, the published constants are the better law."
     ),
     "gravity/kepler": (
         "the oracle carries the IAU nominal GM_sun; a fitted GM absorbs the "

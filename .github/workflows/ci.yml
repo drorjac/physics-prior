@@ -53,7 +53,7 @@ jobs:
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
       # [notebooks]: the notebook and tutorial builders import nbformat at module
       # level, and their structure tests are offline tests like any other.
-      - run: pip install -e '.[nn,notebooks]' pytest pytest-cov
+      - run: pip install -e '.[nn,notebooks,fields]' pytest pytest-cov
       - name: tests that need neither the network nor Julia
         run: pytest -m "not slow and not network and not sr" --cov --cov-report=term-missing
 
@@ -66,7 +66,7 @@ jobs:
         with: { python-version: "3.12", cache: pip }
       - run: python -m pip install --upgrade pip
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
-      - run: pip install -e '.[nn,notebooks]' pytest
+      - run: pip install -e '.[nn,notebooks,fields]' pytest
       # Every tutorial must build and its code must parse. Executing all six
       # trains a few dozen networks and belongs in a nightly, but T1 is
       # seconds and catches the common breakage: a renamed symbol in the

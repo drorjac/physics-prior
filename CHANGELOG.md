@@ -8,6 +8,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`quantum/helium`**: the 452 singly excited He I terms from the NIST ASD,
+  with the hydrogenic law, a Rydberg–Ritz comparison fitted on the same
+  split, and a quantum-defect diagnostic. It is the H3 test named in advance,
+  and H3's own refutation criterion is met: the frozen `pinn` arm reduces to
+  the `physics` fit, and neither it nor an unbalanced variant learns the
+  defect's l structure. Symbolic regression beats the hydrogenic law out of
+  range.
+- **`fields`**, a new problem. `fields/weather`: NOAA ISD monthly-mean station
+  temperatures over the Alps, the lapse rate as the physics prior,
+  extrapolation up the mountain, kriging on its own and on the law's
+  residuals, and a simulated control that checks the error bars.
+  `fields/rf`: a 2-D Helmholtz radio field with a grid-convergence study, the
+  log-distance law with the transmitter position fitted, free space against
+  walls. New extra: `fields` (scikit-learn, for the GP arms).
+- **`physprior reconstruct`**: sparse-sensor field reconstruction in 1-D, 2-D
+  and 3-D, with the hypothesis written before the runs; the physics prior's
+  advantage grows with dimension on both field families.
+- **`physprior dynamics`**: learned time-steppers for ODEs and PDEs, compared
+  over long rollouts against nine expectations written in advance.
+- **`physprior optim`**: a NumPy network with hand-written backprop and
+  optimizers; optimizer, learning-rate, loss-function and curvature studies
+  for physics fits, PINNs and black boxes; and a measurement of what loss
+  balancing does to the `pinn` arm (see Changed).
+- **`physprior theory`**: in-repo symbolic regression (exhaustive and genetic
+  search, PySR's selection rule, SINDy), measured against PySR, with
+  `docs/theory/` on how symbolic regression and the fitting packages work.
+- Tutorials **T8–T13** and the problem notebook **`04_fields`**.
+
 - **The reproduction contract.**
   - `physprior verify CANDIDATE` compares a regenerated results directory with
     the committed one, number by number (relative tolerance 1e-9). It
@@ -48,6 +76,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   new sourced constants `[DE440]`; `results/relativity/mercury/
   neglected_terms.csv`; `tests/test_mercury_model.py` checks EIH against its
   Schwarzschild limit.
+
+### Changed
+
+- **The reading of the frozen `pinn` arm.** Loss balancing drives the physics
+  weight up without bound and switches the learned correction off, so on the
+  algebraic tracks the balanced `pinn` is the `physics` fit plus a vanishing
+  correction. Phase 2's gain was measured against an unbalanced PINN whose
+  correction overfits. README, `docs/plans/PLAN.md` §5A and
+  `docs/DECISIONS.md` (an open item) say so; the frozen configuration itself
+  is unchanged.
+- The notebook helpers moved to `reporting/cells.py`, so topic modules can
+  share them without a circular import.
+- `docs/TOOLING.md` versions now match `requirements.lock`.
 
 ## [0.2.0] - 2026-09-25
 

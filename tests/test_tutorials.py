@@ -16,14 +16,14 @@ import pytest
 from physprior.config import get_settings
 from physprior.reporting.tutorials import TUTORIALS, build
 
-ORDER = ["T1", "T2", "T3", "T4", "T5", "T6", "T7"]
+ORDER = [f"T{i}" for i in range(1, 14)]
 
 
 def test_the_course_covers_every_physics_topic_in_order():
     """The arc is deliberate: gravity (exact law) -> relativity (truncated
     law) -> quantum (no data at all). Losing one breaks the progression."""
     names = list(TUTORIALS)
-    assert [n[:2] for n in names] == ORDER
+    assert [n.split("_")[0] for n in names] == ORDER
     joined = " ".join(names).lower()
     for topic in ("gravity", "relativity", "quantum"):
         assert topic in joined, f"the course has no {topic} notebook"

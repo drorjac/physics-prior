@@ -41,17 +41,19 @@ dependencies = [
 nn = ["torch>=2.0"]
 # Symbolic regression. Pulls a Julia runtime on first use.
 sr = ["pysr>=2.0"]
+# Gaussian-process arms of the spatial-field tracks (fields/rf).
+fields = ["scikit-learn>=1.4"]
 # Notebooks and the report pipeline.
 notebooks = ["jupyter", "ipykernel", "nbclient", "nbformat"]
 dev = [
-    "physprior[nn,sr,notebooks]",
+    "physprior[nn,sr,notebooks,fields]",
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "ruff>=0.5",
     "mypy>=1.8",
     "pre-commit>=3.5",
 ]
-all = ["physprior[nn,sr,notebooks]"]
+all = ["physprior[nn,sr,notebooks,fields]"]
 
 [project.urls]
 Homepage = "https://github.com/drorjac/physics-prior"
@@ -106,6 +108,8 @@ ignore = [
 # records read as records; a literal with quoted keys reads as punctuation.
 "src/physprior/problems/**" = ["C408", "E741", "B905", "RUF046", "RUF007", "PTH"]
 "src/physprior/numerics/**" = ["C408", "B905"]
+# He I terms are indexed by (n, l, s); `l` is the angular-momentum quantum number.
+"src/physprior/data/sources/nist.py" = ["E741"]
 "src/physprior/viz/**"      = ["C408", "B905", "E702"]
 "src/physprior/reporting/**" = ["C408", "B905", "UP031", "PTH"]
 "tests/**"                  = ["B905", "PTH"]

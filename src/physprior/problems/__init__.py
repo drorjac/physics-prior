@@ -10,11 +10,13 @@ One subpackage per subject. Each holds, side by side:
 
     gravity      orbits, the three-body problem, the solar system; Kepler
     relativity   Schwarzschild orbits, inspiral waveforms; GW150914, Mercury
-    quantum      the Schrodinger equation; NIST hydrogen, COBE/FIRAS
+    quantum      the Schrodinger equation; NIST hydrogen and helium, COBE/FIRAS
+    fields       spatial fields: station temperatures and the lapse rate (NOAA
+                 ISD); a simulated radio field and the path-loss law
 """
 
 from __future__ import annotations
 
-PROBLEMS: tuple[str, ...] = ("gravity", "relativity", "quantum")
+PROBLEMS: tuple[str, ...] = ("gravity", "relativity", "quantum", "fields")
 
 __all__ = ["PROBLEMS"]

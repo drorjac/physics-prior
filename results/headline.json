@@ -57,6 +57,22 @@
       "deviation": "+10.89 ppm = QED + relativistic"
     },
     {
+      "track": "quantum",
+      "quantity": "R_He from the hydrogenic law, He I [cm^-1]",
+      "published": 109722.2755485473,
+      "recovered": 123242.81281897478,
+      "sigma": 770.6150321105246,
+      "deviation": "+12.3% = absorbed quantum defect"
+    },
+    {
+      "track": "quantum",
+      "quantity": "He I limit from Rydberg-Ritz, n <= 10 [cm^-1]",
+      "published": 198310.66637,
+      "recovered": 198310.56171034032,
+      "sigma": null,
+      "deviation": "-0.105 cm^-1"
+    },
+    {
       "track": "gravity",
       "quantity": "GM_sun from Kepler [m^3/s^2]",
       "published": 1.32712440018e+20,
@@ -218,6 +234,51 @@
       "out/in range": "42.4 \u2013 56.9"
     },
     {
+      "track": "quantum/helium",
+      "arm": "oracle",
+      "n_seeds": 3,
+      "nrmse_in": 0.360963623245323,
+      "nrmse_out": 0.0014619836454074,
+      "out/in": 0.0040502243197337,
+      "out/in range": "0.00405 \u2013 0.00405"
+    },
+    {
+      "track": "quantum/helium",
+      "arm": "physics",
+      "n_seeds": 3,
+      "nrmse_in": 0.2689105211136445,
+      "nrmse_out": 0.0857785475108816,
+      "out/in": 0.3189854645911405,
+      "out/in range": "0.319 \u2013 0.319"
+    },
+    {
+      "track": "quantum/helium",
+      "arm": "pinn",
+      "n_seeds": 3,
+      "nrmse_in": 0.2689109209571079,
+      "nrmse_out": 0.0858673340419476,
+      "out/in": 0.3193151610813296,
+      "out/in range": "0.318 \u2013 0.320"
+    },
+    {
+      "track": "quantum/helium",
+      "arm": "sr",
+      "n_seeds": 3,
+      "nrmse_in": 0.0455676400449294,
+      "nrmse_out": 0.0481533814027811,
+      "out/in": 1.056745123409994,
+      "out/in range": "0.887 \u2013 1.06"
+    },
+    {
+      "track": "quantum/helium",
+      "arm": "nn",
+      "n_seeds": 3,
+      "nrmse_in": 0.0053638018107745,
+      "nrmse_out": 0.1211528744160257,
+      "out/in": 22.5871273194063,
+      "out/in range": "12.0 \u2013 74.9"
+    },
+    {
       "track": "quantum/cmb",
       "arm": "oracle",
       "n_seeds": 3,
@@ -337,6 +398,30 @@
       "verdict": "physics better on every seed"
     },
     {
+      "track": "quantum/helium",
+      "arm": "pinn",
+      "n_seeds": 3,
+      "ratio (median)": 1.0010350668511232,
+      "ratio range": "0.998 \u2013 1.00",
+      "verdict": "mixed"
+    },
+    {
+      "track": "quantum/helium",
+      "arm": "sr",
+      "n_seeds": 3,
+      "ratio (median)": 0.56136857990831,
+      "ratio range": "0.397 \u2013 0.764",
+      "verdict": "sr better on every seed"
+    },
+    {
+      "track": "quantum/helium",
+      "arm": "nn",
+      "n_seeds": 3,
+      "ratio (median)": 1.412391302156948,
+      "ratio range": "0.875 \u2013 4.32",
+      "verdict": "mixed"
+    },
+    {
       "track": "quantum/cmb",
       "arm": "pinn",
       "n_seeds": 3,
@@ -364,36 +449,36 @@
   "capability_matrix": [
     {
       "arm": "oracle",
-      "returns a physical constant": "4/4 tracks",
-      "returns a closed form": "4/4 tracks",
+      "returns a physical constant": "5/5 tracks",
+      "returns a closed form": "5/5 tracks",
       "needs the law in advance": true,
       "can be wrong in a new way": "no - it is the reference"
     },
     {
       "arm": "physics",
-      "returns a physical constant": "4/4 tracks",
-      "returns a closed form": "4/4 tracks",
+      "returns a physical constant": "5/5 tracks",
+      "returns a closed form": "5/5 tracks",
       "needs the law in advance": true,
       "can be wrong in a new way": "yes - a truncated law gives a confident wrong constant"
     },
     {
       "arm": "pinn",
-      "returns a physical constant": "4/4 tracks",
-      "returns a closed form": "4/4 tracks (law + correction)",
+      "returns a physical constant": "5/5 tracks",
+      "returns a closed form": "5/5 tracks (law + correction)",
       "needs the law in advance": true,
       "can be wrong in a new way": "yes - the network can absorb the physics if w_phys is too small"
     },
     {
       "arm": "sr",
-      "returns a physical constant": "0/4 tracks",
-      "returns a closed form": "4/4 tracks",
+      "returns a physical constant": "0/5 tracks",
+      "returns a closed form": "5/5 tracks",
       "needs the law in advance": false,
       "can be wrong in a new way": "yes - fits the band, misses the law"
     },
     {
       "arm": "nn",
-      "returns a physical constant": "0/4 tracks",
-      "returns a closed form": "0/4 tracks",
+      "returns a physical constant": "0/5 tracks",
+      "returns a closed form": "0/5 tracks",
       "needs the law in advance": false,
       "can be wrong in a new way": "no law to be wrong about; fails outside the range instead"
     }
@@ -425,6 +510,15 @@
       "nn nRMSE at max budget": 0.0087356676519678,
       "physics nRMSE at max budget": 7.270834934023263e-07,
       "physics advantage": 12014.669197192161
+    },
+    {
+      "track": "quantum/helium",
+      "budgets swept": "8-256",
+      "budgets where nn beats physics": "none",
+      "nn wins at largest budget": false,
+      "nn nRMSE at max budget": 0.0801542451540297,
+      "physics nRMSE at max budget": 0.0629298774731452,
+      "physics advantage": 1.2737073131635266
     },
     {
       "track": "quantum/cmb",
@@ -460,6 +554,14 @@
       "beat oracle in-range": "physics, pinn, sr",
       "beat oracle out-of-range": "physics, sr",
       "explanation": "the oracle carries Bohr's R_H, which the data says is 10.8 ppm low. Beating it is the QED result, not overfitting."
+    },
+    {
+      "track": "quantum/helium",
+      "oracle nRMSE in": 0.360963623245323,
+      "oracle nRMSE out": 0.0014619836454074,
+      "beat oracle in-range": "nn, physics, pinn, sr",
+      "beat oracle out-of-range": "none",
+      "explanation": "the oracle is the hydrogenic law with the published limit and R_He, which omits the quantum defect by design. Fitted L and R absorb part of the low-n defect, so a fitted arm can beat it in range; out of range, where most terms have high l and almost no defect, the published constants are the better law."
     },
     {
       "track": "quantum/cmb",

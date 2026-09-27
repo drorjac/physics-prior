@@ -27,40 +27,8 @@ import sys
 import nbformat as nbf
 
 from physprior.config import get_settings
+from physprior.reporting.cells import SETUP, _nb, code, md
 from physprior.reporting.notebooks import section
-
-SETUP = """import warnings
-warnings.filterwarnings("ignore")
-import numpy as np, torch, matplotlib.pyplot as plt
-from physprior.viz import plots as P
-P.use_style()
-torch.set_default_dtype(torch.float64)
-print("torch", torch.__version__)
-"""
-
-
-def md(text):
-    return nbf.v4.new_markdown_cell(text.strip("\n"))
-
-
-def code(text):
-    return nbf.v4.new_code_cell(text.strip("\n"))
-
-
-def _nb(cells, title):
-    nb = nbf.v4.new_notebook()
-    nb.cells = cells
-    nb.metadata = {
-        "kernelspec": {
-            "display_name": "physprior",
-            "language": "python",
-            "name": "physprior",
-        },
-        "language_info": {"name": "python"},
-        "title": title,
-    }
-    return nb
-
 
 # ---------------------------------------------------------------------------
 # T1 -- what a PINN is
@@ -1583,6 +1551,25 @@ TUTORIALS = {
     "T6_when_pinns_fail": t6_when_pinns_fail,
     "T7_when_the_prior_wins": t7_when_the_prior_wins,
 }
+
+
+def _register_extensions() -> None:
+    """The course beyond T7 lives in one module per topic, each using the
+    helpers in `cells.py`; they are registered here in course order."""
+    from physprior.reporting.tutorials_dynamics import t13_learning_the_update
+    from physprior.reporting.tutorials_fields import t10_spatial_fields
+    from physprior.reporting.tutorials_optim import TUTORIALS_OPTIM
+    from physprior.reporting.tutorials_reconstruction import t12_field_reconstruction
+    from physprior.reporting.tutorials_sr import t11_how_symbolic_regression_works
+
+    TUTORIALS.update(TUTORIALS_OPTIM)  # T8, T9
+    TUTORIALS["T10_spatial_fields"] = t10_spatial_fields
+    TUTORIALS["T11_how_symbolic_regression_works"] = t11_how_symbolic_regression_works
+    TUTORIALS["T12_field_reconstruction"] = t12_field_reconstruction
+    TUTORIALS["T13_learning_the_update"] = t13_learning_the_update
+
+
+_register_extensions()
 
 
 def _display(path, root):

@@ -1,12 +1,14 @@
 # A step-by-step PINN course
 
-Six notebooks, in order. Each one is generated from
+The notebooks, in order. Each one is generated from
 [`physprior/reporting/tutorials.py`](../../src/physprior/reporting/tutorials.py)
-and executed in CI, so nothing here is prose that has drifted from the code
-it claims to teach.
+and the topic modules next to it, so nothing here is prose that has drifted
+from the code it claims to teach. T1–T7 are the PINN course; T8 onwards
+widen it to optimisation, spatial fields, symbolic regression and learned
+dynamics.
 
 ```bash
-physprior tutorials --execute      # build and run all six
+physprior tutorials --execute      # build and run all of them
 physprior tutorials T5             # just one
 ```
 
@@ -19,6 +21,12 @@ physprior tutorials T5             # just one
 | **T5** | [quantum](T5_quantum_wavefunction.ipynb) | **no data at all**. Learning ψ and E together from an operator equation: the trivial solution, hard boundaries, orthogonality, spectral bias |
 | **T6** | [when PINNs fail](T6_when_pinns_fail.ipynb) | the failure catalogue, measured on real data. Which of seven standard improvements actually help, and which make things 98× worse |
 | **T7** | [when the prior wins](T7_when_the_prior_wins.ipynb) | the regime the other tracks were missing: a law with a **term left out**. Where the PINN beats both `physics` and `nn` by an order of magnitude — and the condition under which it does not |
+| **T8** | [a network from scratch](T8_network_from_scratch.ipynb) | an MLP in NumPy: forward pass, hand-written backprop checked against finite differences and autograd, initialisation, and SGD through Adam written by hand |
+| **T9** | [optimizers and loss functions](T9_optimizers_and_losses.ipynb) | which optimizer reaches a physics fit, a PINN and a black box, the curvature each lands in, robust losses under outliers, and what loss balancing does to the `pinn` arm |
+| **T10** | [spatial fields](T10_spatial_fields.ipynb) | reconstructing a map: station temperatures and the lapse rate over the Alps, kriging, and a simulated radio field where the physics fit also finds the transmitter |
+| **T11** | [how symbolic regression works](T11_how_symbolic_regression_works.ipynb) | expression trees, the size of the search space, a genetic search and its Pareto front, SINDy, and why the operator set is a prior |
+| **T12** | [field reconstruction in 1-D, 2-D, 3-D](T12_field_reconstruction.ipynb) | a rod, a plate and a 3-D potential from sparse sensors; how many sensors each method needs as the dimension grows |
+| **T13** | [learning the update rule](T13_learning_the_update.ipynb) | learn a pendulum's time step four ways and watch its energy; how long a learned Lorenz stepper stays valid; a Burgers rollout with a local versus a dense stepper |
 
 ## The arc
 
