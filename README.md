@@ -385,6 +385,7 @@ the notebooks stay small.
 
 | | |
 |---|---|
+| [`docs/CONTRIBUTIONS.md`](docs/CONTRIBUTIONS.md) | what the project adds, separated into likely new, known in kind, and reproduced as checks |
 | [`docs/HYPOTHESES.md`](docs/HYPOTHESES.md) | the physical questions, the evidence for each, and what would refute it |
 | [`docs/neglected/`](docs/neglected) | **when** a physics prior helps — the controlled study, on an algebraic law, an ODE and a PDE. Start here |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | what was decided, against what, and why — and what is still open |

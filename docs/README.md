@@ -32,6 +32,7 @@ in advance, and it is the one page to read if you only read one.
 
 | Document | What it answers |
 |---|---|
+| [CONTRIBUTIONS.md](CONTRIBUTIONS.md) | what the project adds, how new each part is, and how strong the evidence |
 | [HYPOTHESES.md](HYPOTHESES.md) | the physical questions the project answers, and what would refute each |
 | [DECISIONS.md](DECISIONS.md) | the research decisions taken, and the ones still open |
 | [RELATED_WORK.md](RELATED_WORK.md) | the prior work, and what this project adds to it |
