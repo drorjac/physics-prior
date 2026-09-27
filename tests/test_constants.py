@@ -10,6 +10,12 @@ def test_rydberg_hydrogen_matches_codata():
     assert abs(k.RYDBERG_H_CM - 109677.583) < 0.01
 
 
+def test_rydberg_helium_uses_the_he_plus_core_mass():
+    # R_He = R_inf (m_alpha + m_e) / (m_alpha + 2 m_e) = 109722.2755 cm^-1
+    assert abs(k.RYDBERG_HE_CM - 109722.2755) < 1e-3
+    assert k.RYDBERG_H_CM < k.RYDBERG_HE_CM < k.RYDBERG_INF_M / 100.0
+
+
 def test_solar_mass_in_seconds():
     assert abs(k.T_SUN_S - 4.925491e-6) < 1e-11
 

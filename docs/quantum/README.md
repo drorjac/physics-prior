@@ -1,10 +1,12 @@
 # quantum
 
-Two tracks that fail in opposite ways: hydrogen, where the law is so nearly
-exact that **its own failure is visible**, and the CMB, where the law is
+Three tracks. Hydrogen, where the law is so nearly exact that **its own
+failure is visible**; helium, where the law is incomplete by design and the
+missing piece depends on inputs the law ignores; and the CMB, where the law is
 transcendental and the observed band cannot identify it.
 
-**Real data** — NIST hydrogen levels; the COBE/FIRAS blackbody.
+**Real data** — NIST hydrogen levels; NIST helium terms; the COBE/FIRAS
+blackbody.
 **Simulations** — the Schrödinger equation, solved and measured.
 
 Code: [`src/physprior/problems/quantum`](../../src/physprior/problems/quantum)
@@ -86,6 +88,43 @@ That shift is relativistic and QED corrections to the 1s level, and it is
 reached **twice, independently**: by fitting Bohr's law to the NIST levels,
 and by solving Schrödinger's equation and differencing against NIST. A black
 box fits the same levels and can say nothing about QED.
+
+## The real-data track: `quantum/helium`
+
+Helium is the test H3 named in advance ([`HYPOTHESES.md`](../HYPOTHESES.md)).
+The data are the 452 singly excited terms 1s·nl of He I from the NIST ASD,
+n = 2–35, l = 0–7, singlet and triplet. The law given to the arms is the
+hydrogenic `E = L − R/n²`. It is incomplete in a known way: each (l, S)
+series is shifted by a quantum defect, large for S and near zero from F
+upwards. The split trains on n ≤ 10 and predicts n = 11–35.
+
+**The fitted law absorbs the defect into its constants.** Fitted to all
+terms, R comes out 12.3% above the reduced-mass Rydberg for helium. Out of
+range the fitted law is 59 times worse than the same law with the published
+constants, because at high n most terms have high l and almost no defect,
+so what hurts is the wrong constant, not the missing term.
+
+**The frozen `pinn` arm is the `physics` fit.** Loss balancing raises the
+physics weight until the correction is below 2×10⁻⁶ of the data's spread on
+every reporting seed, and the out-of-range error matches `physics` to within
+0.3%. Without balancing (reported as a diagnostic, not an arm) the correction
+does fit the low-n defects, but it extrapolates in n badly: out-of-range error
+is 5 to 8 times worse than `physics`. Neither variant reproduces the defect's
+l structure. H3's predictions 1 and 3 are not supported on this track.
+
+**Symbolic regression beats the hydrogenic law out of range on every
+reporting seed**, by a factor of 1.3 to 2.5, with an expression that depends
+on l and S. Given only (n, l, S) and no law, it found an l-dependent
+correction to 1/n².
+
+**The complete law.** The Rydberg–Ritz form with two defect coefficients per
+series, fitted on the same n ≤ 10 terms, recovers the textbook defects and
+extrapolates with an error of 2.8×10⁻⁵ of the data's spread. It is reported
+beside the arms, not as one, because it is given the answer's form.
+
+Tables: [`results/quantum/helium/`](../../results/quantum/helium). The
+defect diagnostic is `defects.csv` and `defect_structure.csv`; the correction
+size per seed is `pinn_correction.csv`.
 
 ## The real-data track: `quantum/cmb`
 

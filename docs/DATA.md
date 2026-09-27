@@ -9,6 +9,8 @@ file it read, so any number can be traced back to the bytes it came from.
 | G | `H-H1_GWOSC_4KHZ_R1-1126259447-32.hdf5`, `L-L1_…` | [GWOSC](https://gwosc.org/eventapi/json/GWTC-1-confident/GW150914/) | Abbott et al., *Phys. Rev. X* **9**, 031040 (2019) — GWTC-1 |
 | Q | `firas_monopole_spec_v1.txt` | [NASA LAMBDA](https://lambda.gsfc.nasa.gov/data/cobe/firas/monopole_spec/) | Fixsen et al., *ApJ* **473**, 576 (1996), Table 4 |
 | A | `nist_h_levels.tsv` | [NIST ASD](https://physics.nist.gov/asd) `energy1.pl`, H I | Kramida et al., NIST ASD v5.12 |
+| He | `nist_he_levels.tsv` | [NIST ASD](https://physics.nist.gov/asd) `energy1.pl`, He I | Kramida et al., NIST ASD v5.12 |
+| fields/weather | `isd_history.csv`, `isd_lite_<station>-2023.gz` | [NOAA NCEI ISD-Lite](https://www.ncei.noaa.gov/pub/data/noaa/isd-lite/) and the [station list](https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv) | NOAA NCEI Integrated Surface Database (public domain) |
 | R | `horizons_elements_*.txt`, `horizons_vec_*.txt` | [JPL Horizons API](https://ssd.jpl.nasa.gov/api/horizons.api) | DE441 |
 
 ## Units, and why they are asserted
@@ -28,6 +30,15 @@ all fetching goes through `physprior/data/cache.py`, not the shell.
 
 ## Known caveats, stated up front
 
+- **NIST levels are evaluated values.** Every H I and He I level in the ASD
+  tables is printed in square brackets, which the ASD legend defines as
+  "energies determined by interpolation, extrapolation, or other
+  semi-empirical procedure relying on some known experimental values". They
+  are reference values anchored to measurement, not raw line positions.
+- **He I terms.** Each (n, l, S) term is the (2J+1)-weighted mean of its
+  fine-structure levels; the fits are unweighted, because the quoted
+  uncertainties (2e-9 to 7e-5 cm⁻¹) are far below the hydrogenic law's error
+  and would otherwise let a few terms decide the fit.
 - **FIRAS.** The distributed monopole spectrum is constructed as *a 2.725 K
   blackbody plus the measured residual*. Recovering T = 2.725 K is therefore
   partly by construction and is not scored as a discovery. The Planckian

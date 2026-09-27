@@ -16,6 +16,8 @@ DE440      Park et al., AJ 161, 105 (2021), the DE440/DE441 ephemeris paper
            (Sun's radius, moment of inertia, rotation and pole, sec. 3.4),
            and the J2SUN constant in the DE440 header file,
            ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de440/header.440.
+NISTASD    NIST Atomic Spectra Database v5.12 (Kramida, Ralchenko, Reader and
+           NIST ASD Team), physics.nist.gov/asd.
 """
 
 from __future__ import annotations
@@ -47,6 +49,20 @@ M_PROTON = 1.67262192595e-27  # kg                        [CODATA22]
 # This -- not R_inf -- is what a fit to H I levels must return.
 RYDBERG_H_M = RYDBERG_INF_M * M_PROTON / (M_ELECTRON + M_PROTON)  # 1 / m
 RYDBERG_H_CM = RYDBERG_H_M / 100.0  # 1 / cm
+
+# --------------------------------------------------------------------------
+# Atomic (quantum/helium -- NIST He I levels)
+# --------------------------------------------------------------------------
+M_ALPHA = 6.6446573450e-27  # kg, alpha particle         [CODATA22]
+
+# Finite-mass Rydberg for the Rydberg electron of He I. The electron orbits a
+# He+ core of mass m_alpha + m_e, so the reduced mass is
+# m_e (m_alpha + m_e) / (m_alpha + 2 m_e), not m_e m_alpha / (m_alpha + m_e).
+RYDBERG_HE_M = RYDBERG_INF_M * (M_ALPHA + M_ELECTRON) / (M_ALPHA + 2.0 * M_ELECTRON)
+RYDBERG_HE_CM = RYDBERG_HE_M / 100.0  # 1 / cm
+
+# First ionisation energy of He I, as the series limit of the level table.
+HE_I_IONISATION_CM = 198310.66637  # 1 / cm, +- 0.00020         [NISTASD]
 
 # --------------------------------------------------------------------------
 # Cosmological (track Q -- COBE/FIRAS)

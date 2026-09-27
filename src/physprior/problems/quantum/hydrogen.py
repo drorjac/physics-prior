@@ -1,7 +1,8 @@
 """Track A -- quantum, atomic. NIST hydrogen levels.
 
 DATA     E_n, the energy of the n-th level of H I above the ground state, in
-         cm^-1, for n = 1..40, with quoted uncertainties. Real measurements.
+         cm^-1, for n = 1..40, with quoted uncertainties. NIST evaluated
+         reference values, anchored to measurement (see data/sources/nist.py).
 
 LAW      Bohr:   E_n = R (1 - 1/n^2)
 

@@ -11,7 +11,7 @@ page carries none, so it cannot drift.
 |---|---|---|
 | H1 | Inside the range the data covers, does knowing the law help? | **supported — barely** |
 | H2 | Out of range, is the gain from knowing the law, or from the data pinning the law's constants? | **supported — the constants** |
-| H3 | Does a learned correction help when the law is incomplete, and hurt when it is complete? | **refined in simulation; one real case; open** |
+| H3 | Does a learned correction help when the law is incomplete, and hurt when it is complete? | **refuted on helium by its own criterion; supported on GW150914** |
 | H4 | Without the physics constraint, does a network absorb the physics and return wrong constants? | **supported** |
 | H5 | Can a good fit hide a wrong law? | **supported, twice on real data** |
 | H6 | Can symbolic regression find a law outside its operator vocabulary? | **supported (negative)** |
@@ -73,7 +73,7 @@ like the GR term that the GR coefficient α absorbed them. They have opposite
 signs, so α looked *nearly* right. Putting both back takes α to 1 within its
 error (see [relativity](relativity/)).
 
-**Next test: helium** (`quantum/helium`, planned). Hydrogen's `E = −R/n²` is
+**Helium** (`quantum/helium`). Hydrogen's `E = −R/n²` is
 exact for one electron. In helium the second electron screens the nucleus,
 and each angular-momentum series is shifted by a *quantum defect*:
 `E = −R/(n − δ_ℓ)²`. The defect is large for S states, whose electron
@@ -86,6 +86,20 @@ H3 therefore predicts:
 3. its learned correction looks like a quantum defect: large for S, near
    zero for high ℓ. This is a check on *what* was learned, not only on the
    error.
+
+**Result on helium: the refutation criterion below is met.** Predictions 1
+and 3 fail; 2 holds. The
+frozen `pinn` arm reduces to the `physics` fit: loss balancing drives the
+physics weight up until the correction is negligible, so the arm matches the
+hydrogenic fit out of range and carries no defect structure. With balancing
+off, the correction fits the low-n defects but extrapolates in n far worse
+than the law. The defect was distinguishable in l and S, and the correction
+still did not help, because the input that leaves the training range is n,
+and a network does not carry a 1/n³ tail beyond the range it saw. So
+distinguishability is necessary but not sufficient: the correction must also
+be one the network can extrapolate. Symbolic regression, given (n, l, S) and
+no law, did find an l-dependent correction that beats the hydrogenic law out
+of range. Details in [quantum](quantum/).
 
 **Then: pulsars** (`gravity/pulsar_spindown`, planned). A magnetic dipole
 spinning in vacuum slows as `ν̇ ∝ −ν³` (braking index 3). Real pulsars

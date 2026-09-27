@@ -39,6 +39,22 @@ def test_hydrogen_levels_are_bohr_to_ppm():
     assert 109678.7 < h.limit_icm < 109678.8
 
 
+def test_helium_terms_carry_the_textbook_quantum_defects():
+    from physprior.constants import RYDBERG_HE_CM
+    from physprior.data.sources import nist
+
+    he = nist.load_helium()
+    assert len(he) == 452
+    assert 198310.6 < he.limit_icm < 198310.7
+    d = he.n - np.sqrt(RYDBERG_HE_CM / (he.limit_icm - he.energy_icm))
+    at = lambda ell, s: float(d[(he.n == 10) & (he.l == ell) & (he.s == s)][0])  # noqa: E731
+    # singlet and triplet S, P, D at n = 10 (e.g. Drake, in the Springer
+    # Handbook of Atomic, Molecular and Optical Physics, ch. 11)
+    assert abs(at(0, 0) - 0.140) < 0.002 and abs(at(0, 1) - 0.297) < 0.002
+    assert abs(at(1, 0) + 0.012) < 0.002 and abs(at(1, 1) - 0.068) < 0.002
+    assert abs(at(2, 0)) < 0.005 and abs(at(3, 0)) < 0.001
+
+
 def test_gw_chirp_track_is_a_chirp():
     from physprior.data.sources import gwosc as gw
 

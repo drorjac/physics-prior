@@ -15,7 +15,7 @@ from physprior.io import save_json, save_table
 from physprior.viz import plots as P
 from physprior.viz.animate import animate_wavefunction
 
-from . import cmb, discovery, hydrogen, schrodinger
+from . import cmb, discovery, helium, hydrogen, schrodinger
 
 PROBLEM = "quantum"
 
@@ -149,6 +149,7 @@ def run_discovery(quick: bool = False) -> dict:
 def run(quick: bool = False) -> dict:
     meta: dict[str, Any] = {"problem": PROBLEM}
     meta["hydrogen_real_data"] = hydrogen.run(quick=quick)
+    meta["helium_real_data"] = helium.run(quick=quick)
     meta["cmb_real_data"] = cmb.run(quick=quick)
     meta["simulations"] = simulations(quick=quick)
     meta["discovery"] = run_discovery(quick=quick)
