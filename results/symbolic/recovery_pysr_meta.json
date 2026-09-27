@@ -1,0 +1,8 @@
+{
+  "config": {
+    "maxsize": 15,
+    "niterations": 40,
+    "populations": 15
+  },
+  "ops": "{+, -, *, /, sqrt, square, cube, exp, log}"
+}

@@ -1,0 +1,15 @@
+vocabulary,size,n_trees_raw,n_trees_pruned
+"{+, -, *, /}",1,2,1
+"{+, -, *, /}",2,0,0
+"{+, -, *, /}",3,16,8
+"{+, -, *, /}",4,0,0
+"{+, -, *, /}",5,256,96
+"{+, -, *, /}",6,0,0
+"{+, -, *, /}",7,5120,1120
+"{+, -, *, /, sqrt, square, cube, exp, log}",1,2,1
+"{+, -, *, /, sqrt, square, cube, exp, log}",2,10,5
+"{+, -, *, /, sqrt, square, cube, exp, log}",3,66,29
+"{+, -, *, /, sqrt, square, cube, exp, log}",4,490,189
+"{+, -, *, /, sqrt, square, cube, exp, log}",5,3906,1263
+"{+, -, *, /, sqrt, square, cube, exp, log}",6,32650,8797
+"{+, -, *, /, sqrt, square, cube, exp, log}",7,282370,62693

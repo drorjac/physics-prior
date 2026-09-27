@@ -1,0 +1,23 @@
+{
+  "adam_first_step": {
+    "1": 0.00099999999,
+    "1e+06": 0.0010000000000000009,
+    "1e-06": 0.000990099009900991
+  },
+  "coverage_1sigma": {
+    "stated_1x_absolute_False": 0.682,
+    "stated_1x_absolute_True": 0.6805,
+    "stated_2x_absolute_False": 0.6915,
+    "stated_2x_absolute_True": 0.955
+  },
+  "coverage_n_sim": 2000,
+  "lm_vs_trf_param_rel_diff": 6.382430369352748e-10,
+  "lm_vs_trf_pcov_rel_diff": 2.6329481071423853e-06,
+  "pcov_vs_hand_rel_diff": 2.6645104591970855e-06,
+  "pysr_version": "2.5.0",
+  "scipy_version": "1.18.1",
+  "second_derivative_max_err": 0.0,
+  "second_derivative_without_create_graph": "element 0 of tensors does not require grad and does not have a grad_fn",
+  "sympy_version": "1.14.0",
+  "torch_version": "2.11.0"
+}

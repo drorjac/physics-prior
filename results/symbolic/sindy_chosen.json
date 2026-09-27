@@ -1,0 +1,36 @@
+{
+  "chosen": [
+    {
+      "err": 0.0005525941554191094,
+      "method": "savgol",
+      "support": 1.0,
+      "system": "damped_oscillator",
+      "threshold": 0.2,
+      "window": 51
+    },
+    {
+      "err": 0.0006465382916473621,
+      "method": "fd",
+      "support": 0.8666666666666667,
+      "system": "damped_oscillator",
+      "threshold": 0.1,
+      "window": 0
+    },
+    {
+      "err": 0.020387797120925536,
+      "method": "savgol",
+      "support": 0.4666666666666667,
+      "system": "pendulum",
+      "threshold": 0.2,
+      "window": 51
+    },
+    {
+      "err": 0.050804917421143694,
+      "method": "fd",
+      "support": 0.4666666666666667,
+      "system": "pendulum",
+      "threshold": 0.1,
+      "window": 0
+    }
+  ]
+}

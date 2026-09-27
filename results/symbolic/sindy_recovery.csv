@@ -1,0 +1,61 @@
+system,noise,seed,threshold,method,window,support_ok,coef_rel_err,n_extra,n_missing,equations
+damped_oscillator,0.0,11,0.2,savgol,51,True,9.772295766450232e-05,0,0,dx/dt = +1 v ; dv/dt = -4 x -0.4001 v
+damped_oscillator,0.0,23,0.2,savgol,51,True,9.772295766450232e-05,0,0,dx/dt = +1 v ; dv/dt = -4 x -0.4001 v
+damped_oscillator,0.0,42,0.2,savgol,51,True,9.772295766450232e-05,0,0,dx/dt = +1 v ; dv/dt = -4 x -0.4001 v
+damped_oscillator,0.001,11,0.2,savgol,51,True,0.00010912851642287974,0,0,dx/dt = +1 v ; dv/dt = -4 x -0.4002 v
+damped_oscillator,0.001,23,0.2,savgol,51,True,5.344840524299369e-05,0,0,dx/dt = +1 v ; dv/dt = -4 x -0.4001 v
+damped_oscillator,0.001,42,0.2,savgol,51,True,0.00015402186200473602,0,0,dx/dt = +1 v ; dv/dt = -4.001 x -0.4003 v
+damped_oscillator,0.01,11,0.2,savgol,51,True,0.0002511253510819178,0,0,dx/dt = +1 v ; dv/dt = -4 x -0.4009 v
+damped_oscillator,0.01,23,0.2,savgol,51,True,0.00048197537697524696,0,0,dx/dt = +1 v ; dv/dt = -3.998 x -0.4002 v
+damped_oscillator,0.01,42,0.2,savgol,51,True,0.0007159639632084485,0,0,dx/dt = +0.9993 v ; dv/dt = -4.002 x -0.4016 v
+damped_oscillator,0.03,11,0.2,savgol,51,True,0.000594910278090386,0,0,dx/dt = +1.001 v ; dv/dt = -4 x -0.4023 v
+damped_oscillator,0.03,23,0.2,savgol,51,True,0.001636103110519561,0,0,dx/dt = +1.001 v ; dv/dt = -3.993 x -0.4002 v
+damped_oscillator,0.03,42,0.2,savgol,51,True,0.001964437047718342,0,0,dx/dt = +0.9978 v ; dv/dt = -4.006 x -0.4046 v
+damped_oscillator,0.1,11,0.2,savgol,51,True,0.0018928281354650526,0,0,dx/dt = +1.001 v ; dv/dt = -3.997 x -0.4073 v
+damped_oscillator,0.1,23,0.2,savgol,51,True,0.00589305563262686,0,0,dx/dt = +1.002 v ; dv/dt = -3.976 x -0.4004 v
+damped_oscillator,0.1,42,0.2,savgol,51,True,0.006141207914806911,0,0,dx/dt = +0.9922 v ; dv/dt = -4.019 x -0.4149 v
+damped_oscillator,0.0,11,0.1,fd,0,True,6.500146709771406e-05,0,0,dx/dt = +0.9999 v ; dv/dt = -4 x -0.3999 v
+damped_oscillator,0.0,23,0.1,fd,0,True,6.500146709771406e-05,0,0,dx/dt = +0.9999 v ; dv/dt = -4 x -0.3999 v
+damped_oscillator,0.0,42,0.1,fd,0,True,6.500146709771406e-05,0,0,dx/dt = +0.9999 v ; dv/dt = -4 x -0.3999 v
+damped_oscillator,0.001,11,0.1,fd,0,True,5.429752238276085e-05,0,0,dx/dt = +0.9999 v ; dv/dt = -4 x -0.4 v
+damped_oscillator,0.001,23,0.1,fd,0,True,0.00013356098760180076,0,0,dx/dt = +0.9999 v ; dv/dt = -3.999 x -0.4 v
+damped_oscillator,0.001,42,0.1,fd,0,True,3.0102917908324637e-05,0,0,dx/dt = +0.9999 v ; dv/dt = -4 x -0.4 v
+damped_oscillator,0.01,11,0.1,fd,0,True,0.0001941087260263139,0,0,dx/dt = +0.9994 v ; dv/dt = -4 x -0.4005 v
+damped_oscillator,0.01,23,0.1,fd,0,True,0.0006043078572825302,0,0,dx/dt = +0.9996 v ; dv/dt = -3.998 x -0.4007 v
+damped_oscillator,0.01,42,0.1,fd,0,True,0.0006164505337041406,0,0,dx/dt = +0.9994 v ; dv/dt = -4.002 x -0.4003 v
+damped_oscillator,0.03,11,0.1,fd,0,True,0.0006664540318603539,0,0,dx/dt = +0.9979 v ; dv/dt = -3.999 x -0.4013 v
+damped_oscillator,0.03,23,0.1,fd,0,True,0.0006575712865017205,0,0,dx/dt = +1 v ; dv/dt = -3.998 x -0.4022 v
+damped_oscillator,0.03,42,0.1,fd,0,True,0.001586608053209609,0,0,dx/dt = +0.9979 v ; dv/dt = -4.006 x -0.4005 v
+damped_oscillator,0.1,11,0.1,fd,0,True,0.006917815305384458,0,0,dx/dt = +0.9889 v ; dv/dt = -3.974 x -0.4006 v
+damped_oscillator,0.1,23,0.1,fd,0,False,0.05366876728290152,1,0,dx/dt = +1.012 v ; dv/dt = -4.009 x -0.4016 v +0.2218 x*x
+damped_oscillator,0.1,42,0.1,fd,0,True,0.002554654117194198,0,0,dx/dt = +0.99 v ; dv/dt = -4.002 x -0.3971 v
+pendulum,0.0,11,0.2,savgol,51,True,0.00022526405707320473,0,0,dtheta/dt = +1 omega ; domega/dt = -0.2002 omega -9.804 sin(theta)
+pendulum,0.0,23,0.2,savgol,51,True,0.00022526405707320473,0,0,dtheta/dt = +1 omega ; domega/dt = -0.2002 omega -9.804 sin(theta)
+pendulum,0.0,42,0.2,savgol,51,True,0.00022526405707320473,0,0,dtheta/dt = +1 omega ; domega/dt = -0.2002 omega -9.804 sin(theta)
+pendulum,0.001,11,0.2,savgol,51,True,0.000254162621741506,0,0,dtheta/dt = +1.001 omega ; domega/dt = -0.2004 omega -9.804 sin(theta)
+pendulum,0.001,23,0.2,savgol,51,True,0.00030037402168703873,0,0,dtheta/dt = +1.001 omega ; domega/dt = -0.2005 omega -9.804 sin(theta)
+pendulum,0.001,42,0.2,savgol,51,True,0.00019014461149277558,0,0,dtheta/dt = +1 omega ; domega/dt = -0.2002 omega -9.805 sin(theta)
+pendulum,0.01,11,0.2,savgol,51,True,0.0005260392909510808,0,0,dtheta/dt = +1.001 omega ; domega/dt = -0.2014 omega -9.802 sin(theta)
+pendulum,0.01,23,0.2,savgol,51,True,0.00099331618883778,0,0,dtheta/dt = +1.001 omega ; domega/dt = -0.203 omega -9.797 sin(theta)
+pendulum,0.01,42,0.2,savgol,51,False,0.020355596381792563,0,1,dtheta/dt = +0.9999 omega ; domega/dt = -9.79 sin(theta)
+pendulum,0.03,11,0.2,savgol,51,False,0.23070743027310578,3,0,dtheta/dt = +1.001 omega ; domega/dt = -1.518 1 -0.2033 omega +0.6369 theta*theta -9.79 sin(theta) +1.569 cos(theta)
+pendulum,0.03,23,0.2,savgol,51,True,0.0025431306238800975,0,0,dtheta/dt = +1.002 omega ; domega/dt = -0.2086 omega -9.783 sin(theta)
+pendulum,0.03,42,0.2,savgol,51,False,0.020308695729052136,0,1,dtheta/dt = +0.9988 omega ; domega/dt = -9.797 sin(theta)
+pendulum,0.1,11,0.2,savgol,51,False,0.781999171260737,6,0,dtheta/dt = +1.608 1 +1.002 omega -0.6766 theta*theta -1.642 cos(theta) ; domega/dt = -4.89 1 -0.2106 omega +2.046 theta*theta -9.753 sin(theta) +5.061 cos(theta)
+pendulum,0.1,23,0.2,savgol,51,False,0.2102546654015573,7,0,dtheta/dt = +0.7582 1 +1.006 omega -0.3265 theta*theta -0.7832 cos(theta) ; domega/dt = -1.049 1 -0.4438 theta -0.2276 omega +0.4373 theta*theta -9.175 sin(theta) +1.055 cos(theta)
+pendulum,0.1,42,0.2,savgol,51,False,0.3680682403032595,5,1,dtheta/dt = -0.2294 theta +0.9951 omega +0.2791 sin(theta) ; domega/dt = +2.388 1 -0.9725 theta*theta -9.821 sin(theta) -2.52 cos(theta)
+pendulum,0.0,11,0.1,fd,0,True,0.00014386786616441973,0,0,dtheta/dt = +0.9999 omega ; domega/dt = -0.2 omega -9.805 sin(theta)
+pendulum,0.0,23,0.1,fd,0,True,0.00014386786616441973,0,0,dtheta/dt = +0.9999 omega ; domega/dt = -0.2 omega -9.805 sin(theta)
+pendulum,0.0,42,0.1,fd,0,True,0.00014386786616441973,0,0,dtheta/dt = +0.9999 omega ; domega/dt = -0.2 omega -9.805 sin(theta)
+pendulum,0.001,11,0.1,fd,0,True,0.00017277666519361802,0,0,dtheta/dt = +0.9998 omega ; domega/dt = -0.2 omega -9.805 sin(theta)
+pendulum,0.001,23,0.1,fd,0,True,0.00023508058305855863,0,0,dtheta/dt = +0.9999 omega ; domega/dt = -0.2002 omega -9.804 sin(theta)
+pendulum,0.001,42,0.1,fd,0,True,9.198313297948313e-05,0,0,dtheta/dt = +0.9998 omega ; domega/dt = -0.1999 omega -9.806 sin(theta)
+pendulum,0.01,11,0.1,fd,0,False,0.04224168513502283,3,0,dtheta/dt = +0.9993 omega ; domega/dt = -0.2771 1 -0.2006 omega +0.1137 theta*theta -9.802 sin(theta) +0.2894 cos(theta)
+pendulum,0.01,23,0.1,fd,0,True,0.0009818122413241131,0,0,dtheta/dt = +0.9999 omega ; domega/dt = -0.2026 omega -9.797 sin(theta)
+pendulum,0.01,42,0.1,fd,0,True,0.0003882261574911064,0,0,dtheta/dt = +0.9993 omega ; domega/dt = -0.1992 omega -9.81 sin(theta)
+pendulum,0.03,11,0.1,fd,0,False,0.06743793773192153,3,0,dtheta/dt = +0.4497 1 +0.9978 omega -0.19 theta*theta -0.4514 cos(theta) ; domega/dt = -0.2021 omega -9.8 sin(theta)
+pendulum,0.03,23,0.1,fd,0,False,0.09949682270472054,4,0,dtheta/dt = +1 omega ; domega/dt = -0.6303 1 -0.1944 theta -0.208 omega +0.2835 theta*theta -9.537 sin(theta) +0.6118 cos(theta)
+pendulum,0.03,42,0.1,fd,0,False,0.12368382958209688,6,0,dtheta/dt = -0.2718 1 +0.9978 omega +0.1185 theta*theta +0.2774 cos(theta) ; domega/dt = +0.7561 1 -0.1979 omega -0.2998 theta*theta -9.817 sin(theta) -0.8127 cos(theta)
+pendulum,0.1,11,0.1,fd,0,False,1.25682769486599,12,0,dtheta/dt = +2.172 1 -0.2746 theta +0.9974 omega -0.9671 theta*theta +0.3229 sin(theta) -2.096 cos(theta) -0.142 sin(omega) +0.1757 cos(omega) ; domega/dt = +7.997 1 +1.175 theta -0.2029 omega -3.498 theta*theta -11.37 sin(theta) -7.952 cos(theta) +0.192 cos(omega)
+pendulum,0.1,23,0.1,fd,0,False,1.064406345367942,10,0,dtheta/dt = +2.181 1 -0.5271 theta +1.02 omega -0.9466 theta*theta +0.6862 sin(theta) -2.201 cos(theta) -0.1986 sin(omega) ; domega/dt = -6.657 1 -0.9242 theta -0.2257 omega +2.958 theta*theta -8.597 sin(theta) +6.592 cos(theta)
+pendulum,0.1,42,0.1,fd,0,False,1.0456296715450886,8,0,dtheta/dt = -2.324 1 +0.9818 omega +0.9895 theta*theta +2.373 cos(theta) +0.1325 sin(omega) ; domega/dt = +6.418 1 -0.2979 theta -0.1912 omega -2.542 theta*theta -9.448 sin(theta) -6.811 cos(theta)

@@ -1,0 +1,11 @@
+law,seed,vocabulary,seconds,n_evaluated,size_reached,reached_floor,timed_out,expression,complexity,loss,form_err,form_ok,extrap_dev,recovered,on_front
+kepler,11,"{+, -, *, /, sqrt, square, cube, exp, log}",2.7624016249901615,35,3,True,False,sqrt((x0)**3),3,4.700326236127493e-33,6.073549322665938e-17,True,2.1780241201927208e-16,True,True
+kepler,23,"{+, -, *, /, sqrt, square, cube, exp, log}",0.003352500032633543,35,3,True,False,sqrt((x0)**3),3,1.374604261481372e-33,6.073549322665938e-17,True,2.1780241201927208e-16,True,True
+kepler,42,"{+, -, *, /, sqrt, square, cube, exp, log}",0.003034583991393447,35,3,True,False,sqrt((x0)**3),3,3.1836908513428175e-33,6.073549322665938e-17,True,2.1780241201927208e-16,True,True
+inverse_square,11,"{+, -, *, /, sqrt, square, cube, exp, log}",0.4014037089655176,224,4,True,False,((5.930084) / (x0)**2),4,0.0,0.0,True,8.11190758273182e-08,True,True
+inverse_square,23,"{+, -, *, /, sqrt, square, cube, exp, log}",0.25010758300777525,224,4,True,False,((5.930084) / (x0)**2),4,0.0,0.0,True,8.11190758273182e-08,True,True
+inverse_square,42,"{+, -, *, /, sqrt, square, cube, exp, log}",0.10941070801345631,224,4,True,False,((5.930084) / (x0)**2),4,0.0,0.0,True,8.11190758273182e-08,True,True
+bohr,11,"{+, -, *, /, sqrt, square, cube, exp, log}",35.551671500026714,10284,6,True,False,((1.096776) - (((1.047271) / x0))**2),6,1.209137822714899e-32,7.346968384724983e-17,True,1.5131495344872205e-07,True,True
+bohr,23,"{+, -, *, /, sqrt, square, cube, exp, log}",30.79517241701251,10284,6,True,False,((1.096776) - (((1.047271) / x0))**2),6,1.209137822714899e-32,7.346968384724983e-17,True,1.5131495344872205e-07,True,True
+bohr,42,"{+, -, *, /, sqrt, square, cube, exp, log}",27.017431916028727,10284,6,True,False,((1.096776) - (((1.047271) / x0))**2),6,1.209137822714899e-32,7.346968384724983e-17,True,1.5131495344872205e-07,True,True
+planck,11,"{+, -, *, /, sqrt, square, cube, exp, log}",264.57002654200187,72977,7,True,False,((x0)**3 / ((-1.0) + exp(x0))),7,6.37054709182807e-33,3.8970112649295545e-16,True,1.6261433050885913e-15,True,True

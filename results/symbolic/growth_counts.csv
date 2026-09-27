@@ -1,0 +1,109 @@
+n_binary,n_unary,n_ops,vocabulary,size,n_trees_raw
+2,0,2,"{+, *}",1,2.0
+2,0,2,"{+, *}",2,0.0
+2,0,2,"{+, *}",3,8.0
+2,0,2,"{+, *}",4,0.0
+2,0,2,"{+, *}",5,64.0
+2,0,2,"{+, *}",6,0.0
+2,0,2,"{+, *}",7,640.0
+2,0,2,"{+, *}",8,0.0
+2,0,2,"{+, *}",9,7168.0
+2,0,2,"{+, *}",10,0.0
+2,0,2,"{+, *}",11,86016.0
+2,0,2,"{+, *}",12,0.0
+4,0,4,"{+, -, *, /}",1,2.0
+4,0,4,"{+, -, *, /}",2,0.0
+4,0,4,"{+, -, *, /}",3,16.0
+4,0,4,"{+, -, *, /}",4,0.0
+4,0,4,"{+, -, *, /}",5,256.0
+4,0,4,"{+, -, *, /}",6,0.0
+4,0,4,"{+, -, *, /}",7,5120.0
+4,0,4,"{+, -, *, /}",8,0.0
+4,0,4,"{+, -, *, /}",9,114688.0
+4,0,4,"{+, -, *, /}",10,0.0
+4,0,4,"{+, -, *, /}",11,2752512.0
+4,0,4,"{+, -, *, /}",12,0.0
+4,1,5,"{+, -, *, /, square}",1,2.0
+4,1,5,"{+, -, *, /, square}",2,2.0
+4,1,5,"{+, -, *, /, square}",3,18.0
+4,1,5,"{+, -, *, /, square}",4,50.0
+4,1,5,"{+, -, *, /, square}",5,354.0
+4,1,5,"{+, -, *, /, square}",6,1442.0
+4,1,5,"{+, -, *, /, square}",7,9202.0
+4,1,5,"{+, -, *, /, square}",8,45138.0
+4,1,5,"{+, -, *, /, square}",9,276418.0
+4,1,5,"{+, -, *, /, square}",10,1495106.0
+4,1,5,"{+, -, *, /, square}",11,9043154.0
+4,1,5,"{+, -, *, /, square}",12,51651954.0
+4,2,6,"{+, -, *, /, square, sqrt}",1,2.0
+4,2,6,"{+, -, *, /, square, sqrt}",2,4.0
+4,2,6,"{+, -, *, /, square, sqrt}",3,24.0
+4,2,6,"{+, -, *, /, square, sqrt}",4,112.0
+4,2,6,"{+, -, *, /, square, sqrt}",5,672.0
+4,2,6,"{+, -, *, /, square, sqrt}",6,3904.0
+4,2,6,"{+, -, *, /, square, sqrt}",7,24448.0
+4,2,6,"{+, -, *, /, square, sqrt}",8,154368.0
+4,2,6,"{+, -, *, /, square, sqrt}",9,1004032.0
+4,2,6,"{+, -, *, /, square, sqrt}",10,6611968.0
+4,2,6,"{+, -, *, /, square, sqrt}",11,44226560.0
+4,2,6,"{+, -, *, /, square, sqrt}",12,298905600.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",1,2.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",2,6.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",3,34.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",4,198.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",5,1282.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",6,8646.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",7,60578.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",8,435462.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",9,3196162.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",10,23846022.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",11,180325410.0
+4,3,7,"{+, -, *, /, square, sqrt, cube}",12,1379002950.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",1,2.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",2,8.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",3,48.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",4,320.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",5,2304.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",6,17408.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",7,136192.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",8,1093632.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",9,8962048.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",10,74645504.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",11,630063104.0
+4,4,8,"{+, -, *, /, square, sqrt, cube, exp}",12,5377622016.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",1,2.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",2,10.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",3,66.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",4,490.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",5,3906.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",6,32650.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",7,282370.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",8,2505450.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",9,22679938.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",10,208627210.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",11,1944557762.0
+4,5,9,"{+, -, *, /, square, sqrt, cube, exp, log}",12,18325234410.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",1,2.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",2,12.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",3,88.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",4,720.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",5,6304.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",6,57792.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",7,547712.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",8,5323008.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",9,52761088.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",10,531311616.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",11,5420488704.0
+4,6,10,"{+, -, *, /, square, sqrt, cube, exp, log, sin}",12,55905767424.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",1,2.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",2,14.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",3,114.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",4,1022.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",5,9762.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",6,97454.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",7,1004818.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",8,10618398.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",9,114401602.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",10,1251937358.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",11,13877612210.0
+4,7,11,"{+, -, *, /, square, sqrt, cube, exp, log, sin, cos}",12,155497401150.0

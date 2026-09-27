@@ -11,16 +11,16 @@ pip install -e '.[sr]'       # + pysr, Julia  -> the symbolic-regression arm
 pip install -e '.[all]'      # everything, including the notebook toolchain
 ```
 
-Versions below are those the committed results were produced with.
+Versions below match `requirements.lock`, the environment the committed results were produced with.
 
 | Package | Version | What it does here |
 |---|---|---|
-| **PySR** | 2.2.0 | symbolic regression — the only arm that returns a law it was not given |
-| **Julia** | 1.11.9 | PySR's search engine (`SymbolicRegression.jl`), driven through `juliacall` 0.9.35 |
+| **PySR** | 2.5.0 | symbolic regression — the only arm that returns a law it was not given |
+| **Julia** | 1.11.9 | PySR's search engine (`SymbolicRegression.jl`), driven through `juliacall` 0.9.36; PySR resolves `SymbolicRegression.jl` 2.4.1 |
 | **SymPy** | 1.14.0 | parses PySR's output into an expression tree, simplifies it, and `lambdify`s it back to a numpy function |
 | **PyTorch** | 2.11.0 | the neural arms. `torch.autograd.grad` supplies the derivative in the PINN's ODE residual; the physical constants are ordinary `nn.Parameter`s |
 | **SciPy** | 1.18.1 | `curve_fit` (the `physics` arm, with covariance), `solve_ivp`/DOP853 (Schwarzschild and photon geodesics), `eigh_tridiagonal` (the Schrödinger solver), `signal` (whitening, Butterworth, Hilbert, resampling) |
-| **NumPy** | 2.5.2 | the integrators, the finite-difference stencils, everything else |
+| **NumPy** | 2.5.3 | the integrators, the finite-difference stencils, everything else |
 | **h5py** | 3.14.0 | reads the LIGO strain files |
 | **requests** | 2.34.2 | all downloads (**not** `curl` — see `docs/DATA.md`) |
 | **pandas / matplotlib** | 3.0.5 / 3.11.1 | results tables and figures; `PillowWriter` writes the GIFs, since ffmpeg is not installed |
