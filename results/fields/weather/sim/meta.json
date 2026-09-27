@@ -1,0 +1,69 @@
+{
+  "coverage": [
+    {
+      "arm": "physics",
+      "case": "inversion",
+      "coverage_1sigma": 0.43333333333333335,
+      "draws": 30,
+      "gamma_mean": -3.024055104722634,
+      "gamma_ref": -2.9973330446299693,
+      "gamma_sd_over_draws": 0.2259565289083202,
+      "pull_sd": 1.821081169332354,
+      "sigma_quoted_median": 0.12948917333543059
+    },
+    {
+      "arm": "uk",
+      "case": "inversion",
+      "coverage_1sigma": 0.36666666666666664,
+      "draws": 30,
+      "gamma_mean": -3.2721063319193773,
+      "gamma_ref": -2.9973330446299693,
+      "gamma_sd_over_draws": 0.1467073166803653,
+      "pull_sd": 0.6888547088108813,
+      "sigma_quoted_median": 0.23388780747563637
+    },
+    {
+      "arm": "physics",
+      "case": "law",
+      "coverage_1sigma": 0.23333333333333334,
+      "draws": 30,
+      "gamma_mean": -5.026722059520964,
+      "gamma_ref": -4.999999999999997,
+      "gamma_sd_over_draws": 0.225956529724776,
+      "pull_sd": 2.5371988973563444,
+      "sigma_quoted_median": 0.0910774746636112
+    },
+    {
+      "arm": "uk",
+      "case": "law",
+      "coverage_1sigma": 0.7666666666666667,
+      "draws": 30,
+      "gamma_mean": -5.028709172587818,
+      "gamma_ref": -4.999999999999997,
+      "gamma_sd_over_draws": 0.1486996129175605,
+      "pull_sd": 0.9749386887773783,
+      "sigma_quoted_median": 0.15272830220027112
+    }
+  ],
+  "gamma_best_linear": {
+    "inversion": -2.9973330446299693,
+    "law": -4.999999999999997
+  },
+  "inversion": {
+    "C": 6.0,
+    "z_top_km": 1.2
+  },
+  "n_stations": 197,
+  "noise_k": 0.3,
+  "residual": {
+    "l_h_km": 40.0,
+    "l_z_km": 0.4,
+    "s_f": 1.0
+  },
+  "truth": {
+    "Gamma": -5.0,
+    "T0": 16.0,
+    "a": -0.3,
+    "b": -1.0
+  }
+}

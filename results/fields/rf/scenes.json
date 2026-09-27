@@ -1,0 +1,12 @@
+{
+  "free": {
+    "n_eval": 4972,
+    "oracle_map_rmse_db": 0.06707750437229017,
+    "solve_seconds": 225.15328407287598
+  },
+  "walls": {
+    "n_eval": 4972,
+    "oracle_map_rmse_db": 11.575927367663436,
+    "solve_seconds": 177.39655184745789
+  }
+}

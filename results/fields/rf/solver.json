@@ -1,0 +1,6 @@
+{
+  "ppw": 24,
+  "ppw_rule": "coarsest grid within tolerance of the finest at 99% of points",
+  "ppw_tolerance_db": 0.5,
+  "quick": false
+}
