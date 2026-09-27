@@ -1,0 +1,71 @@
+{
+  "lr": {
+    "closure": 0.01,
+    "direct": 0.03,
+    "hnn": 0.03,
+    "hnn_leapfrog": 0.03,
+    "node": 0.03,
+    "pde_closure": 0.03,
+    "pde_conv": 0.03,
+    "pde_dense": 0.003,
+    "residual": 0.03
+  },
+  "n_runs": 247,
+  "options": {
+    "batch": 128,
+    "data_sizes": [
+      2,
+      8
+    ],
+    "default_lr": 0.003,
+    "horizon": 5,
+    "horizon_cap": null,
+    "lrs": [
+      0.003,
+      0.01,
+      0.03
+    ],
+    "n_test": 16,
+    "n_traj": 32,
+    "n_val": 8,
+    "objective_ode": [
+      "pendulum",
+      "lorenz"
+    ],
+    "objective_pde": [
+      "burgers"
+    ],
+    "ode_systems": [
+      "pendulum",
+      "duffing",
+      "kepler",
+      "lorenz"
+    ],
+    "pde_batch": 32,
+    "pde_systems": [
+      "heat",
+      "advection",
+      "burgers"
+    ],
+    "seeds": [
+      11,
+      23,
+      42
+    ],
+    "steps": 1000,
+    "tune": true,
+    "tune_seeds": [
+      3,
+      7,
+      19
+    ],
+    "workers": 3
+  },
+  "quick": false,
+  "seconds": 689.3657081127167,
+  "thresholds": {
+    "blowup_z": 50.0,
+    "lorenz": 0.4,
+    "valid": 0.1
+  }
+}

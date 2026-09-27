@@ -1,0 +1,95 @@
+{
+  "arms": {
+    "closure": {
+      "chosen": 0.003,
+      "val_valid_steps_by_lr": {
+        "0.001": 112.5,
+        "0.003": 406.1666666666667,
+        "0.01": 914.6666666666666
+      },
+      "with_edge": 0.01,
+      "would_change": true
+    },
+    "direct": {
+      "chosen": 0.003,
+      "val_valid_steps_by_lr": {
+        "0.001": 5.833333333333333,
+        "0.003": 19.833333333333332,
+        "0.01": 27.166666666666668
+      },
+      "with_edge": 0.01,
+      "would_change": true
+    },
+    "hnn": {
+      "chosen": 0.003,
+      "val_valid_steps_by_lr": {
+        "0.001": 77.83333333333333,
+        "0.003": 169.16666666666666,
+        "0.01": 761.3333333333334
+      },
+      "with_edge": 0.01,
+      "would_change": true
+    },
+    "hnn_leapfrog": {
+      "chosen": 0.003,
+      "val_valid_steps_by_lr": {
+        "0.001": 277.6666666666667,
+        "0.003": 1000.0,
+        "0.01": 1000.0
+      },
+      "with_edge": 0.01,
+      "would_change": true
+    },
+    "node": {
+      "chosen": 0.003,
+      "val_valid_steps_by_lr": {
+        "0.001": 58.0,
+        "0.003": 135.66666666666666,
+        "0.01": 237.83333333333334
+      },
+      "with_edge": 0.01,
+      "would_change": true
+    },
+    "pde_closure": {
+      "chosen": 0.003,
+      "val_valid_steps_by_lr": {
+        "0.001": 23.666666666666668,
+        "0.003": 84.66666666666667,
+        "0.01": 100.0
+      },
+      "with_edge": 0.01,
+      "would_change": true
+    },
+    "pde_conv": {
+      "chosen": 0.003,
+      "val_valid_steps_by_lr": {
+        "0.001": 21.0,
+        "0.003": 55.333333333333336,
+        "0.01": 97.66666666666667
+      },
+      "with_edge": 0.01,
+      "would_change": true
+    },
+    "pde_dense": {
+      "chosen": 0.001,
+      "val_valid_steps_by_lr": {
+        "0.001": 1.0,
+        "0.003": 1.0,
+        "0.01": 1.0
+      },
+      "with_edge": 0.001,
+      "would_change": false
+    },
+    "residual": {
+      "chosen": 0.003,
+      "val_valid_steps_by_lr": {
+        "0.001": 60.166666666666664,
+        "0.003": 132.33333333333334,
+        "0.01": 245.83333333333334
+      },
+      "with_edge": 0.01,
+      "would_change": true
+    }
+  },
+  "edge_lr": 0.01
+}

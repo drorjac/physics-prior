@@ -1,0 +1,29 @@
+{
+  "at_grid_edge": [
+    "direct",
+    "hnn",
+    "hnn_leapfrog",
+    "node",
+    "pde_closure",
+    "pde_conv",
+    "pde_dense",
+    "residual"
+  ],
+  "grid": [
+    0.003,
+    0.01,
+    0.03
+  ],
+  "lr": {
+    "closure": 0.01,
+    "direct": 0.03,
+    "hnn": 0.03,
+    "hnn_leapfrog": 0.03,
+    "node": 0.03,
+    "pde_closure": 0.03,
+    "pde_conv": 0.03,
+    "pde_dense": 0.003,
+    "residual": 0.03
+  },
+  "tuned": true
+}

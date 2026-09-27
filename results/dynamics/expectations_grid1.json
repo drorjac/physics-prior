@@ -1,0 +1,229 @@
+{
+  "E1": {
+    "detail": {
+      "kepler": {
+        "black_box_late": {
+          "direct": 0.16155043266713678,
+          "node": 0.23775005983662462,
+          "residual": 0.1170090961273098
+        },
+        "leapfrog_growth": 1.0582509518903183,
+        "leapfrog_late": 0.005526800794814452
+      },
+      "pendulum": {
+        "black_box_late": {
+          "direct": 0.46460770153408604,
+          "node": 0.11772766017738769,
+          "residual": 0.09445915685901113
+        },
+        "leapfrog_growth": 1.0001028505369491,
+        "leapfrog_late": 0.0007961809370097838
+      }
+    },
+    "verdict": "supported"
+  },
+  "E2": {
+    "detail": {
+      "kepler": {
+        "hnn_rk4_growth": 1.0237165804232657,
+        "hnn_rk4_late": 0.007626544124066256,
+        "leapfrog_growth": 1.0582509518903183
+      },
+      "pendulum": {
+        "hnn_rk4_growth": 1.0158468701633876,
+        "hnn_rk4_late": 0.002471678631436521,
+        "leapfrog_growth": 1.0001028505369491
+      }
+    },
+    "verdict": "supported"
+  },
+  "E3": {
+    "detail": {
+      "duffing": {
+        "direct": 2.0,
+        "direct_ood": 0.0,
+        "residual": 9.5,
+        "residual_ood": 0.0
+      },
+      "kepler": {
+        "direct": 10.5,
+        "direct_ood": 0.0,
+        "residual": 25.5,
+        "residual_ood": 3.0
+      },
+      "lorenz": {
+        "direct": 66.0,
+        "residual": 187.0
+      },
+      "pendulum": {
+        "direct": 17.0,
+        "direct_ood": 2.5,
+        "residual": 155.5,
+        "residual_ood": 20.5
+      }
+    },
+    "verdict": "supported"
+  },
+  "E4": {
+    "detail": {
+      "duffing": {
+        "node": 9.5,
+        "residual": 9.5
+      },
+      "kepler": {
+        "node": 20.5,
+        "residual": 25.5
+      },
+      "lorenz": {
+        "node": 152.0,
+        "residual": 187.0
+      },
+      "pendulum": {
+        "node": 124.0,
+        "residual": 155.5
+      }
+    },
+    "verdict": "refuted"
+  },
+  "E5": {
+    "detail": {
+      "burgers": {
+        "black_box": {
+          "conv": 0.14204673489362135,
+          "dense": 0.7271005617716727
+        },
+        "closure": 0.12904420792621518,
+        "closure_best": true
+      },
+      "duffing": {
+        "black_box": {
+          "direct": 0.799945666148335,
+          "node": 0.7759888843559906,
+          "residual": 0.7897196367118093
+        },
+        "closure": 0.07395385682235368,
+        "closure_best": true
+      },
+      "lorenz": {
+        "black_box": {
+          "direct": 66.0,
+          "node": 152.0,
+          "residual": 187.0
+        },
+        "closure": 123.0,
+        "closure_best": false
+      },
+      "pendulum": {
+        "black_box": {
+          "direct": 2.467028665280358,
+          "node": 2.2917727097699743,
+          "residual": 2.270316955160397
+        },
+        "closure": 2.122907249665329,
+        "closure_best": true
+      }
+    },
+    "verdict": "supported"
+  },
+  "E6": {
+    "detail": {
+      "burgers/conv": {
+        "onestep_loss": 100.0,
+        "rollout_loss": 71.0
+      },
+      "burgers/dense": {
+        "onestep_loss": 1.0,
+        "rollout_loss": 1.0
+      },
+      "lorenz/direct": {
+        "onestep_loss": 66.0,
+        "rollout_loss": 73.0
+      },
+      "lorenz/node": {
+        "onestep_loss": 152.0,
+        "rollout_loss": 190.0
+      },
+      "lorenz/residual": {
+        "onestep_loss": 187.0,
+        "rollout_loss": 154.5
+      },
+      "pendulum/direct": {
+        "onestep_loss": 17.0,
+        "rollout_loss": 28.0
+      },
+      "pendulum/node": {
+        "onestep_loss": 124.0,
+        "rollout_loss": 158.5
+      },
+      "pendulum/residual": {
+        "onestep_loss": 155.5,
+        "rollout_loss": 115.0
+      }
+    },
+    "verdict": "refuted"
+  },
+  "E7": {
+    "detail": {
+      "advection": {
+        "conv": 1.0991511414391804,
+        "conv_ood": 0.9759478773959813,
+        "dense": 2.724174193337196,
+        "dense_ood": 3.352835812172736
+      },
+      "burgers": {
+        "conv": 0.06249461022398298,
+        "conv_ood": 2.9125657069302853,
+        "dense": 0.7734520960919127,
+        "dense_ood": 0.7329555395147671
+      },
+      "burgers_conv_over_dense_by_n_traj": {
+        "2": 0.0683486340183673,
+        "8": 0.13005875292591845,
+        "32": 0.08079958738201735
+      },
+      "heat": {
+        "conv": 2.458893070908352,
+        "conv_ood": 4.58592496737792,
+        "dense": 0.05713356112346557,
+        "dense_ood": 0.3944931318041228
+      }
+    },
+    "verdict": "supported"
+  },
+  "E8": {
+    "detail": {
+      "max_vpt_lyap": 1.960624,
+      "spearman": -0.8161133356141735,
+      "vpt_lyap_by_arm": {
+        "closure": 1.113888,
+        "direct": 0.597696,
+        "node": 1.376512,
+        "residual": 1.693472
+      }
+    },
+    "verdict": "supported"
+  },
+  "E9": {
+    "detail": {
+      "2": {
+        "closure": 115.0,
+        "hnn_leapfrog": 776.0,
+        "leapfrog_over_residual": 5.139072847682119,
+        "residual": 151.0
+      },
+      "8": {
+        "closure": 448.0,
+        "hnn_leapfrog": 1000.0,
+        "leapfrog_over_residual": 8.16326530612245,
+        "residual": 122.5
+      },
+      "32": {
+        "closure": 416.0,
+        "hnn_leapfrog": 1000.0,
+        "leapfrog_over_residual": 6.430868167202572,
+        "residual": 155.5
+      }
+    },
+    "verdict": "refuted"
+  }
+}

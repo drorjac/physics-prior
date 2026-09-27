@@ -1,0 +1,251 @@
+{
+  "E1": {
+    "detail": {
+      "kepler": {
+        "black_box_late": {
+          "direct": 0.11524496113403263,
+          "node": 0.6031915825360705,
+          "residual": 0.11170505001342143
+        },
+        "leapfrog_growth": 1.0205627217341546,
+        "leapfrog_late": 0.0013513054524291182
+      },
+      "pendulum": {
+        "black_box_late": {
+          "direct": 0.30705587583080174,
+          "node": 0.07719507617157771,
+          "residual": 0.08776822677164187
+        },
+        "leapfrog_growth": 0.9935901375695568,
+        "leapfrog_late": 0.00014771951669058543
+      }
+    },
+    "verdict": "supported"
+  },
+  "E2": {
+    "caveats": [
+      "pendulum: H growth RK4-HNN 0.995, leapfrog 0.994; late error RK4-HNN 0.000376, leapfrog 0.000148",
+      "kepler: E growth RK4-HNN 1.12, leapfrog 1.02; late error RK4-HNN 0.00209, leapfrog 0.00135"
+    ],
+    "detail": {
+      "kepler": {
+        "hnn_rk4_growth": 1.1192170179660677,
+        "hnn_rk4_late": 0.0020941371397416707,
+        "leapfrog_growth": 1.0205627217341546
+      },
+      "pendulum": {
+        "hnn_rk4_growth": 0.9948401283441555,
+        "hnn_rk4_late": 0.0003761090373985132,
+        "leapfrog_growth": 0.9935901375695568
+      }
+    },
+    "verdict": "supported"
+  },
+  "E3": {
+    "detail": {
+      "duffing": {
+        "direct": 17.0,
+        "direct_ood": 0.0,
+        "residual": 103.0,
+        "residual_ood": 0.5
+      },
+      "kepler": {
+        "direct": 24.0,
+        "direct_ood": 6.0,
+        "residual": 31.5,
+        "residual_ood": 7.5
+      },
+      "lorenz": {
+        "direct": 109.0,
+        "residual": 282.5
+      },
+      "pendulum": {
+        "direct": 68.5,
+        "direct_ood": 5.0,
+        "residual": 482.5,
+        "residual_ood": 22.5
+      }
+    },
+    "verdict": "supported"
+  },
+  "E4": {
+    "detail": {
+      "duffing": {
+        "node": 73.5,
+        "residual": 103.0
+      },
+      "kepler": {
+        "node": 27.5,
+        "residual": 31.5
+      },
+      "lorenz": {
+        "node": 286.5,
+        "residual": 282.5
+      },
+      "pendulum": {
+        "node": 452.0,
+        "residual": 482.5
+      }
+    },
+    "verdict": "refuted"
+  },
+  "E5": {
+    "caveats": [
+      "pendulum: in-distribution valid steps closure 1e+03, best black box residual 482",
+      "duffing: in-distribution valid steps closure 1e+03, best black box residual 103",
+      "lorenz: in-distribution valid steps closure 220, best black box node 286",
+      "burgers: in-distribution valid steps closure 100, best black box conv 100"
+    ],
+    "detail": {
+      "burgers": {
+        "black_box": {
+          "conv": 0.2119482897632042,
+          "dense": 0.6810396283396152
+        },
+        "closure": 0.08181741066221244,
+        "closure_best": true
+      },
+      "duffing": {
+        "black_box": {
+          "direct": 0.37308594799313766,
+          "node": 1.410736108343555,
+          "residual": 1.1199930672034635
+        },
+        "closure": 0.038139278436994564,
+        "closure_best": true
+      },
+      "lorenz": {
+        "black_box": {
+          "direct": 109.0,
+          "node": 286.5,
+          "residual": 282.5
+        },
+        "closure": 220.0,
+        "closure_best": false
+      },
+      "pendulum": {
+        "black_box": {
+          "direct": 2.6728881836592207,
+          "node": 1.4941489573682263,
+          "residual": 1.6258974305203246
+        },
+        "closure": 1.8623387955275783,
+        "closure_best": false
+      }
+    },
+    "verdict": "refuted"
+  },
+  "E6": {
+    "caveats": [
+      "longer with unrolled loss: lorenz/direct, lorenz/node, lorenz/residual, pendulum/residual",
+      "not longer: burgers/conv, burgers/dense, pendulum/direct, pendulum/node"
+    ],
+    "detail": {
+      "burgers/conv": {
+        "onestep_loss": 100.0,
+        "rollout_loss": 100.0
+      },
+      "burgers/dense": {
+        "onestep_loss": 1.0,
+        "rollout_loss": 1.0
+      },
+      "lorenz/direct": {
+        "onestep_loss": 109.0,
+        "rollout_loss": 118.0
+      },
+      "lorenz/node": {
+        "onestep_loss": 286.5,
+        "rollout_loss": 287.0
+      },
+      "lorenz/residual": {
+        "onestep_loss": 282.5,
+        "rollout_loss": 320.5
+      },
+      "pendulum/direct": {
+        "onestep_loss": 68.5,
+        "rollout_loss": 56.0
+      },
+      "pendulum/node": {
+        "onestep_loss": 452.0,
+        "rollout_loss": 449.0
+      },
+      "pendulum/residual": {
+        "onestep_loss": 482.5,
+        "rollout_loss": 512.0
+      }
+    },
+    "verdict": "refuted"
+  },
+  "E7": {
+    "caveats": [
+      "heat (test): err at end conv 9.83, dense 0.0636; fraction of conv rollouts ending with error > 1: 1",
+      "heat (ood): err at end conv 9.82, dense 0.392; fraction of conv rollouts ending with error > 1: 1",
+      "advection (test): err at end conv 2.65, dense 2.05; fraction of conv rollouts ending with error > 1: 1",
+      "advection (ood): err at end conv 1.79, dense 2.86; fraction of conv rollouts ending with error > 1: 1",
+      "burgers (test): err at end conv 0.0563, dense 0.858; fraction of conv rollouts ending with error > 1: 0",
+      "burgers (ood): err at end conv 0.458, dense 0.707; fraction of conv rollouts ending with error > 1: 0.375"
+    ],
+    "detail": {
+      "advection": {
+        "conv": 2.64783860972632,
+        "conv_ood": 1.7944893391354022,
+        "dense": 2.052595110397778,
+        "dense_ood": 2.855772247120689
+      },
+      "burgers": {
+        "conv": 0.05625659199105203,
+        "conv_ood": 0.4579386634891033,
+        "dense": 0.8578204612383316,
+        "dense_ood": 0.7074792378384488
+      },
+      "burgers_conv_over_dense_by_n_traj": {
+        "2": 0.08787696926525401,
+        "8": 0.04134994490824378,
+        "32": 0.06558084649769393
+      },
+      "heat": {
+        "conv": 9.830837815851105,
+        "conv_ood": 9.819718699259703,
+        "dense": 0.06356929132439731,
+        "dense_ood": 0.39174577163551916
+      }
+    },
+    "verdict": "refuted"
+  },
+  "E8": {
+    "detail": {
+      "max_vpt_lyap": 2.8118879999999997,
+      "spearman": -0.9036791441564668,
+      "vpt_lyap_by_arm": {
+        "closure": 1.99232,
+        "direct": 0.987104,
+        "node": 2.594544,
+        "residual": 2.55832
+      }
+    },
+    "verdict": "supported"
+  },
+  "E9": {
+    "detail": {
+      "2": {
+        "closure": 148.0,
+        "hnn_leapfrog": 1000.0,
+        "leapfrog_over_residual": 8.849557522123893,
+        "residual": 113.0
+      },
+      "8": {
+        "closure": 819.5,
+        "hnn_leapfrog": 1000.0,
+        "leapfrog_over_residual": 3.007518796992481,
+        "residual": 332.5
+      },
+      "32": {
+        "closure": 1000.0,
+        "hnn_leapfrog": 1000.0,
+        "leapfrog_over_residual": 2.0725388601036268,
+        "residual": 482.5
+      }
+    },
+    "verdict": "supported"
+  }
+}
