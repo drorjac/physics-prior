@@ -601,3 +601,37 @@ def test_helium_rydberg_ritz_error(helium, quantum_doc):
     mant, exp = f"{err:.1e}".split("e")
     sup = str(int(exp[1:])).translate(str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹"))
     assert f"{mant}×10⁻{sup}" in quantum_doc
+
+
+# --- gravity/pulsar_spindown: docs/gravity/README.md --------------------------
+
+
+@pytest.fixture(scope="module")
+def pulsar() -> dict:
+    root = get_settings().results_dir / "gravity" / "pulsar_spindown"
+    if not (root / "meta.json").is_file():
+        pytest.skip(
+            "results/gravity/pulsar_spindown missing -- run the gravity problem"
+        )
+    return json.loads((root / "meta.json").read_text())
+
+
+@pytest.fixture(scope="module")
+def gravity_doc() -> str:
+    return (get_settings().root / "docs" / "gravity" / "README.md").read_text()
+
+
+def test_pulsar_dipole_deficit(pulsar, gravity_doc):
+    d = pulsar["dipole_test"]
+    assert f"n = {d['n_fit']:.2f} ± {d['n_sigma']:.2f}" in gravity_doc
+    assert f"{d['deficit_sigma']:.1f}σ below 3" in gravity_doc
+    assert f"{pulsar['n_selected']} pass a rule" in gravity_doc
+
+
+def test_pulsar_predictions_hold_as_written(pulsar, gravity_doc):
+    v = pulsar["verdicts"]
+    assert all(v[k] for k in v if k.startswith("p"))
+    out = v["median_nrmse_out"]
+    assert f"{min(out.values()):.2f} to {max(out.values()):.2f} times" in gravity_doc
+    sim = list(v["pinn_over_physics_sim"].values())
+    assert f"{min(sim):.2f} to {max(sim):.2f} of the constant-n fit" in gravity_doc

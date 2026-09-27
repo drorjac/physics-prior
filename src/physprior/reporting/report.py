@@ -24,6 +24,7 @@ from physprior.io import load_json, load_table
 # sweeps to summarise. Its numbers enter through `parameter_recovery`.
 TRACKS = {
     "gravity/kepler": "gravity · Kepler's third law (JPL DE441)",
+    "gravity/pulsar_spindown": "gravity · pulsar braking index (ATNF)",
     "relativity/gw150914": "relativity · GW150914 inspiral (LIGO)",
     "quantum/hydrogen": "quantum · hydrogen levels (NIST ASD)",
     "quantum/helium": "quantum · helium terms (NIST ASD)",
@@ -139,6 +140,20 @@ def parameter_recovery() -> list[dict]:
                     "deviation": f"{ritz['L'] - lim:+.3f} cm^-1",
                 }
             )
+
+    m = _try(lambda: load_json("gravity/pulsar_spindown", "meta"))
+    if m and "dipole_test" in m:
+        d = m["dipole_test"]
+        rows.append(
+            {
+                "track": "gravity",
+                "quantity": "pulsar braking index n, younger half [dimensionless]",
+                "published": 3.0,
+                "recovered": d["n_fit"],
+                "sigma": d["n_sigma"],
+                "deviation": f"{d['n_fit'] - 3.0:+.2f} ({-d['deficit_sigma']:+.1f} sigma)",
+            }
+        )
 
     m = _try(lambda: load_json("gravity/kepler", "meta"))
     if m and "headline" in m:
@@ -363,6 +378,12 @@ ORACLE_NOTES = {
         "absorb part of the low-n defect, so a fitted arm can beat it in "
         "range; out of range, where most terms have high l and almost no "
         "defect, the published constants are the better law."
+    ),
+    "gravity/pulsar_spindown": (
+        "the oracle is the dipole law, n = 3, which the young pulsars measure "
+        "below; a fitted n absorbs the mean deficit, so a fitted arm can beat "
+        "the oracle in range. Out of range the older pulsars' indices are "
+        "dominated by glitch recovery and no arm predicts them."
     ),
     "gravity/kepler": (
         "the oracle carries the IAU nominal GM_sun; a fitted GM absorbs the "

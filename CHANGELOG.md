@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`gravity/pulsar_spindown`**: the braking index `n = ν ν̈ / ν̇²` of the
+  ATNF Pulsar Catalogue's young isolated pulsars (v2.8.1, 13 of 4393 by a
+  rule fixed before any fit), against the vacuum-dipole value 3, with a
+  simulated control where the index depends on age through a known term. The
+  four predictions were committed before the run and all hold: the dipole
+  law is incomplete, every arm fails on the older glitch-dominated pulsars,
+  the tuning rule prefers no correction on the real data, and the correction
+  does learn the age dependence in the control. New loader
+  `data/sources/atnf.py`; new sourced constants `[DIPOLE]`, `[MT77]`.
 - **`quantum/helium`**: the 452 singly excited He I terms from the NIST ASD,
   with the hydrogenic law, a Rydberg–Ritz comparison fitted on the same
   split, and a quantum-defect diagnostic. It is the H3 test named in advance,

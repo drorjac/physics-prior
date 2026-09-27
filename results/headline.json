@@ -74,6 +74,14 @@
     },
     {
       "track": "gravity",
+      "quantity": "pulsar braking index n, younger half [dimensionless]",
+      "published": 3.0,
+      "recovered": 2.4029734424737907,
+      "sigma": 0.14575147431753882,
+      "deviation": "-0.60 (-4.1 sigma)"
+    },
+    {
+      "track": "gravity",
       "quantity": "GM_sun from Kepler [m^3/s^2]",
       "published": 1.32712440018e+20,
       "recovered": 1.3272031097626434e+20,
@@ -142,6 +150,51 @@
       "nrmse_out": 1.6604745240059169,
       "out/in": 78185.25461824446,
       "out/in range": "78,100 \u2013 78,500"
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "arm": "oracle",
+      "n_seeds": 3,
+      "nrmse_in": 0.020603024907712,
+      "nrmse_out": 1.373253816256502,
+      "out/in": 66.65301927303277,
+      "out/in range": "66.7 \u2013 66.7"
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "arm": "physics",
+      "n_seeds": 3,
+      "nrmse_in": 0.0098718563594562,
+      "nrmse_out": 1.3766314185237938,
+      "out/in": 139.450106281695,
+      "out/in range": "139 \u2013 139"
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "arm": "pinn",
+      "n_seeds": 3,
+      "nrmse_in": 0.0098718464876097,
+      "nrmse_out": 1.376659125977209,
+      "out/in": 139.4530524461735,
+      "out/in range": "139 \u2013 139"
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "arm": "sr",
+      "n_seeds": 3,
+      "nrmse_in": 0.00753265465447,
+      "nrmse_out": 1.374261282911563,
+      "out/in": 182.44050018887486,
+      "out/in range": "182 \u2013 182"
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "arm": "nn",
+      "n_seeds": 3,
+      "nrmse_in": 3.757098685423703e-07,
+      "nrmse_out": 1.3769544737259405,
+      "out/in": 3664940.9265401177,
+      "out/in range": "3.57e+06 \u2013 3.79e+06"
     },
     {
       "track": "relativity/gw150914",
@@ -350,6 +403,30 @@
       "verdict": "physics better on every seed"
     },
     {
+      "track": "gravity/pulsar_spindown",
+      "arm": "pinn",
+      "n_seeds": 3,
+      "ratio (median)": 1.0000201269948095,
+      "ratio range": "1.000 \u2013 1.00",
+      "verdict": "mixed"
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "arm": "sr",
+      "n_seeds": 3,
+      "ratio (median)": 0.9982783077733528,
+      "ratio range": "0.998 \u2013 0.998",
+      "verdict": "sr better on every seed"
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "arm": "nn",
+      "n_seeds": 3,
+      "ratio (median)": 1.0002346708042542,
+      "ratio range": "0.998 \u2013 1.00",
+      "verdict": "mixed"
+    },
+    {
       "track": "relativity/gw150914",
       "arm": "pinn",
       "n_seeds": 3,
@@ -449,36 +526,36 @@
   "capability_matrix": [
     {
       "arm": "oracle",
-      "returns a physical constant": "5/5 tracks",
-      "returns a closed form": "5/5 tracks",
+      "returns a physical constant": "6/6 tracks",
+      "returns a closed form": "6/6 tracks",
       "needs the law in advance": true,
       "can be wrong in a new way": "no - it is the reference"
     },
     {
       "arm": "physics",
-      "returns a physical constant": "5/5 tracks",
-      "returns a closed form": "5/5 tracks",
+      "returns a physical constant": "6/6 tracks",
+      "returns a closed form": "6/6 tracks",
       "needs the law in advance": true,
       "can be wrong in a new way": "yes - a truncated law gives a confident wrong constant"
     },
     {
       "arm": "pinn",
-      "returns a physical constant": "5/5 tracks",
-      "returns a closed form": "5/5 tracks (law + correction)",
+      "returns a physical constant": "6/6 tracks",
+      "returns a closed form": "6/6 tracks (law + correction)",
       "needs the law in advance": true,
       "can be wrong in a new way": "yes - the network can absorb the physics if w_phys is too small"
     },
     {
       "arm": "sr",
-      "returns a physical constant": "0/5 tracks",
-      "returns a closed form": "5/5 tracks",
+      "returns a physical constant": "0/6 tracks",
+      "returns a closed form": "6/6 tracks",
       "needs the law in advance": false,
       "can be wrong in a new way": "yes - fits the band, misses the law"
     },
     {
       "arm": "nn",
-      "returns a physical constant": "0/5 tracks",
-      "returns a closed form": "0/5 tracks",
+      "returns a physical constant": "0/6 tracks",
+      "returns a closed form": "0/6 tracks",
       "needs the law in advance": false,
       "can be wrong in a new way": "no law to be wrong about; fails outside the range instead"
     }
@@ -492,6 +569,15 @@
       "nn nRMSE at max budget": 0.0306473583141459,
       "physics nRMSE at max budget": 4.383007620243623e-05,
       "physics advantage": 699.2312350221835
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "budgets swept": "4-10",
+      "budgets where nn beats physics": "none",
+      "nn wins at largest budget": false,
+      "nn nRMSE at max budget": 1.1504765677731927,
+      "physics nRMSE at max budget": 0.6347647205432679,
+      "physics advantage": 1.8124456677248053
     },
     {
       "track": "relativity/gw150914",
@@ -538,6 +624,14 @@
       "beat oracle in-range": "physics, pinn, sr",
       "beat oracle out-of-range": "physics",
       "explanation": "the oracle carries the IAU nominal GM_sun; a fitted GM absorbs the planet masses and the osculating-vs-mean semi-major axis, both omitted from P = 2 pi sqrt(a^3/GM)."
+    },
+    {
+      "track": "gravity/pulsar_spindown",
+      "oracle nRMSE in": 0.020603024907712,
+      "oracle nRMSE out": 1.373253816256502,
+      "beat oracle in-range": "nn, physics, pinn, sr",
+      "beat oracle out-of-range": "none",
+      "explanation": "the oracle is the dipole law, n = 3, which the young pulsars measure below; a fitted n absorbs the mean deficit, so a fitted arm can beat the oracle in range. Out of range the older pulsars' indices are dominated by glitch recovery and no arm predicts them."
     },
     {
       "track": "relativity/gw150914",

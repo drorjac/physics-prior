@@ -16,6 +16,10 @@ DE440      Park et al., AJ 161, 105 (2021), the DE440/DE441 ephemeris paper
            (Sun's radius, moment of inertia, rotation and pole, sec. 3.4),
            and the J2SUN constant in the DE440 header file,
            ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de440/header.440.
+DIPOLE     Magnetic-dipole spin-down in vacuum: Pacini, Nature 219, 145 (1968);
+           Gunn & Ostriker, Nature 221, 454 (1969).
+MT77       Manchester & Taylor, Pulsars (Freeman, 1977): surface field for
+           R = 10 km, I = 1e45 g cm^2 and an orthogonal rotator.
 NISTASD    NIST Atomic Spectra Database v5.12 (Kramida, Ralchenko, Reader and
            NIST ASD Team), physics.nist.gov/asd.
 """
@@ -63,6 +67,15 @@ RYDBERG_HE_CM = RYDBERG_HE_M / 100.0  # 1 / cm
 
 # First ionisation energy of He I, as the series limit of the level table.
 HE_I_IONISATION_CM = 198310.66637  # 1 / cm, +- 0.00020         [NISTASD]
+
+# --------------------------------------------------------------------------
+# Pulsars (gravity/pulsar_spindown -- ATNF catalogue)
+# --------------------------------------------------------------------------
+# nu_dot = -K nu^n for a dipole spinning in vacuum: n = 3 exactly.
+BRAKING_INDEX_DIPOLE = 3.0  # dimensionless              [DIPOLE]
+# B_s = 3.2e19 sqrt(P Pdot) gauss, P in s.
+B_SURFACE_COEFF_G = 3.2e19  # G s^-1/2                    [MT77]
+JULIAN_YEAR_S = 365.25 * 86400.0  # s, the Julian year          [exact]
 
 # --------------------------------------------------------------------------
 # Cosmological (track Q -- COBE/FIRAS)

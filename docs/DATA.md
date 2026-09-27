@@ -10,6 +10,7 @@ file it read, so any number can be traced back to the bytes it came from.
 | Q | `firas_monopole_spec_v1.txt` | [NASA LAMBDA](https://lambda.gsfc.nasa.gov/data/cobe/firas/monopole_spec/) | Fixsen et al., *ApJ* **473**, 576 (1996), Table 4 |
 | A | `nist_h_levels.tsv` | [NIST ASD](https://physics.nist.gov/asd) `energy1.pl`, H I | Kramida et al., NIST ASD v5.12 |
 | He | `nist_he_levels.tsv` | [NIST ASD](https://physics.nist.gov/asd) `energy1.pl`, He I | Kramida et al., NIST ASD v5.12 |
+| gravity/pulsar_spindown | `psrcat_pkg.tar.gz` (`psrcat.db`) | [ATNF Pulsar Catalogue](https://www.atnf.csiro.au/research/pulsar/psrcat/) package, v2.8.1 | Manchester, Hobbs, Teoh & Hobbs, *AJ* **129**, 1993 (2005) |
 | fields/weather | `isd_history.csv`, `isd_lite_<station>-2023.gz` | [NOAA NCEI ISD-Lite](https://www.ncei.noaa.gov/pub/data/noaa/isd-lite/) and the [station list](https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv) | NOAA NCEI Integrated Surface Database (public domain) |
 | R | `horizons_elements_*.txt`, `horizons_vec_*.txt` | [JPL Horizons API](https://ssd.jpl.nasa.gov/api/horizons.api) | DE441 |
 

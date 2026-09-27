@@ -134,7 +134,7 @@ one's assumption — by T5 the prior *is* the problem statement.
 
 | Problem | Simulations | Real data |
 |---|---|---|
-| [**gravity**](docs/gravity) | two-body orbits · the three-body problem (figure-eight + chaos) · the solar system from JPL initial conditions · symplectic vs RK4 | Kepler's third law, DE441 |
+| [**gravity**](docs/gravity) | two-body orbits · the three-body problem (figure-eight + chaos) · the solar system from JPL initial conditions · symplectic vs RK4 | Kepler's third law, DE441; ATNF pulsar braking indices |
 | [**relativity**](docs/relativity) | Schwarzschild orbits and perihelion precession · post-Newtonian inspiral waveforms · light bending | GW150914 strain (LIGO); Mercury's ephemeris |
 | [**quantum**](docs/quantum) | the Schrödinger equation: bound states, convergence, tunnelling | NIST hydrogen levels; NIST helium terms; COBE/FIRAS |
 | [**fields**](docs/fields) | a 2-D radio field from the Helmholtz equation, in free space and with walls; a temperature field with a known lapse rate | NOAA ISD station temperatures over the Alps |
@@ -209,6 +209,7 @@ calibrated on *injected* signals with known answers.
 | quantum | Rydberg R vs Bohr prediction [cm^-1] | 109677.5834 | 109678.7774 | 1.53e-04 | +10.89 ppm = QED + relativistic |
 | quantum | R_He from the hydrogenic law, He I [cm^-1] | 109722.2755 | 123242.8128 | 771 | +12.3% = absorbed quantum defect |
 | quantum | He I limit from Rydberg-Ritz, n <= 10 [cm^-1] | 198310.6664 | 198310.5617 |  | -0.105 cm^-1 |
+| gravity | pulsar braking index n, younger half [dimensionless] | 3 | 2.40297 | 0.146 | -0.60 (-4.1 sigma) |
 | gravity | GM_sun from Kepler [m^3/s^2] | 1.327124e+20 | 1.327203e+20 | 3.38e+15 | +59.3 ppm |
 | relativity | GR coefficient alpha (Mercury) | 1 | 1.00012 | 1.65e-05 | +1.21e-04 |
 | relativity | perihelion advance [arcsec/century] | 42.98 | 42.9852 |  | +0.005 |
@@ -222,6 +223,11 @@ Extrapolation — error outside the training range relative to inside:
 | gravity/kepler | pinn | 3 | 1.13e-08 | 2.46e-04 | 21,700 | 2,220 – 41,600 |
 | gravity/kepler | sr | 3 | 8.93e-09 | 7.78e-05 | 8,720 | 8,400 – 10,000 |
 | gravity/kepler | nn | 3 | 2.12e-05 | 1.66 | 78,200 | 78,100 – 78,500 |
+| gravity/pulsar_spindown | oracle | 3 | 0.0206 | 1.37 | 66.7 | 66.7 – 66.7 |
+| gravity/pulsar_spindown | physics | 3 | 0.00987 | 1.38 | 139 | 139 – 139 |
+| gravity/pulsar_spindown | pinn | 3 | 0.00987 | 1.38 | 139 | 139 – 139 |
+| gravity/pulsar_spindown | sr | 3 | 0.00753 | 1.37 | 182 | 182 – 182 |
+| gravity/pulsar_spindown | nn | 3 | 3.76e-07 | 1.38 | 3.66e+06 | 3.57e+06 – 3.79e+06 |
 | relativity/gw150914 | oracle | 3 | 0.315 | 0.0858 | 0.272 | 0.272 – 0.272 |
 | relativity/gw150914 | physics | 3 | 0.268 | 13.4 | 50.2 | 50.2 – 50.2 |
 | relativity/gw150914 | pinn | 3 | 0.193 | 0.457 | 2.36 | 2.24 – 3.09 |

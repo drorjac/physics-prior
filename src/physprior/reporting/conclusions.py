@@ -43,7 +43,7 @@ from physprior.io import load_json
 
 # The real-data benchmark tracks, by problem.
 TRACKS_BY_PROBLEM = {
-    "gravity": ["gravity/kepler"],
+    "gravity": ["gravity/kepler", "gravity/pulsar_spindown"],
     "relativity": ["relativity/gw150914"],
     "quantum": ["quantum/hydrogen", "quantum/helium", "quantum/cmb"],
     "fields": ["fields/weather/july"],

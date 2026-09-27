@@ -11,7 +11,7 @@ page carries none, so it cannot drift.
 |---|---|---|
 | H1 | Inside the range the data covers, does knowing the law help? | **supported — barely** |
 | H2 | Out of range, is the gain from knowing the law, or from the data pinning the law's constants? | **supported — the constants** |
-| H3 | Does a learned correction help when the law is incomplete, and hurt when it is complete? | **refuted on helium by its own criterion; supported on GW150914** |
+| H3 | Does a learned correction help when the law is incomplete, and hurt when it is complete? | **supported on GW150914; refuted on helium by its own criterion; pulsars as predicted** |
 | H4 | Without the physics constraint, does a network absorb the physics and return wrong constants? | **supported** |
 | H5 | Can a good fit hide a wrong law? | **supported, twice on real data** |
 | H6 | Can symbolic regression find a law outside its operator vocabulary? | **supported (negative)** |
@@ -125,6 +125,15 @@ therefore predicts, written before the runs:
 4. in a simulated control where `n` depends on age through a known term, the
    learned correction does beat the constant-`n` fit out of range, so a
    failure on the real data is not the method's.
+
+**Result on pulsars: all four predictions hold.** The dipole law is
+incomplete (n below 3 by 4.1σ on the younger half); every arm fails on the
+older, glitch-dominated half; the tuning rule preferred no correction, so the
+`pinn` arm matched `physics` there, which answers prediction 2 by selection
+rather than by a trained correction failing; and in the simulated control the
+correction beat the constant-n fit on every reporting seed. The departure
+from n = 3 is real and not a function of age and field. Details in
+[gravity](gravity/).
 
 **Refuted if** on pulsars the `pinn` arm beats `physics` out of range on
 every reporting seed (the deviation was learnable after all), or if it fails

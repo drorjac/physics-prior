@@ -67,6 +67,44 @@ A neural correction watching a constant converge:
 
 <img src="../../figures/gravity/pinn_learning_orbit.gif" alt="a PINN learning an orbit while GM walks toward its published value" width="620">
 
+## The real-data track: `gravity/pulsar_spindown`
+
+A magnetic dipole spinning in vacuum slows as `ν̇ = −K νⁿ` with `n = 3`, so
+each pulsar's timing gives a braking index `n_obs = ν ν̈ / ν̇²` that the law
+says is 3. The data are the ATNF Pulsar Catalogue (v2.8.1): of its 4393
+pulsars, 13 pass a rule fixed before any fit (isolated, not in a globular
+cluster, not a magnetar, younger than 10⁴ years, `ν̈` at 5σ or better). The
+arms see the characteristic age and the surface field; the split trains on
+the younger half and predicts the older. The four predictions, with what
+would refute them, are in [`HYPOTHESES.md`](../HYPOTHESES.md) (H3) and were
+committed before the runs.
+
+![braking indices and the simulated control](../../figures/gravity/pulsar_braking_index.png)
+
+**The dipole law is incomplete.** Fitted on the six younger pulsars,
+n = 2.40 ± 0.15, 4.1σ below 3. This is the known result that young pulsars
+brake more gently than a vacuum dipole.
+
+**No arm predicts the older pulsars.** Their indices run from large negative
+to large positive values, the signature of glitch recovery and timing noise,
+and every arm's out-of-range error is 1.37 to 1.38 times the data's spread.
+
+**The correction has nothing to learn from age and field.** The tuning rule,
+on its validation block, preferred no correction at all: the `pinn` arm's
+weight is pinned at the top of its grid, and it matches `physics` out of
+range on every reporting seed. That answers prediction 2, but by selection,
+not by a trained correction failing.
+
+**The method could have learned an age dependence.** In a simulated control
+at the same ages and fields, where the index falls linearly with log age,
+the `pinn` arm's out-of-range error is 0.27 to 0.35 of the constant-n fit's
+on every reporting seed. So the result on real data is a property of the
+data: the departure from n = 3 is pulsar-specific, not a function of the
+inputs.
+
+Tables: [`results/gravity/pulsar_spindown/`](../../results/gravity/pulsar_spindown).
+The selected pulsars and the rule are in its `meta.json`.
+
 ## Caveats, stated up front
 
 `P = 2π√(a³/GM)` ignores the planet's own mass and uses the osculating

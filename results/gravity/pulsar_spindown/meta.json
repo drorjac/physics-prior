@@ -1,0 +1,177 @@
+{
+  "catalogue_version": "2.8.1",
+  "dipole_test": {
+    "below_three": true,
+    "deficit_sigma": 4.096195666779384,
+    "n_fit": 2.4029734424737907,
+    "n_sigma": 0.14575147431753882,
+    "n_train": 6
+  },
+  "headline": {
+    "physics": {
+      "expression": "n",
+      "params": {
+        "n": 7.128833335288701
+      },
+      "seconds": 0.0011267662048339844,
+      "sigma": {
+        "n": 9.530342575995542
+      }
+    },
+    "pinn": {
+      "expression": "n  + NN(x)",
+      "params": {
+        "n": 7.12883362056564
+      },
+      "seconds": 2.684674024581909,
+      "sigma": {}
+    },
+    "sr": {
+      "expression": "0.5317705/(log_age - 1*3.6553626)",
+      "params": {},
+      "seconds": 4.836737155914307,
+      "sigma": {}
+    }
+  },
+  "n_catalogue": 4393,
+  "n_selected": 13,
+  "n_with_nu_ddot": 516,
+  "provenance": {
+    "bytes": 1224627,
+    "file": "psrcat_pkg.tar.gz",
+    "note": "ATNF Pulsar Catalogue v2.8.1, Manchester et al. 2005",
+    "sha256": "2ea143fc2c9a01184f5a94715422351c49ecf97cae26004ea4897e56421d4cbd",
+    "url": "https://www.atnf.csiro.au/research/pulsar/psrcat/downloads/psrcat_pkg.tar.gz"
+  },
+  "pulsars": [
+    {
+      "age_yr": 727.998091,
+      "b_surface_g": 48752386102038.69,
+      "n_obs": 1.878767,
+      "n_obs_err": 0.002068,
+      "psrj": "J1846-0258"
+    },
+    {
+      "age_yr": 1256.7851,
+      "b_surface_g": 3794025795561.3936,
+      "n_obs": 2.342048,
+      "n_obs_err": 0.001051,
+      "psrj": "J0534+2200"
+    },
+    {
+      "age_yr": 1571.064986,
+      "b_surface_g": 15403995845139.57,
+      "n_obs": 2.825804,
+      "n_obs_err": 0.002981,
+      "psrj": "J1513-5908"
+    },
+    {
+      "age_yr": 1607.818338,
+      "b_surface_g": 40981256263445.84,
+      "n_obs": 2.68408,
+      "n_obs_err": 0.00168,
+      "psrj": "J1119-6127"
+    },
+    {
+      "age_yr": 1673.0286,
+      "b_surface_g": 4979912563178.756,
+      "n_obs": 2.126849,
+      "n_obs_err": 0.002819,
+      "psrj": "J0540-6919"
+    },
+    {
+      "age_yr": 2135.099526,
+      "b_surface_g": 38406902598224.67,
+      "n_obs": 2.560292,
+      "n_obs_err": 0.080009,
+      "psrj": "J1208-6238"
+    },
+    {
+      "age_yr": 2852.241922,
+      "b_surface_g": 10217741750693.824,
+      "n_obs": -3.775758,
+      "n_obs_err": 0.175617,
+      "psrj": "J1124-5916"
+    },
+    {
+      "age_yr": 4602.418448,
+      "b_surface_g": 6618467360458.015,
+      "n_obs": 66.783006,
+      "n_obs_err": 1.881211,
+      "psrj": "J1023-5746"
+    },
+    {
+      "age_yr": 4853.537045,
+      "b_surface_g": 3577912734031.7095,
+      "n_obs": 1.856535,
+      "n_obs_err": 0.000581,
+      "psrj": "J1833-1034"
+    },
+    {
+      "age_yr": 4932.788652,
+      "b_surface_g": 924616502593.4354,
+      "n_obs": 9.532519,
+      "n_obs_err": 0.468812,
+      "psrj": "J0537-6910"
+    },
+    {
+      "age_yr": 5373.848694,
+      "b_surface_g": 3610862310397.435,
+      "n_obs": 44.236309,
+      "n_obs_err": 0.000378,
+      "psrj": "J0205+6449"
+    },
+    {
+      "age_yr": 7298.118149,
+      "b_surface_g": 7841348472849.142,
+      "n_obs": 40.861233,
+      "n_obs_err": 0.564577,
+      "psrj": "J1357-6429"
+    },
+    {
+      "age_yr": 7416.949913,
+      "b_surface_g": 10836394426001.672,
+      "n_obs": -81.236851,
+      "n_obs_err": 15.23191,
+      "psrj": "J1614-5048"
+    }
+  ],
+  "selection": {
+    "isolated": "no BINARY parameter: orbital motion biases nu_dot",
+    "measured": "|nu_ddot| at 5 sigma or better",
+    "not_a_magnetar": "TYPE has no AXP or SGR: outbursts drive the spin-down",
+    "not_in_globular_cluster": "no GC: association: cluster acceleration biases nu_dot",
+    "spinning_down": "nu_dot < 0",
+    "young": "characteristic age below 1e4 yr, where nu_ddot is measurable above timing noise"
+  },
+  "simulation": {
+    "n": 60,
+    "noise": 0.05,
+    "pinn_w_phys": 0.001,
+    "pivot": 3.0,
+    "slope": -0.8
+  },
+  "verdicts": {
+    "median_nrmse_out": {
+      "nn": 1.377,
+      "physics": 1.3766,
+      "pinn": 1.3767,
+      "sr": 1.3743
+    },
+    "p1_dipole_law_incomplete": true,
+    "p2_pinn_not_better_on_every_seed": true,
+    "p3_every_arm_fails_out_of_range": true,
+    "p4_pinn_better_in_control_on_every_seed": true,
+    "pinn_over_physics_real": {
+      "11": 1.0,
+      "23": 1.0,
+      "42": 1.0
+    },
+    "pinn_over_physics_sim": {
+      "11": 0.3508,
+      "23": 0.2661,
+      "42": 0.3341
+    }
+  },
+  "weighting": "unweighted: pulsar-to-pulsar scatter exceeds the quoted errors"
+}

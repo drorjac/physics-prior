@@ -12,6 +12,7 @@ DATASETS: dict[str, tuple[str, str]] = {
     "cobe/firas": ("physprior.data.sources.firas", "load"),
     "nist/hydrogen": ("physprior.data.sources.nist", "load"),
     "nist/helium": ("physprior.data.sources.nist", "load_helium"),
+    "atnf/pulsars": ("physprior.data.sources.atnf", "load"),
     "jpl/planets": ("physprior.data.sources.horizons", "planets"),
     "noaa/isd-stations": ("physprior.data.sources.isd", "load_station_list"),
 }

@@ -118,6 +118,7 @@ def train_split(track: str, prob: Problem) -> np.ndarray:
     x0 = prob.x[:, 0]
     frac = {
         "gravity/kepler": 0.5,
+        "gravity/pulsar_spindown": 0.5,
         "quantum/hydrogen": 0.25,
         "quantum/cmb": float(np.mean(x0 < cmb.TURNOVER_HZ)),
         "quantum/helium": float(np.mean(x0 <= helium.N_TRAIN_MAX)),
@@ -127,11 +128,12 @@ def train_split(track: str, prob: Problem) -> np.ndarray:
 
 
 def problems() -> dict:
-    from physprior.problems.gravity import kepler
+    from physprior.problems.gravity import kepler, pulsar_spindown
     from physprior.problems.quantum import cmb, helium, hydrogen
 
     return {
         "gravity/kepler": kepler.problem,
+        "gravity/pulsar_spindown": pulsar_spindown.problem,
         "quantum/hydrogen": hydrogen.problem,
         "quantum/cmb": cmb.problem,
         "quantum/helium": helium.problem,

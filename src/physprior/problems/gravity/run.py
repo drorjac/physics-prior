@@ -18,7 +18,7 @@ from physprior.units import require_not_none
 from physprior.viz import plots as P
 from physprior.viz.animate import animate_orbits, animate_training
 
-from . import discovery, kepler, orbits
+from . import discovery, kepler, orbits, pulsar_spindown
 
 PROBLEM = "gravity"
 
@@ -235,6 +235,7 @@ def training_movie() -> dict:
 def run(quick: bool = False) -> dict:
     meta: dict[str, Any] = {"problem": PROBLEM}
     meta["kepler_real_data"] = kepler.run(quick=quick)
+    meta["pulsar_real_data"] = pulsar_spindown.run(quick=quick)
     meta["simulations"] = simulations(quick=quick)
     meta["discovery"] = run_discovery(quick=quick)
     meta["training"] = training_movie()
