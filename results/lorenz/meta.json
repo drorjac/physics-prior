@@ -1,0 +1,119 @@
+{
+  "chaos": {
+    "delta0": 1e-08,
+    "lambda_fit": 0.9002921835763005,
+    "lambda_reference": 0.9056,
+    "lambda_single_pair": 0.8438849300103385,
+    "n_pairs": 24,
+    "t_saturate": 21.25
+  },
+  "choice": {
+    "ms": "seg12",
+    "nn": "w32_d3",
+    "pinn": "w0.1_f8"
+  },
+  "configs": {
+    "ms": {
+      "max_nfev": 300,
+      "n_seg": 12
+    },
+    "nn": {
+      "balance": "none",
+      "balance_every": 100,
+      "causal_chunks": 16,
+      "causal_eps": 0.0,
+      "compile": false,
+      "depth": 3,
+      "derivative": "forward",
+      "fourier": 0,
+      "lbfgs": 0,
+      "lr": 0.002,
+      "n_col": 256,
+      "n_lbfgs_grid": 1024,
+      "physics": false,
+      "ramp": 0,
+      "record_every": 25,
+      "resample": true,
+      "schedule": "cosine",
+      "steps": 6000,
+      "w_phys": 1.0,
+      "warmup": 0,
+      "weight_decay": 0.0,
+      "width": 32
+    },
+    "pinn": {
+      "balance": "none",
+      "balance_every": 100,
+      "causal_chunks": 16,
+      "causal_eps": 0.0,
+      "compile": false,
+      "depth": 4,
+      "derivative": "forward",
+      "fourier": 8,
+      "lbfgs": 1000,
+      "lr": 0.002,
+      "n_col": 256,
+      "n_lbfgs_grid": 1024,
+      "physics": true,
+      "ramp": 1000,
+      "record_every": 25,
+      "resample": true,
+      "schedule": "cosine",
+      "steps": 6000,
+      "w_phys": 0.1,
+      "warmup": 1000,
+      "weight_decay": 0.0,
+      "width": 64
+    }
+  },
+  "options": {
+    "budgets": [
+      10,
+      20,
+      40,
+      80,
+      160
+    ],
+    "lbfgs": 1000,
+    "ms_nfev": 300,
+    "noises": [
+      0.0,
+      0.01,
+      0.02,
+      0.05,
+      0.1,
+      0.2
+    ],
+    "quick": false,
+    "ramp": 1000,
+    "seeds": [
+      11,
+      23,
+      42
+    ],
+    "speed_steps": 150,
+    "steps": 6000,
+    "tune_seeds": [
+      3,
+      7,
+      19
+    ],
+    "warmup": 1000
+  },
+  "reference": {
+    "n_obs": 40,
+    "noise": 0.05,
+    "t_end": 3.0
+  },
+  "seconds": 260.67368679100764,
+  "theta_init": {
+    "beta": 1.0,
+    "rho": 15.0,
+    "sigma": 5.0
+  },
+  "theta_true": {
+    "beta": 2.6666666666666665,
+    "rho": 28.0,
+    "sigma": 10.0
+  }
+}

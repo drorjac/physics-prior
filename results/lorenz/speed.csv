@@ -1,0 +1,5 @@
+derivative,compiled,ms_per_step,error,torch,max_abs_diff_vs_autograd
+autograd,False,9.926457779947668,,2.11.0,0.0
+jvp,False,11.155925000008816,,2.11.0,7.771561172376096e-16
+forward,False,6.980359999967429,,2.11.0,7.771561172376096e-16
+forward,True,5.7642774999840185,,2.11.0,7.771561172376096e-16
