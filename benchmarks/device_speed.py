@@ -5,6 +5,7 @@ MPS on an OS the project's own torch has dropped, and nothing here writes
 into the project.
 """
 import time
+
 import torch
 
 L, T_MAX, W, ALPHA = 1.0, 1.0, 0.08, 0.05

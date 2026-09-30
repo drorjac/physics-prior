@@ -12,8 +12,10 @@
     physprior optim [--quick]
     physprior reconstruct [--quick] [--workers N] [--doc-only]
     physprior dynamics [--quick] [--doc-only]
+    physprior lorenz [--quick] [--workers N] [--doc-only] [--no-gif]
     physprior budget-weight [TRACK]
     physprior summary [--execute]
+    physprior summary-md [--check]
     physprior info
 
 This is the only module that configures logging or prints; everything under it
@@ -191,11 +193,30 @@ def build_parser() -> argparse.ArgumentParser:
         "--doc-only", action="store_true", help="redraw figures and page from results/"
     )
 
+    lz = sub.add_parser(
+        "lorenz",
+        help="Lorenz-63: PINN vs black box vs shooting, noise, budget, "
+        "optimisation ladder, the butterfly effect",
+    )
+    lz.add_argument("--quick", action="store_true", help="short runs, for a smoke test")
+    lz.add_argument("--workers", type=int, default=None, help="parallel processes")
+    lz.add_argument(
+        "--doc-only", action="store_true", help="redraw figures and page from results/"
+    )
+    lz.add_argument(
+        "--no-gif", action="store_true", help="skip the butterfly animation"
+    )
+
     bw = sub.add_parser(
         "budget-weight",
         help="H7: the pinn arm's physics weight chosen per training-set size",
     )
     bw.add_argument("track", nargs="?", default=None, help="one track (default: all)")
+
+    smd = sub.add_parser("summary-md", help="write SUMMARY.md from results/")
+    smd.add_argument(
+        "--check", action="store_true", help="write nothing; exit 1 if it is stale"
+    )
 
     sm = sub.add_parser("summary", help="build the one-notebook tour of the results")
     sm.add_argument("--execute", action="store_true", help="execute it after building")
@@ -400,12 +421,38 @@ def main(argv: Sequence[str] | None = None) -> int:
                 run_dynamics(quick=args.quick)
             dynamics_doc.render_doc()
             return 0
+        if args.command == "lorenz":
+            from physprior.lorenz import doc as lorenz_doc
+            from physprior.lorenz import figures as lorenz_figures
+
+            if not args.doc_only:
+                from dataclasses import replace
+
+                from physprior.lorenz.study import Options
+                from physprior.lorenz.study import run as run_lorenz
+
+                o = Options.quick_options() if args.quick else Options()
+                if args.workers:
+                    o = replace(o, workers=args.workers)
+                run_lorenz(opts=o)
+            lorenz_figures.regenerate(gif=not args.no_gif)
+            lorenz_doc.render_doc()
+            return 0
         if args.command == "budget-weight":
             from physprior.benchmark import budget_weight
 
             budget_weight.run(only=args.track)
             v = budget_weight.verdicts()
             print({k: v[k] for k in v if k != "table"})
+            return 0
+        if args.command == "summary-md":
+            from physprior.reporting import project_summary
+
+            if args.check:
+                ok = project_summary.check()
+                print("SUMMARY.md is up to date" if ok else "SUMMARY.md is stale")
+                return 0 if ok else 1
+            project_summary.render()
             return 0
         if args.command == "summary":
             from physprior.reporting.summary import build as build_summary
