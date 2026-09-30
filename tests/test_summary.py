@@ -28,7 +28,7 @@ def test_notebook_code_parses():
 def test_notebook_has_every_task_and_the_chooser():
     nb = S.notebook()
     text = "\n".join(c.source for c in nb.cells)
-    assert 'TASK = "gw150914"' in text and "S.show(TASK)" in text
+    assert 'TASK = "lorenz"' in text and "S.show(TASK)" in text
     for fn in PLOTS:
         assert f"S.{fn}()" in text
     assert "## In progress" in text

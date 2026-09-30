@@ -8,6 +8,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The Lorenz study** (`physprior lorenz`, `physprior.lorenz`). An inverse
+  problem on a chaotic system: 40 noisy observations of one Lorenz-63
+  trajectory; reconstruct it, recover (sigma, rho, beta) from a start wrong by
+  a factor of two, and forecast. Arms: a tuned black box (and its derivative
+  regressed on the law), finite differences, single shooting, multiple
+  shooting, the PINN, and the PINN polished by shooting. Sweeps over noise
+  (0 to 20 %) and budget (10 to 160 points); an optimisation ladder that adds
+  the training recipe one piece at a time, plus gradient-norm balancing and
+  causal weights; the cost of forward-mode, `torch.func.jvp` and reverse-mode
+  derivatives, with and without `torch.compile`; the Lyapunov exponent from
+  24 trajectory pairs and the forecast horizon against the error in the
+  constants. Page generated from results: `docs/lorenz/README.md`.
+- **T14, the butterfly and the PINN**: the study as an executable tutorial,
+  with the block diagram, the loss term by term, and a vanilla PINN failing
+  beside the recipe that fixes it.
+- **`SUMMARY.md`** (`physprior summary-md`): the project on one page,
+  generated from `results/`, with the pipeline and the Lorenz PINN as
+  diagrams. The summary notebook opens with the Lorenz study.
+
 - **H7: the physics weight against the amount of training data**
   (`physprior budget-weight`). The `pinn` arm's weight is chosen per budget
   of the data-budget sweep on the tuning seeds and re-scored on the

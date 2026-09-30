@@ -1558,6 +1558,7 @@ def _register_extensions() -> None:
     helpers in `cells.py`; they are registered here in course order."""
     from physprior.reporting.tutorials_dynamics import t13_learning_the_update
     from physprior.reporting.tutorials_fields import t10_spatial_fields
+    from physprior.reporting.tutorials_lorenz import t14_butterfly_and_the_pinn
     from physprior.reporting.tutorials_optim import TUTORIALS_OPTIM
     from physprior.reporting.tutorials_reconstruction import t12_field_reconstruction
     from physprior.reporting.tutorials_sr import t11_how_symbolic_regression_works
@@ -1567,6 +1568,7 @@ def _register_extensions() -> None:
     TUTORIALS["T11_how_symbolic_regression_works"] = t11_how_symbolic_regression_works
     TUTORIALS["T12_field_reconstruction"] = t12_field_reconstruction
     TUTORIALS["T13_learning_the_update"] = t13_learning_the_update
+    TUTORIALS["T14_butterfly_and_the_pinn"] = t14_butterfly_and_the_pinn
 
 
 _register_extensions()

@@ -16,7 +16,7 @@ import pytest
 from physprior.config import get_settings
 from physprior.reporting.tutorials import TUTORIALS, build
 
-ORDER = [f"T{i}" for i in range(1, 14)]
+ORDER = [f"T{i}" for i in range(1, 15)]
 
 
 def test_the_course_covers_every_physics_topic_in_order():

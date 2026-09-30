@@ -4,8 +4,8 @@ The notebooks, in order. Each one is generated from
 [`physprior/reporting/tutorials.py`](../../src/physprior/reporting/tutorials.py)
 and the topic modules next to it, so nothing here is prose that has drifted
 from the code it claims to teach. T1–T7 are the PINN course; T8 onwards
-widen it to optimisation, spatial fields, symbolic regression and learned
-dynamics.
+widen it to optimisation, spatial fields, symbolic regression, learned
+dynamics and a chaotic inverse problem.
 
 ```bash
 physprior tutorials --execute      # build and run all of them
@@ -27,6 +27,7 @@ physprior tutorials T5             # just one
 | **T11** | [how symbolic regression works](T11_how_symbolic_regression_works.ipynb) | expression trees, the size of the search space, a genetic search and its Pareto front, SINDy, and why the operator set is a prior |
 | **T12** | [field reconstruction in 1-D, 2-D, 3-D](T12_field_reconstruction.ipynb) | a rod, a plate and a 3-D potential from sparse sensors; how many sensors each method needs as the dimension grows |
 | **T13** | [learning the update rule](T13_learning_the_update.ipynb) | learn a pendulum's time step four ways and watch its energy; how long a learned Lorenz stepper stays valid; a Burgers rollout with a local versus a dense stepper |
+| **T14** | [the butterfly and the PINN](T14_butterfly_and_the_pinn.ipynb) | a chaotic inverse problem: the butterfly effect measured, the PINN as a block diagram and its loss term by term, a vanilla PINN collapsing and the recipe that fixes it, and the PINN against a tuned black box, single and multiple shooting |
 
 ## The arc
 

@@ -865,6 +865,72 @@ def budget_conclusion() -> str:
 
 
 # ---------------------------------------------------------------------------
+# Lorenz-63: the inverse problem on a chaotic system
+# ---------------------------------------------------------------------------
+
+
+def lorenz_data():
+    from physprior.lorenz import figures as LF
+
+    return LF.fig_butterfly_3d(save=False)
+
+
+def lorenz_method():
+    from physprior.lorenz import figures as LF
+
+    return LF.fig_block_diagram(save=False)
+
+
+def lorenz_result():
+    from physprior.lorenz import figures as LF
+
+    return LF.fig_main(save=False)
+
+
+def lorenz_reconstruction():
+    from physprior.lorenz import figures as LF
+
+    return LF.fig_reconstruction(save=False)
+
+
+def lorenz_noise():
+    from physprior.lorenz import figures as LF
+
+    return LF.fig_sweep("noise", save=False)
+
+
+def lorenz_ladder():
+    from physprior.lorenz import figures as LF
+
+    return LF.fig_ladder(save=False)
+
+
+def lorenz_loss():
+    from physprior.lorenz import figures as LF
+
+    return LF.fig_loss_breakdown(save=False)
+
+
+def lorenz_conclusion() -> str:
+    from physprior.lorenz.doc import findings
+
+    f = findings()
+    return (
+        f"The PINN reconstructs the chaotic trajectory {f['state_ratio']:.1f}x more "
+        f"accurately than the tuned black box ({f['wins_state']}/{f['n_seeds']} "
+        f"seeds) and recovers (sigma, rho, beta) to {f['theta_pinn']:.2%} from a "
+        f"start wrong by a factor of two. Single shooting from that start fails "
+        f"({f['theta_shooting']:.0%}); multiple shooting matches the PINN "
+        f"({f['theta_ms']:.2%}), but with {min(f['budget_theta_pinn']):g} "
+        f"observations only the PINN still does "
+        f"({f['budget_theta_pinn'][min(f['budget_theta_pinn'])]:.1%} against "
+        f"{f['budget_theta_ms'][min(f['budget_theta_ms'])]:.0%}). The training "
+        f"recipe is what makes it work: the vanilla PINN fails on "
+        f"{f['vanilla_fails']} of {f['n_seeds']} seeds."
+    )
+
+
+# ---------------------------------------------------------------------------
 # the registry and `show`
 # ---------------------------------------------------------------------------
 
@@ -879,6 +945,22 @@ class Task:
 
 
 TASKS: dict[str, Task] = {
+    "lorenz": Task(
+        "Lorenz-63: a PINN against a black box on a chaotic system",
+        "Forty noisy observations of one chaotic trajectory. Reconstruct it, recover "
+        "sigma, rho and beta from a start wrong by a factor of two, and forecast. "
+        "Below: the butterfly effect, the PINN as a block diagram, every method, "
+        "the noise sweep, the optimisation ladder and the loss term by term.",
+        [lorenz_data, lorenz_method],
+        [
+            lorenz_result,
+            lorenz_reconstruction,
+            lorenz_noise,
+            lorenz_ladder,
+            lorenz_loss,
+        ],
+        lorenz_conclusion,
+    ),
     "gw150914": Task(
         "Extrapolating the GW150914 chirp",
         "Six cycles of the frequency track of LIGO's first detection. Train on the "
@@ -1022,6 +1104,7 @@ Protocol:
 """
 
 DOCS = {
+    "lorenz": "lorenz/README.md",
     "gw150914": "relativity/README.md",
     "neglected": "neglected/README.md",
     "pulsars": "gravity/README.md",
@@ -1052,7 +1135,7 @@ IN_PROGRESS = """
 
 def _section(i: int, key: str) -> list:
     t = TASKS[key]
-    letter = "abcdefgh"[i]
+    letter = "abcdefghijk"[i]
     cells = [
         md(
             f"## {letter}. {t.title}\n\n{t.goal} "
@@ -1075,7 +1158,7 @@ def notebook():
             "## Choose a task\n\nEdit `TASK` and re-run the cell to see one task's "
             "data, result and conclusion."
         ),
-        code(f'TASK = "gw150914"  # one of: {", ".join(keys)}\nS.show(TASK)'),
+        code(f'TASK = "lorenz"  # one of: {", ".join(keys)}\nS.show(TASK)'),
         md(
             "## Results by task\n\nEach section shows the data, then the result, then "
             "a one-line conclusion computed from `results/`."

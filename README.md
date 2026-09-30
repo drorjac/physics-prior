@@ -28,7 +28,8 @@ you can watch**, where the governing law is known exactly.
 > of range. The questions, their evidence and what would refute them are in
 > [`docs/HYPOTHESES.md`](docs/HYPOTHESES.md).
 
-**Start with the results.** [`docs/MISSIONS.md`](docs/MISSIONS.md) lists every
+**Start with the results.** [`SUMMARY.md`](SUMMARY.md) is the project on one
+page, generated from `results/`. [`docs/MISSIONS.md`](docs/MISSIONS.md) lists every
 task with its goal and conclusion, the clear results first and the open ones
 after them; [`notebooks/summary.ipynb`](notebooks/summary.ipynb) shows the
 data and results of each in plots (`physprior summary --execute`); [`docs/CONTRIBUTIONS.md`](docs/CONTRIBUTIONS.md)
@@ -79,6 +80,8 @@ physprior reconstruct        # field reconstruction from sparse sensors, 1-D to 
 physprior dynamics           # learning the update rule of ODEs and PDEs
 physprior optim              # optimizers, loss functions, curvature, loss balancing
 physprior theory             # how symbolic regression searches; the fitting packages
+physprior lorenz             # Lorenz-63: PINN vs black box vs shooting, noise, the butterfly
+physprior summary-md         # SUMMARY.md, the project on one page, from results/
 ```
 
 `make reproduce` regenerates everything into `build/reproduce/` and checks
@@ -90,6 +93,30 @@ Every writable path is overridable — `PHYSPRIOR_RESULTS_DIR`,
 package behaves the same from a checkout, a wheel, or CI.
 
 ---
+
+## A chaotic inverse problem: the butterfly and the PINN
+
+![an ensemble of Lorenz trajectories spreading over the attractor](figures/lorenz/butterfly.gif)
+
+Forty noisy observations of one Lorenz-63 trajectory. The PINN fits the
+trajectory and the constants (sigma, rho, beta) of the law together, from a
+start that is wrong by a factor of two in each. Against a tuned black-box
+network it reconstructs the trajectory and its derivative about an order of
+magnitude more accurately on every reporting seed, and it returns the
+constants, which the black box cannot. Against classical fitting of the same
+law, single shooting lands in a wrong minimum on most seeds; multiple shooting,
+the standard remedy, matches the PINN; with only ten observations, the PINN is
+the one method that still recovers the constants. A vanilla PINN fails on
+most seeds; the study builds the training recipe up one piece at a time and
+measures each piece.
+
+![the PINN for Lorenz as a block diagram](figures/lorenz/block_diagram.png)
+
+The numbers, the noise and budget sweeps, the loss term by term and the
+measured Lyapunov exponent are on [`docs/lorenz`](docs/lorenz/README.md); the
+tutorial is [T14](notebooks/tutorials/T14_butterfly_and_the_pinn.ipynb).
+`tests/test_lorenz.py` checks every statement in this paragraph against
+`results/lorenz`.
 
 ## The two shapes a PINN comes in
 
@@ -108,8 +135,8 @@ Generated, executable notebooks in
 [`notebooks/tutorials/`](notebooks/tutorials), built from
 [`tutorials.py`](src/physprior/reporting/tutorials.py) and its topic modules,
 so they cannot drift from the code they teach. T1–T7 are the PINN course;
-T8–T13 cover optimisation, spatial fields, symbolic regression and learned
-dynamics.
+T8–T14 cover optimisation, spatial fields, symbolic regression, learned
+dynamics and a chaotic inverse problem.
 
 ```bash
 physprior tutorials --execute
@@ -130,6 +157,7 @@ physprior tutorials --execute
 | **T11** | [how symbolic regression works](notebooks/tutorials/T11_how_symbolic_regression_works.ipynb) | expression trees, the search space, a genetic search and its Pareto front, SINDy, the operator set as a prior |
 | **T12** | [field reconstruction in 1-D, 2-D, 3-D](notebooks/tutorials/T12_field_reconstruction.ipynb) | a rod, a plate and a 3-D potential from sparse sensors, and how the sensor count each method needs grows with dimension |
 | **T13** | [learning the update rule](notebooks/tutorials/T13_learning_the_update.ipynb) | learned time-steppers for a pendulum, Lorenz and Burgers: energy drift, valid horizons, stability |
+| **T14** | [the butterfly and the PINN](notebooks/tutorials/T14_butterfly_and_the_pinn.ipynb) | a chaotic inverse problem: the butterfly effect, a PINN drawn as a block diagram, why the vanilla PINN collapses and the recipe that fixes it, the loss term by term, and the PINN against a tuned black box and classical shooting |
 
 The difficulty rises with the physics, and each domain breaks the previous
 one's assumption — by T5 the prior *is* the problem statement.
@@ -152,8 +180,14 @@ results here exist only because both halves are present.
 
 ## Studies across problems
 
-Each of these states its hypotheses before the runs that test them, reports
-on the reporting seeds only, and generates its page from `results/`.
+Each of these reports on the reporting seeds only and generates its page from
+`results/`; all but the Lorenz study stated their hypotheses before the runs.
+
+- **[Lorenz-63, a chaotic inverse problem](docs/lorenz/).** A PINN against a
+  tuned black box and against single and multiple shooting, under noise from
+  0 to 20 % and with 10 to 160 observations; the PINN's training recipe as a
+  ladder of measured steps; three ways of computing du/dt and what each costs;
+  the butterfly effect and the forecast horizon it sets.
 
 - **[Field reconstruction, 1-D to 3-D](docs/reconstruction/).** How many
   sensors a physics-constrained reconstruction needs, against a GP, RBF

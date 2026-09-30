@@ -23,6 +23,7 @@ in advance, and it is the one page to read if you only read one.
 | Study | What it answers |
 |---|---|
 | [reconstruction/](reconstruction/) | how the value of a physics prior for reconstructing a field from sparse sensors changes from 1-D to 3-D ([hypothesis, written first](reconstruction/HYPOTHESIS.md)) |
+| [lorenz/](lorenz/) | a chaotic inverse problem: a PINN against a tuned black box and classical shooting, under noise and with less data; the PINN's training recipe built up one piece at a time; the butterfly effect |
 | [dynamics/](dynamics/) | learning the update rule of an ODE or PDE: what structure buys over long rollouts |
 | [optimization/](optimization/) | optimizers, learning rates, loss functions and curvature for physics-constrained models and black boxes; what loss balancing does to the `pinn` arm |
 | [theory/symbolic_regression.md](theory/symbolic_regression.md) | how symbolic regression searches, measured with in-repo implementations, PySR and SINDy |
