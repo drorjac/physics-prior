@@ -81,12 +81,12 @@ test-all:  ## everything, including injection studies and network fetches
 	$(PYTHON) -m pytest
 
 lint:  ## ruff + format check + mypy
-	$(PYTHON) -m ruff check src tests scripts
+	$(PYTHON) -m ruff check src tests tools
 	$(PYTHON) -m ruff format --check src tests
 	$(PYTHON) -m mypy
 
 format:  ## apply ruff fixes and formatting
-	$(PYTHON) -m ruff check --fix src tests scripts
+	$(PYTHON) -m ruff check --fix src tests tools
 	$(PYTHON) -m ruff format src tests
 
 typecheck:

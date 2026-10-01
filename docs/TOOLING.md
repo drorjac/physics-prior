@@ -11,7 +11,7 @@ pip install -e '.[sr]'       # + pysr, Julia  -> the symbolic-regression arm
 pip install -e '.[all]'      # everything, including the notebook toolchain
 ```
 
-Versions below match `requirements.lock`, the environment the committed results were produced with.
+Versions below match `tools/requirements.lock`, the environment the committed results were produced with.
 
 | Package | Version | What it does here |
 |---|---|---|
@@ -182,7 +182,7 @@ torch 2.11 requires macOS 14; this machine runs 13.4. So `is_built()` is True
 (the code is compiled in) and `is_available()` is False (the OS is too old):
 an **OS constraint**, not a missing GPU and not missing code. PyTorch raised
 that floor at 2.9, so `torch==2.8.0` reaches the same GPU on the same machine,
-which is how the numbers below were obtained. See `benchmarks/README.md`.
+which is how the numbers below were obtained. See `tools/README.md`.
 
 ### What the GPU is actually worth
 

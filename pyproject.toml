@@ -59,7 +59,7 @@ all = ["physprior[nn,sr,notebooks,fields]"]
 Homepage = "https://github.com/drorjac/physics-prior"
 Repository = "https://github.com/drorjac/physics-prior"
 Issues = "https://github.com/drorjac/physics-prior/issues"
-Changelog = "https://github.com/drorjac/physics-prior/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/drorjac/physics-prior/blob/main/docs/CHANGELOG.md"
 
 [project.scripts]
 physprior = "physprior.cli:main"
@@ -113,7 +113,7 @@ ignore = [
 "src/physprior/viz/**"      = ["C408", "B905", "E702"]
 "src/physprior/reporting/**" = ["C408", "B905", "UP031", "PTH"]
 "tests/**"                  = ["B905", "PTH"]
-"scripts/**"                = ["B905", "E702", "PTH"]
+"tools/**"                  = ["B905", "E702", "PTH"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["physprior"]

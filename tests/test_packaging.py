@@ -58,8 +58,8 @@ def test_version_is_consistent_everywhere(pyproject):
     assert re.search(rf"^version: {re.escape(version)}$", citation, re.M), (
         f"CITATION.cff does not declare version {version}"
     )
-    assert f"[{version}]" in (ROOT / "CHANGELOG.md").read_text(), (
-        f"CHANGELOG.md has no section for {version}"
+    assert f"[{version}]" in (ROOT / "docs" / "CHANGELOG.md").read_text(), (
+        f"docs/CHANGELOG.md has no section for {version}"
     )
 
 

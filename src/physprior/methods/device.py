@@ -13,7 +13,7 @@ place, so the device is now selectable.
     PHYSPRIOR_DEVICE=cpu       force the CPU (the default remains automatic)
     PHYSPRIOR_DTYPE=float32    trade precision for speed, deliberately
 
-Measured on this machine (`benchmarks/`, Apple M2, 10 GPU cores), on the
+Measured on this machine (`tools/device_speed.py`, Apple M2, 10 GPU cores), on the
 2-D residual with second derivatives:
 
     collocation    cpu f64    cpu f32    mps f32    speedup
@@ -47,7 +47,7 @@ is the dominant error.
 torch cannot reach the GPU on this OS: torch 2.11 requires macOS 14 and this
 machine runs 13.4, so `is_built()` is True and `is_available()` is False. The
 benchmarks above ran under torch 2.8 in a separate venv. Every number in
-`results/` was produced on the CPU in float64. See `benchmarks/README.md`.
+`results/` was produced on the CPU in float64. See `tools/README.md`.
 """
 
 from __future__ import annotations
@@ -97,7 +97,7 @@ def resolve(requested: str | None = None) -> tuple[torch.device, torch.dtype]:
             warnings.warn(
                 "mps does not support float64; falling back to float32. "
                 "Measured cost on this project's second-derivative estimator "
-                "is ~2e-08 relative (benchmarks/device_precision.py), so this "
+                "is ~2e-08 relative (tools/device_precision.py), so this "
                 "is a notice, not a reason to avoid the gpu -- but prefer cpu "
                 "or cuda if you need float64 reproducibility with results/.",
                 stacklevel=2,

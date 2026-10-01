@@ -6,7 +6,7 @@ smaller than the pooled seed-to-seed spread is reported as a TIE rather than
 a win: with three reporting seeds, a 2x difference on one metric is often
 nothing at all.
 
-    python scripts/audit_pinn.py            # verdicts + the w_phys table
+    python tools/audit_pinn.py            # verdicts + the w_phys table
 
 Nothing here selects anything -- it reads the REPORTING seeds and is a
 description of the published results, not a tuning step.

@@ -1,6 +1,27 @@
-# Device benchmarks
+# tools
 
-Two standalone scripts, kept out of the package because they exist to be run
+Scripts and files that sit outside the package. All of them assume it is
+installed (`pip install -e '.[all]'`), except the two device benchmarks.
+
+## Pipeline and checks
+
+| Script | What it does |
+|---|---|
+| `regenerate.sh` | the full pipeline: run every problem, run the neglected-terms study, write figures, regenerate the docs and README tables, execute the notebooks, then run the tests |
+| `validate_palette.py` | run the figure-palette validator without installing the package (it is also `python -m physprior.viz.palette`) |
+| `audit_pinn.py` | where the `pinn` arm wins, loses and ties against the best non-oracle arm, with a gap smaller than the seed spread reported as a tie (the tables in `docs/plans/PLAN.md` §2) |
+
+## The pinned environment
+
+`requirements.lock` pins the environment that produced `results/`:
+
+```bash
+pip install -e '.[all]' -c tools/requirements.lock
+```
+
+## Device benchmarks
+
+`device_speed.py` and `device_precision.py` are standalone, kept out of the package because they exist to be run
 against a **different torch** from the one the project pins.
 
 | file | question |
@@ -11,7 +32,7 @@ against a **different torch** from the one the project pins.
 They import nothing from `physprior`; the PINN inner loop is replicated so
 they can run in a bare venv.
 
-## Running them where the GPU actually works
+### Running them where the GPU actually works
 
 This machine is an **Apple M2, 10 GPU cores, Metal 3**; the hardware is
 there. The project's own torch cannot reach it:
@@ -29,8 +50,8 @@ code.** PyTorch raised the floor at 2.9, so any earlier build reaches it:
 ```bash
 python3.13 -m venv /tmp/gpuenv
 /tmp/gpuenv/bin/pip install 'torch==2.8.0' numpy
-/tmp/gpuenv/bin/python benchmarks/device_speed.py
-/tmp/gpuenv/bin/python benchmarks/device_precision.py
+/tmp/gpuenv/bin/python tools/device_speed.py
+/tmp/gpuenv/bin/python tools/device_precision.py
 ```
 
 Verified on this machine: `torch 2.8.0`, `mps built True | avail True`,

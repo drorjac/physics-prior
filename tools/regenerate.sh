@@ -2,7 +2,7 @@
 # Regenerate everything downstream of the source: results, figures, docs,
 # notebooks, and then verify with the test suite.
 #
-#   ./scripts/regenerate.sh [--quick]
+#   ./tools/regenerate.sh [--quick]
 #
 # Uses whatever `physprior` is on PATH, so activate the environment first.
 set -euo pipefail

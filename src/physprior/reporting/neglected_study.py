@@ -4,7 +4,7 @@
 
 This exists because the study's outputs were **orphaned**. Five CSVs under
 `results/` and fourteen figures under `figures/neglected/` were committed,
-and nothing in the repository reproduced them -- `scripts/regenerate.sh` ran
+and nothing in the repository reproduced them -- `tools/regenerate.sh` ran
 every problem, wrote every other figure and rebuilt the docs, and skipped
 this study entirely. A committed artefact that no command regenerates is the
 exact drift the project's invariants exist to prevent: it cannot be checked,

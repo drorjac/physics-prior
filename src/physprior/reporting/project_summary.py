@@ -251,7 +251,7 @@ def render(path=None) -> str:
         "extrapolates worse than the fitted law; helium refutes the prediction "
         "stated for it ([HYPOTHESES](docs/HYPOTHESES.md)).",
         "- Every number is on CPU in float64; the GPU paths are written but not "
-        "used for results ([benchmarks](benchmarks/README.md)).",
+        "used for results ([tools](tools/README.md)).",
         "",
         "## Reproduce",
         "",
@@ -271,7 +271,7 @@ def render(path=None) -> str:
         ("](docs/", "]("),
         ("](figures/", "](../figures/"),
         ("](notebooks/", "](../notebooks/"),
-        ("](benchmarks/", "](../benchmarks/"),
+        ("](tools/", "](../tools/"),
     ):
         text = text.replace(a, b)
     out = path or get_settings().root / "docs" / PAGE

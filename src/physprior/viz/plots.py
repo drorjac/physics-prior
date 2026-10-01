@@ -3,7 +3,7 @@
 Colour follows the dataviz method. The four competing arms take categorical
 slots validated for ALL pairs on the light surface (blue / orange / aqua /
 violet: worst CVD dE 9.2, worst normal-vision dE 16.3, by
-`scripts/validate_palette.py`, a Python port of the skill's validator that
+`tools/validate_palette.py`, a Python port of the skill's validator that
 reproduces its published reference numbers exactly).
 
 The figures are rasterised with an explicit light surface, so the light-mode

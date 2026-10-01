@@ -11,7 +11,7 @@ nothing committed, then compares every regenerated number with `results/`
 | | |
 |---|---|
 | code | commit `d312e06`, clean tree |
-| environment | Python 3.13.1, macOS 13.4 arm64, CPU float64, `requirements.lock` sha256 `71cc42f3…` |
+| environment | Python 3.13.1, macOS 13.4 arm64, CPU float64, `tools/requirements.lock` sha256 `71cc42f3…` |
 | commands | `physprior run all`, then `physprior neglected`, offline, from the cached `data/raw/` |
 | verdict | **0 files differ.** 22 identical byte for byte; 23 with every number equal and only timings changed; 125 not regenerated |
 | report check | the README and `docs/RESULTS.md` tables match `results/` |

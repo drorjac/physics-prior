@@ -144,7 +144,7 @@ Every mission with its goal and conclusion: [MISSIONS](MISSIONS.md). What is new
 
 - The Lorenz study is a simulation with the law known exactly; it measures the method, not a discovery.
 - On algebraic laws that are already right, the PINN's correction extrapolates worse than the fitted law; helium refutes the prediction stated for it ([HYPOTHESES](HYPOTHESES.md)).
-- Every number is on CPU in float64; the GPU paths are written but not used for results ([benchmarks](../benchmarks/README.md)).
+- Every number is on CPU in float64; the GPU paths are written but not used for results ([tools](../tools/README.md)).
 
 ## Reproduce
 

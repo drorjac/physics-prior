@@ -2,7 +2,7 @@
 
 This file exists because they were not. Five CSVs under `results/` and
 fourteen figures under `figures/neglected/` were committed, and nothing in
-the repository regenerated them: `scripts/regenerate.sh` ran every problem,
+the repository regenerated them: `tools/regenerate.sh` ran every problem,
 wrote every other figure, rebuilt the docs and the notebooks, and skipped
 this study. A committed artefact that no command reproduces cannot be
 checked, and silently stops matching the code that supposedly made it.
@@ -35,9 +35,9 @@ def test_regenerate_script_runs_the_study():
     """The gap that started this file: the pipeline skipped the study."""
     from physprior.config import get_settings
 
-    script = (get_settings().root / "scripts" / "regenerate.sh").read_text()
+    script = (get_settings().root / "tools" / "regenerate.sh").read_text()
     assert "physprior neglected" in script, (
-        "scripts/regenerate.sh does not regenerate the neglected-terms study, "
+        "tools/regenerate.sh does not regenerate the neglected-terms study, "
         "so its committed CSVs and figures are orphaned again"
     )
 

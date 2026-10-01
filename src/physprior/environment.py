@@ -55,7 +55,7 @@ def _torch_device() -> str | None:
 
 def snapshot() -> dict[str, Any]:
     root = get_settings().root
-    lock = root / "requirements.lock"
+    lock = root / "tools" / "requirements.lock"
     status = _git("status", "--porcelain", "--untracked-files=no")
     return {
         "physprior": __version__,
