@@ -566,7 +566,7 @@ def make_figures() -> None:
 
 def _fmt(v, digits: int = 3) -> str:
     if v is None or (isinstance(v, float) and not np.isfinite(v)):
-        return "—" if v is None or np.isnan(v) else "inf"
+        return "–" if v is None or np.isnan(v) else "inf"
     if isinstance(v, (bool, np.bool_)):
         return "yes" if v else "no"
     if isinstance(v, (int, np.integer)):
@@ -681,7 +681,7 @@ def render_doc(path=None) -> str:
             "Median over the reporting seeds 11/23/42 at the learning rate chosen on "
             "the tuning seeds. `evals to tol` is the number of loss-and-gradient "
             "evaluations until the data loss first reached the task's tolerance "
-            "(— = never); `failure` is the fraction of seeds that never reached "
+            "(– = never); `failure` is the fraction of seeds that never reached "
             "it or diverged or ended more than 10x above it; `param err` is the error in the key constant "
             "(R, gamma, D).\n"
         )
@@ -1147,7 +1147,7 @@ def _opt_findings(s: pd.DataFrame, fr: pd.DataFrame) -> str:
             d = s[(s.task == t) & (s.model == m)].set_index("optimizer")
             ok = d[d.failure_rate < 1].dropna(subset=["evals_to_tol"])
             if not len(ok):
-                lines.append(f"| {t} | {m} | none reached it | — | — | — |")
+                lines.append(f"| {t} | {m} | none reached it | – | – | – |")
                 continue
             best = ok.evals_to_tol.idxmin()
             lines.append(

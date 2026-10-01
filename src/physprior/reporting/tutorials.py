@@ -49,7 +49,7 @@ We will solve
 
 $$\\frac{d^2x}{dt^2} = -\\omega^2 x, \\qquad x(0) = 1, \\quad \\dot{x}(0) = 0$$
 
-whose answer is $x(t) = \\cos(\\omega t)$ — so we can check every step against
+whose answer is $x(t) = \\cos(\\omega t)$, so we can check every step against
 something known. **There is no training data anywhere in this notebook.**
 """),
             code(SETUP),
@@ -57,7 +57,7 @@ something known. **There is no training data anywhere in this notebook.**
 ## Step 1 · The network is the solution
 
 Write $x_\\theta(t)$: a small network taking a time and returning a position.
-Not a fit to samples of the solution — the network *is* the candidate
+Not a fit to samples of the solution; the network *is* the candidate
 solution, and training will push it toward obeying the ODE.
 """),
             code("""
@@ -77,7 +77,7 @@ print("parameters:", sum(p.numel() for p in net.parameters()))
 
 The loss will differentiate the network's output **twice**. A ReLU network is
 piecewise linear, so its second derivative is zero almost everywhere and the
-physics term would be identically zero. This is not a style preference — a
+physics term would be identically zero. This is not a style preference: a
 ReLU PINN on a second-order equation silently trains on nothing.
 """),
             code("""
@@ -94,16 +94,16 @@ for name, f in (("tanh", net), ("relu", relu_net)):
 
 Two ways to impose $x(0)=1,\\ \\dot x(0)=0$:
 
-* **soft** — add $\\lambda\\,[(x_\\theta(0)-1)^2 + \\dot x_\\theta(0)^2]$ to the
+* **soft**: add $\\lambda\\,[(x_\\theta(0)-1)^2 + \\dot x_\\theta(0)^2]$ to the
   loss. Now there is a weight $\\lambda$ to tune, and the conditions hold only
   approximately.
-* **hard** — build them into the architecture:
+* **hard**: build them into the architecture:
 
 $$x_\\theta(t) = 1 + t^2\\,\\mathrm{NN}(t)$$
 
 At $t=0$ this is exactly 1, and its derivative is exactly 0, for *any*
 network. No weight, no approximation. **Prefer hard constraints wherever the
-algebra allows them** — it is one fewer hyperparameter nobody can justify.
+algebra allows them**; it is one fewer hyperparameter nobody can justify.
 """),
             code("""
 def x_hard(t, f=None):
@@ -121,7 +121,7 @@ print("both exact, before any training")
 ## Step 3 · Collocation points and the residual
 
 The physics loss is evaluated at **collocation points**: times we choose,
-where we ask whether the equation holds. They are not data — nothing is known
+where we ask whether the equation holds. They are not data: nothing is known
 about the solution there. They are just where we check.
 
 $$\\mathcal{L} = \\frac{1}{N}\\sum_i \\left[\\ddot x_\\theta(t_i) + \\omega^2 x_\\theta(t_i)\\right]^2$$
@@ -177,7 +177,7 @@ print(f"max |error| over the interval: {np.max(np.abs(learned - truth)):.2e}")
 
 The network never saw a single value of $\\cos$. It was handed an equation,
 some points at which to satisfy it, and initial conditions it could not
-violate — and it produced the solution.
+violate, and it produced the solution.
 
 **This is the forward problem**: the law is fully known and we want the
 solution. It is also the case where a PINN is *least* competitive: a standard
@@ -204,7 +204,7 @@ def t2_forward_and_inverse():
             md("""
 # T2 · The two jobs: solving an equation, and recovering a constant
 
-[T1](T1_what_is_a_pinn.ipynb) solved a fully known equation — the **forward**
+[T1](T1_what_is_a_pinn.ipynb) solved a fully known equation, the **forward**
 problem, where an ODE integrator beats a PINN easily.
 
 The **inverse** problem is the one worth caring about. The law's *form* is
@@ -221,7 +221,7 @@ and the unknown constant is trained alongside the weights.
 ## The setup: eight noisy points, and an unknown frequency
 
 The truth is $\\omega = 2$ and we pretend not to know it. Eight measurements,
-5% noise. A curve fit would recover $\\omega$ from these too — the point here
+5% noise. A curve fit would recover $\\omega$ from these too; the point here
 is the *mechanism*, which generalises to equations that have no closed-form
 solution to fit.
 """),
@@ -326,7 +326,7 @@ plt.show()
 ## The finding
 
 At `w_phys = 0` the network fits the eight points perfectly well and
-`omega` drifts to whatever is left over — **the data loss barely changes
+`omega` drifts to whatever is left over: **the data loss barely changes
 while the recovered constant is badly wrong**. The physics term is not a
 regulariser you tune for accuracy. It is what makes the parameter
 *identifiable* at all.
@@ -352,7 +352,7 @@ def t3_gravity():
     return _nb(
         [
             md("""
-# T3 · Gravity — where the law is exact
+# T3 · Gravity: where the law is exact
 
 The first of three physics domains, in rising order of how badly the law can
 let you down. Here it cannot: Kepler's third law
@@ -361,7 +361,7 @@ $$P = 2\\pi\\sqrt{a^3 / GM}$$
 
 is exact for a two-body system, and the only unknown is `GM`. This is the
 **best case** for a physics prior, and it is worth seeing what that best case
-actually buys — which is less than you might expect.
+actually buys, which is less than you might expect.
 """),
             code(
                 SETUP
@@ -405,11 +405,11 @@ Every track in this repository is run through the same five arms, so that
 
 | arm | knows the law? | returns a constant? |
 |---|---|---|
-| `oracle` | published law **and** published constant — the ceiling, not a competitor | — |
+| `oracle` | published law **and** published constant (the ceiling, not a competitor) | – |
 | `physics` | the law, constants fitted by `curve_fit` | yes, with a covariance |
-| `pinn` | `y = law(x; θ) + σ_y·NN(x)` — law plus a learned correction | yes |
-| `sr` | **no** — symbolic regression searches for a law | sometimes |
-| `nn` | no — a tuned MLP | no |
+| `pinn` | `y = law(x; θ) + σ_y·NN(x)`: law plus a learned correction | yes |
+| `sr` | **no**; symbolic regression searches for a law | sometimes |
+| `nn` | no (a tuned MLP) | no |
 """),
             code("""
 idx = np.arange(len(prob))
@@ -442,7 +442,7 @@ for arm, f in fits.items():
 ## The PINN here is a *correction*, not a solver
 
 Note the shape of the `pinn` arm. It is not solving a differential equation
-as in T1 — it is
+as in T1; it is
 
 $$y = \\text{law}(x;\\theta) + \\sigma_y\\,\\mathrm{NN}(x)$$
 
@@ -500,7 +500,7 @@ ephemeris rather than a toy.
 
 ### What the physics prior buys here
 
-With the law exact and the data clean, remarkably little in-distribution —
+With the law exact and the data clean, remarkably little in-distribution:
 a tuned black box is competitive inside the training range. The prior earns
 its place *outside* it, and in returning a number a physicist can argue with.
 
@@ -521,7 +521,7 @@ def t4_relativity():
     return _nb(
         [
             md("""
-# T4 · Relativity — where the law is an approximation
+# T4 · Relativity: where the law is an approximation
 
 Gravity's law was exact. This one is a **series**, and you get to choose where
 to stop:
@@ -560,7 +560,7 @@ reported a Newtonian "precession" 20% larger than the GR one.
 
 ## The post-Newtonian ablation
 
-The same data, the same code, the same fitting — only the order at which the
+The same data, the same code, the same fitting; only the order at which the
 expansion is truncated changes.
 """),
             code("""
@@ -598,13 +598,13 @@ print(f"RMSE spread across orders:       {ok.rmse_hz.max() - ok.rmse_hz.min():.3
 ## The finding: goodness of fit does not diagnose a wrong law
 
 Note the row that is **missing from the plot**. The 1PN fit pinned its
-parameter to a bound at `Mc = 200` with a formal error of 710 — the optimiser
+parameter to a bound at `Mc = 200` with a formal error of 710: the optimiser
 reported a result, and it is not one. This project's rule is that a parameter
 at its bound has not converged whatever the optimiser says, so it is marked
 and excluded rather than drawn as a point.
 
 At Newtonian order the recovered chirp mass is biased by about **+9 M☉** with
-a formal error of 4.1 — the fit reports high confidence in a wrong number.
+a formal error of 4.1: the fit reports high confidence in a wrong number.
 Adding the 1.5PN tail and 2PN terms removes the bias **while the RMSE hardly
 moves**.
 
@@ -615,7 +615,7 @@ the missing physics, so it cannot see the missing physics.
 ## This track's PINN is a different animal
 
 Because the law here *is* a differential equation, `relativity/gw150914` uses
-the **residual PINN of Raissi et al. (2019)** — the T1 form — rather than the
+the **residual PINN of Raissi et al. (2019)** (the T1 form) rather than the
 law-plus-correction form of T3:
 
 ```python
@@ -631,8 +631,8 @@ That single flag is the difference between training the constant and not.
 
 ## And a warning that has nothing to do with networks
 
-The chirp mass is extracted through a chain of signal-processing choices. One
-— the envelope SNR a cycle must clear — was set to 2.0 a priori and looked
+The chirp mass is extracted through a chain of signal-processing choices. One,
+the envelope SNR a cycle must clear, was set to 2.0 a priori and looked
 perfectly reasonable. Injecting a **known** chirp mass into the **real
 detector noise** and running the identical code:
 """),
@@ -642,7 +642,7 @@ cal = load_table("relativity", "threshold_calibration")
 print(cal.to_string(index=False, float_format=lambda v: f"{v:.4g}"))
 """),
             md("""
-At a threshold of 2.0 the pipeline recovers 9.3 M☉ for an injected 31.2 — a
+At a threshold of 2.0 the pipeline recovers 9.3 M☉ for an injected 31.2, a
 **−70% bias**. The cut was re-chosen on injections, never on the real event.
 
 > A pipeline you have not injected into has no error budget, and a constant it
@@ -666,11 +666,11 @@ def t5_quantum_wavefunction():
     return _nb(
         [
             md("""
-# T5 · Quantum — learning a wave function, with no data at all
+# T5 · Quantum: learning a wave function, with no data at all
 
 The hardest of the three, and the purest. T3 had data and a law. T4 had data
 and a *truncated* law. Here there is **no data on the right-hand side at
-all** — only an operator equation and a boundary:
+all**: only an operator equation and a boundary:
 
 $$-\\tfrac{1}{2}\\psi''(x) + V(x)\\,\\psi(x) = E\\,\\psi(x), \\qquad \\psi(a)=\\psi(b)=0$$
 
@@ -727,7 +727,7 @@ ends = torch.tensor([0.0, 1.0])
 print("psi at the walls, untrained:", net(ends).detach().numpy())
 print("exact, and no boundary weight to tune")
 """),
-            md("## Now solve it — the infinite square well, where $E_n = n^2\\pi^2/2$"),
+            md("## Now solve it: the infinite square well, where $E_n = n^2\\pi^2/2$"),
             code("""
 state = fit_eigen_pinn(lambda x: np.zeros_like(x), 0.0, 1.0, epochs=2500, seed=11)
 exact = np.pi**2 / 2
@@ -749,7 +749,7 @@ plt.show()
 print(f"max |error| in psi: {np.max(np.abs(psi - truth)):.3e}")
 """),
             md("""
-## Trap 3 · Excited states need orthogonality — and the weight is not free
+## Trap 3 · Excited states need orthogonality, and the weight is not free
 
 Both objectives are minimised by the **ground** state, so asking for level 2
 gets you level 1 again. The fix is a penalty on overlap with what you already
@@ -794,11 +794,11 @@ ax.legend(loc="lower right")
 plt.show()
 """),
             md("""
-## Trap 4 · Spectral bias — the best-known PINN failure mode
+## Trap 4 · Spectral bias: the best-known PINN failure mode
 
 Look at the `tries` column. The fourth level often needs a restart, and
 sometimes comes back as a copy of the ground state *even though the objective
-still prefers the true answer* — falling back costs the orthogonality penalty,
+still prefers the true answer*: falling back costs the orthogonality penalty,
 by then around 459, against the true level's 79.
 
 So it is not the objective that failed. It is the **optimiser**: reshaping one
@@ -813,7 +813,7 @@ retries from another seed, and returns a still-collapsed level with
 ## Trap 5 · You cannot validate a PINN from inside the PINN
 
 `converged` above is an **overlap** check: it catches a level that came back
-as a copy of a lower one. It does not catch a level that is simply *wrong* —
+as a copy of a lower one. It does not catch a level that is simply *wrong*:
 orthogonal to everything below it, and still not an eigenstate. That happens,
 and on some seeds level 4 returns ~95 against a true 79, a 20% error, with an
 overlap of 0.03 and a `converged` flag of `True`.
@@ -839,7 +839,7 @@ one.
 > a badly wrong answer.
 
 This is why every track in this repository is checked against something
-independent — a closed form, a second method, or an injection with a known
+independent: a closed form, a second method, or an injection with a known
 answer. It is also the answer to "how do you know your PINN worked?":
 *you do not, from the inside*.
 
@@ -861,13 +861,13 @@ with a tridiagonal matrix, it should never be your choice.
 
 So why learn it? Because the method does not care about dimension or mesh.
 The same twenty lines extend to geometries where no such matrix exists, to
-potentials known only pointwise, and — the case that actually matters — to the
+potentials known only pointwise, and (the case that actually matters) to the
 **inverse** problem: given a measured spectrum, recover $V(x)$. That is the
 same trick as T2's `omega`, applied to a whole function.
 
 And because knowing *where it breaks* is most of the expertise. Everything in
-this notebook that went wrong — the trivial solution, the penalty weight below
-the gap, the collapse at level 4 — is a general property of PINNs, shown here
+this notebook that went wrong (the trivial solution, the penalty weight below
+the gap, the collapse at level 4) is a general property of PINNs, shown here
 in a problem whose answer is known to nine digits.
 
 Next: [T6](T6_when_pinns_fail.ipynb) collects the failures this repository has
@@ -879,8 +879,8 @@ measured on real data.
 ## The inverse problem: recover the potential from the spectrum
 
 This is the one worth caring about. The forward problem has a better solver;
-the inverse has none. Hand it only the energies — never the functional form,
-never the word "harmonic" — and ask for `V(x)`.
+the inverse has none. Hand it only the energies (never the functional form,
+never the word "harmonic") and ask for `V(x)`.
 """),
             code("""
 from physprior.methods.eigen_pinn import fit_inverse_potential
@@ -903,8 +903,8 @@ plt.show()
 
 **1 · One spectrum does not determine a potential.** Borg-Marchenko: two
 spectra are needed in general, and "can one hear the shape of a drum?" is the
-same question. Here symmetry is imposed *architecturally* — `V` is evaluated
-at `|x - centre|` — which buys **identifiability**, not accuracy. Without it
+same question. Here symmetry is imposed *architecturally* (`V` is evaluated
+at `|x - centre|`), which buys **identifiability**, not accuracy. Without it
 the problem is genuinely ill-posed and no amount of training fixes that.
 
 **2 · Where no state lives, the data is silent.** Every term of the residual
@@ -933,7 +933,7 @@ the ones its potential actually has. Differentiating through
 puts every bit of the optimisation into `V`.
 
 **That is the scope of a PINN.** It is not a better eigensolver. It is
-what remains when there is no eigensolver — an unmeshable geometry, a forward
+what remains when there is no eigensolver: an unmeshable geometry, a forward
 model you cannot differentiate, a physical law known only as a residual. Both
 methods are kept in this repository so that claim stays a measurement rather
 than an opinion.
@@ -952,7 +952,7 @@ def t6_when_pinns_fail():
     return _nb(
         [
             md("""
-# T6 · When PINNs fail — a catalogue, measured
+# T6 · When PINNs fail: a catalogue, measured
 
 The previous five notebooks built PINNs up. This one is the part an interview
 actually probes: **when does this not work, and how would you know?**
@@ -972,8 +972,8 @@ from physprior.reporting import conclusions as C
             md("""
 ## 0 · The two shapes a PINN comes in
 
-Before the failures, the anatomy. These are not variants of one architecture
-— they answer different questions, and `w_phys` means something different in
+Before the failures, the anatomy. These are not variants of one architecture;
+they answer different questions, and `w_phys` means something different in
 each.
 """),
             code("""
@@ -988,7 +988,7 @@ continuous dial between the classical fit and a black box.
 
 ## 1 · The network eats the physics if you let it
 
-Already seen in T2 and T3 — repeated because it is the one that produces
+Already seen in T2 and T3, repeated because it is the one that produces
 *publishable-looking* wrong answers.
 
 | problem | constant | error at `w_phys = 0` | error at `w_phys ≥ 0.01` |
@@ -1013,7 +1013,7 @@ P.fig_alpha_convergence(gr.to_dict("records")); plt.show()
 """),
             md("""
 At a 3-hour step with a 4th-order stencil, the GR coefficient comes out at
-**α = 1.1343 ± 0.0024** — a 13.4% violation of general relativity at **56
+**α = 1.1343 ± 0.0024**, a 13.4% violation of general relativity at **56
 formal sigma**. It is entirely finite-difference truncation error. With a
 6th-order stencil α agrees with Einstein to one part in 10⁴.
 
@@ -1022,7 +1022,7 @@ the *statistics* of a model that was *systematically* wrong.
 
 > The result is not α; it is α once it has stopped moving.
 
-## 4 · Which switches actually help — measured, not assumed
+## 4 · Which switches actually help: measured, not assumed
 
 Seven common PINN improvements were ablated one at a time on the tuning
 seeds. The pre-registered ranking got the top two backwards.
@@ -1049,15 +1049,15 @@ display(HTML('<img src="../../figures/phase2_improvement.png" width="800">'))
             md("""
 | option | verdict |
 |---|---|
-| **gradient-norm loss balancing** (Wang et al. 2021) | **ships** — helps 5 cells, hurts none, up to 101× |
+| **gradient-norm loss balancing** (Wang et al. 2021) | **ships**: helps 5 cells, hurts none, up to 101× |
 | deep ensembles | helps, but 5× the compute for a further 1.3–1.4× |
-| **early stopping** | **rejected** — hurt 4 cells, helped none |
-| **Fourier features** | **rejected** — made one track **98× worse** |
-| **L-BFGS refinement** | **rejected** — its proposal never lowered the loss |
+| **early stopping** | **rejected**: hurt 4 cells, helped none |
+| **Fourier features** | **rejected**: made one track **98× worse** |
+| **L-BFGS refinement** | **rejected**: its proposal never lowered the loss |
 
 Two things worth saying out loud in an interview:
 
-* Fourier features are the standard remedy for the spectral bias of T5 — and
+* Fourier features are the standard remedy for the spectral bias of T5, and
   on *these* tracks, whose targets are smooth, they were catastrophic. A
   remedy is only a remedy for the disease it treats.
 * The pre-registered ranking in `docs/plans/PLAN.md` put early stopping first
@@ -1082,7 +1082,7 @@ plt.show()
 print(f"{counts.get('TIE', 0)} of {len(frame)} questions sit inside the seed spread")
 """),
             md("""
-Read the `verdict` column carefully. Most questions are **ties** — the gap
+Read the `verdict` column carefully. Most questions are **ties**: the gap
 between arms is smaller than the seed-to-seed spread, and calling those wins
 would be noise-mining.
 
@@ -1091,11 +1091,11 @@ The pattern across this repository, stated plainly:
 1. **Inside the training range, with enough clean data, a tuned black box is
    competitive.** A physics prior buys little there. Claims to the contrary
    usually compare against an untuned baseline.
-2. **Outside it the gap is orders of magnitude — but the mechanism is
+2. **Outside it the gap is orders of magnitude, but the mechanism is
    identifiability, not the mere presence of a law.** On `quantum/cmb`,
    out-of-band error falls ~56× as the fitted band reaches the Rayleigh-Jeans
-   regime *while in-band error gets worse*. On `relativity/gw150914` —
-   the counter-control — extrapolation from four faint cycles defeats every
+   regime *while in-band error gets worse*. On `relativity/gw150914`
+   (the counter-control), extrapolation from four faint cycles defeats every
    fitted arm, physics included.
 3. **Only the physics arms return something a physicist can argue with**, and
    three times here the argument was worth having: QED in hydrogen, the PN
@@ -1105,16 +1105,16 @@ The pattern across this repository, stated plainly:
 ## The one-sentence version
 
 > A physics prior buys extrapolation when the data can identify its
-> parameters, and costs you accuracy when it cannot — and the only way to
+> parameters, and costs you accuracy when it cannot, and the only way to
 > know which case you are in is to measure it against a control.
 
 ---
 
 ### Where to go next
 
-* [`docs/gravity/`](../../docs/gravity) · [`docs/relativity/`](../../docs/relativity) · [`docs/quantum/`](../../docs/quantum) — the three problems in full
-* [`docs/METHOD.md`](../../docs/METHOD.md) — the decisions, including the ones made *after* something went wrong
-* [`docs/TOOLING.md`](../../docs/TOOLING.md) — how a formula comes out of symbolic regression
+* [`docs/gravity/`](../../docs/gravity) · [`docs/relativity/`](../../docs/relativity) · [`docs/quantum/`](../../docs/quantum): the three problems in full
+* [`docs/METHOD.md`](../../docs/METHOD.md): the decisions, including the ones made *after* something went wrong
+* [`docs/TOOLING.md`](../../docs/TOOLING.md): how a formula comes out of symbolic regression
 """),
         ],
         "T6 - when PINNs fail",
@@ -1135,7 +1135,7 @@ def t7_when_the_prior_wins():
 [T6](T6_when_pinns_fail.ipynb) is uncomfortable reading: across four real
 tracks the `pinn` arm wins **one** cell in twelve. That is not because
 physics-informed learning does not work. It is because those tracks are the
-wrong test — their laws are either **exact** (Kepler on a two-body system) or
+wrong test: their laws are either **exact** (Kepler on a two-body system) or
 **unidentifiable from the band observed** (Planck on FIRAS).
 
 The case a physics prior was built for is the third one, and it was missing:
@@ -1143,7 +1143,7 @@ The case a physics prior was built for is the third one, and it was missing:
 > The law is right as far as it goes, and **something real has been left out
 > of it.**
 
-That is the normal condition of applied physics — a neglected oblateness
+That is the normal condition of applied physics: a neglected oblateness
 term, a higher post-Newtonian order, an unmodelled instrument response. This
 notebook builds exactly that, as a controlled experiment where the left-out
 term is known and can be dialled.
@@ -1166,8 +1166,8 @@ Three arms, and each can do something different about the missing piece:
 | arm | what it can represent | what it cannot |
 |---|---|---|
 | `physics` | `GM` inside the law | the missing term, **at all** |
-| `nn` | anything | — but must learn the whole curve from scratch |
-| `pinn` | the law **and** a correction | — the network only has the residual to learn |
+| `nn` | anything | nothing; it must learn the whole curve from scratch |
+| `pinn` | the law **and** a correction | nothing; the network only has the residual to learn |
 
 The prediction is a crossover. Let us see the system first.
 """),
@@ -1221,7 +1221,7 @@ print(eps.groupby(["eps","arm"]).nrmse_in.median().unstack("arm")
         .to_string(float_format=lambda v: f"{v:.4g}"))
 """),
             md("""
-**At `eps = 0` the law is exact and `physics` wins**, as it must — the PINN
+**At `eps = 0` the law is exact and `physics` wins**, as it must: the PINN
 pays 5× for a correction it does not need, and the black box pays 44×.
 
 **From `eps = 0.1` onwards the PINN wins decisively**, and its error is
@@ -1229,7 +1229,7 @@ almost flat while `physics` degrades eight-fold. That is the crossover, and
 it arrives as soon as there is *any* missing physics worth the name.
 
 `nn` is flat at ~0.046 throughout. It never learns the curve well from forty
-points, and the size of the missing term is irrelevant to it — it was
+points, and the size of the missing term is irrelevant to it; it was
 learning everything from scratch anyway.
 
 ### Did the network learn the missing physics, or just absorb noise?
@@ -1255,7 +1255,7 @@ P.fig_learning_curves(hist, published=1.0,
 plt.show()
 """),
             md("""
-The data term falls thirtyfold. The physics term **rises** and plateaus —
+The data term falls thirtyfold. The physics term **rises** and plateaus;
 that is the correction growing to the size of the missing bump and stopping
 there, which is exactly what `w_phys` is negotiating. And the constant
 overshoots to 1.038 before settling: *the loss going down and the constant
@@ -1273,7 +1273,7 @@ plt.show()
             md("""
 A clean bias–variance crossover:
 
-* `physics` is **biased but noise-immune** — it cannot fit the bump, and it
+* `physics` is **biased but noise-immune**: it cannot fit the bump, and it
   cannot fit the noise either, so it sits flat at 0.055 whatever happens.
 * `pinn` is **unbiased but not noise-immune**. Its correction is flexible
   enough to represent the missing term, which means it is flexible enough to
@@ -1301,7 +1301,7 @@ factor of four in data here, and worth more the less data you have.
             md("""
 ## The catch, and the real conclusion
 
-Everything above used a **localised** missing term — a bump the law has no
+Everything above used a **localised** missing term, a bump the law has no
 way to imitate. Repeat it with a missing term that looks like the law itself,
 `eps·GM·R/r³`, one order higher in `1/r`, which is how a neglected oblateness
 or first relativistic correction actually appears:
@@ -1323,7 +1323,7 @@ print(f"degenerate term      : GM = {gm_deg:.4f}   ({abs(gm_deg-1)*100:.1f}% err
 
 Everything above is algebraic, `y = law(x) + missing`. The other shape of
 PINN solves a **differential equation**, and there the missing piece is a
-missing **force** — so recovering it means the network has learned a term of
+missing **force**, so recovering it means the network has learned a term of
 the equation of motion, not a curve.
 
 The system is the one every physicist meets first. A pendulum obeys
@@ -1350,7 +1350,7 @@ print(ode[ode["shape"]=="damping"].groupby(["amplitude_deg","arm"]).nrmse_in.med
 """),
             md("""
 `physics` is pinned at **0.209 at every amplitude**. That is not a fit going
-wrong — a conservative harmonic model *cannot produce decay at all*, at any
+wrong: a conservative harmonic model *cannot produce decay at all*, at any
 value of `ω`, so its error is a property of the model rather than of the
 data. The PINN is 16–18× better as soon as there is enough amplitude to see.
 
@@ -1366,7 +1366,7 @@ P.fig_learned_force(s_damp, force, pr, physics=ph); plt.show()
 print(f"omega: physics {om_ph:.4f}, pinn {om:.4f}  (true 1.0)")
 """),
             md("""
-It did — the learned force has the right sign and slope against **velocity**,
+It did: the learned force has the right sign and slope against **velocity**,
 which is the variable it actually depends on. Plotting it against *angle*
 would have drawn a flat line and told you nothing, which is the differential
 version of asking the wrong question of the data.
@@ -1375,7 +1375,7 @@ version of asking the wrong question of the data.
 
 Replace damping with the anharmonic term the small-angle step really drops,
 $-\\omega^{2}(\\sin\\theta - \\theta)$. It depends on **angle**, and a pendulum at
-amplitude $A$ has period $T(A)$ — so a harmonic oscillator can simply adopt
+amplitude $A$ has period $T(A)$, so a harmonic oscillator can simply adopt
 $\\omega = 2\\pi/T(A)$ and absorb most of it.
 """),
             code("""
@@ -1395,12 +1395,12 @@ governs both forms of PINN:**
 
 | | algebraic law | differential law |
 |---|---|---|
-| **degenerate** missing piece | `1/r³` — absorbed into `GM` | anharmonic — absorbed into `ω` |
+| **degenerate** missing piece | `1/r³`, absorbed into `GM` | anharmonic, absorbed into `ω` |
 | **distinguishable** missing piece | a localised bump | damping (depends on velocity) |
 | result | prior wins by ~10× | prior wins by ~16× |
 
 > A physics prior helps when the missing piece is **distinguishable from the
-> law** — not merely when the law is incomplete. Which variable the missing
+> law**, not merely when the law is incomplete. Which variable the missing
 > term depends on is the whole question.
 
 That is `quantum/cmb`'s identifiability finding, reached twice more from
@@ -1428,13 +1428,13 @@ for shape in ("diffusive", "advective"):
             md("""
 **Two opposite failure signatures, from the same question.**
 
-`diffusive` — the missing term is $\\varepsilon\\,\\alpha\\,u_{xx}$, *more of the
+`diffusive`: the missing term is $\\varepsilon\\,\\alpha\\,u_{xx}$, *more of the
 same operator*. A single rescaling $\\alpha \\to \\alpha(1+\\varepsilon)$
 reproduces the truth exactly, so the fitted constant is wrong by **precisely
-$\\varepsilon$** — and the prediction is flawless. This is the dangerous case:
+$\\varepsilon$**, and the prediction is flawless. This is the dangerous case:
 nothing about the fit looks wrong.
 
-`advective` — the missing term is $-v\\,u_x$, a drift. It is *orthogonal* to
+`advective`: the missing term is $-v\\,u_x$, a drift. It is *orthogonal* to
 $u_{xx}$ in the least-squares projection, so it does not bias $\\alpha$ at all.
 Instead it makes the model wrong: diffusion is symmetric and no value of
 $\\alpha$ can move a peak.
@@ -1451,7 +1451,7 @@ for shape in ("diffusive", "advective"):
 
 The 2-D residual PINN in this study **does not converge**, so its numbers are
 marked rather than reported. The failure is unambiguous and it is worst where
-it should be easiest — at `eps = 0`, where the modelled law is exactly right
+it should be easiest: at `eps = 0`, where the modelled law is exactly right
 and there is nothing whatever to recover, `alpha` is driven to ~0.001 against
 a true 0.05 and the field is reproduced to only ~0.5 nRMSE.
 
@@ -1462,7 +1462,7 @@ what was actually wrong, because every item was a genuine defect and three of
 them are mistakes this course warns about:
 
 1. **No initial or boundary conditions at all**, so the residual did not
-   identify `alpha` — many pairs `(u, alpha)` satisfy `u_t = alpha u_xx`.
+   identify `alpha`: many pairs `(u, alpha)` satisfy `u_t = alpha u_xx`.
 2. **The residual was nondimensionalised by the amplitude, not the rate**,
    making the physics term ~1000× the data term. Since `u = u0` with
    `alpha = 0` gives an *exactly zero* residual, the optimiser took it.
@@ -1471,11 +1471,11 @@ them are mistakes this course warns about:
    `max|∇data| / mean|∇phys|`; passing the residual first returns the inverse
    ratio and *amplifies* precisely the term that was already too strong.
 4. **The hard constraint used a bare `t`.** At the earliest data, `t = 0.02`
-   and `x = 0.5`, the prefactor `t·x·(L−x)` is **0.005** — the network needed
+   and `x = 0.5`, the prefactor `t·x·(L−x)` is **0.005**: the network needed
    outputs of order 200 to correct anything. Replaced by a saturating
    `1 − exp(−t/τ)`, which vanishes at `t = 0` just as exactly.
 5. **The initial profile was a piecewise-linear interpolant**, whose second
-   derivative is zero almost everywhere — so the residual saw `u_xx` of the
+   derivative is zero almost everywhere, so the residual saw `u_xx` of the
    initial profile as *nothing*, when it is the largest term in the equation.
    That is [T1](T1_what_is_a_pinn.ipynb)'s ReLU warning, committed inside a
    hard constraint.
@@ -1487,21 +1487,21 @@ A control settles where the remaining problem is: a **plain MLP on the same
 500 points reaches a field nRMSE of 0.095**, so the network can represent
 this field easily. The constrained, physics-regularised version reaches 0.93.
 The obstacle is therefore the parameterisation and the optimisation, not
-capacity — and the next thing to try is the collocation sampling and a
+capacity, and the next thing to try is the collocation sampling and a
 curriculum in `t`, not more weight tuning.
 
-So the PDE section above rests entirely on the `physics` arm — whose result
+So the PDE section above rests entirely on the `physics` arm, whose result
 is a closed-form identity and needs no network at all, so the finding
 does not depend on the thing that failed.
 
-What it would take is not a parameter tweak. It is the Phase 2 machinery —
-gradient-norm loss balancing, measured in [T6](T6_when_pinns_fail.ipynb) to
-be worth up to 101× on the 1-D tracks — applied to a 2-D residual, where the
+What it would take is not a parameter tweak. It is the Phase 2 machinery
+(gradient-norm loss balancing, measured in [T6](T6_when_pinns_fail.ipynb) to
+be worth up to 101× on the 1-D tracks) applied to a 2-D residual, where the
 data and physics terms differ by three orders of magnitude at initialisation.
 That is exactly the disease balancing treats, and it is the obvious next
 piece of work.
 
-The advective residual is a **dipole** — mass moved from one side to the
+The advective residual is a **dipole**: mass moved from one side to the
 other, which is exactly what a drift does and exactly what diffusion cannot.
 Its peak is six times the diffusive one.
 
@@ -1528,7 +1528,7 @@ the constant, the correction learns nothing identifiable, and `GM` comes back
 > when the missing piece is *distinguishable from the law*.**
 
 That is the same lesson as `quantum/cmb`, where the Planck denominator is not
-identifiable from the Wien-dominated band FIRAS observed — arriving here from
+identifiable from the Wien-dominated band FIRAS observed, arriving here from
 a completely different direction, in a system where the answer is known
 exactly.
 

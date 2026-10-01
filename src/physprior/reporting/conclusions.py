@@ -301,7 +301,7 @@ def conclusion_markdown(scope: str = "all") -> str:
     if s.n_questions == 0:
         return (
             "**No conclusion.** No results are on disk for "
-            f"`{scope}` — run `physprior run {scope}` first."
+            f"`{scope}`; run `physprior run {scope}` first."
         )
     if s.n_decisive == 0:
         return (
@@ -343,7 +343,7 @@ def conclusion_markdown(scope: str = "all") -> str:
     p = s.pinn
     if p["wins"] or p["losses"]:
         lines.append(
-            f"The `pinn` arm — the one this project is built around — wins "
+            f"The `pinn` arm (the one this project is built around) wins "
             f"**{p['wins']}**, loses **{p['losses']}** and ties **{p['ties']}** "
             "of these, which is the number to read before any claim about "
             "what a physics prior buys."
@@ -368,8 +368,8 @@ def _falsifier(arm: str, n: int, where: str) -> str:
         return (
             f"`nn` wins {n} question(s) ({where}): the black box is only as "
             "strong as the grid it was tuned on, so a wider architecture "
-            "search for the other arms — or simply more data, which is what "
-            "it is exploiting — would move this."
+            "search for the other arms, or simply more data, which is what "
+            "it is exploiting, would move this."
         )
     if arm == "sr":
         return (
@@ -381,8 +381,8 @@ def _falsifier(arm: str, n: int, where: str) -> str:
     if arm == "physics":
         return (
             f"`physics` wins {n} question(s) ({where}): it assumes the "
-            "published law is right. A track where the law is incomplete — "
-            "a truncated expansion, a neglected term — removes that "
+            "published law is right. A track where the law is incomplete "
+            "(a truncated expansion, a neglected term) removes that "
             "advantage, which is exactly what the `pinn` arm exists to test."
         )
     if arm == "pinn":

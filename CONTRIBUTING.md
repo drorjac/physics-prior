@@ -46,7 +46,7 @@ a wrong physical result at some point, and the story is in `docs/METHOD.md`.
 
 6. **Tune on seeds 3 / 7 / 19, report on 11 / 23 / 42.** Never select a
    hyperparameter, a threshold or a design choice by looking at a reported
-   seed — or at the real data. Signal-processing choices are calibrated on
+   seed, or at the real data. Signal-processing choices are calibrated on
    injected signals with known answers.
 
 7. **Negative results are results.** Symbolic regression fails to find
@@ -72,7 +72,7 @@ A problem is a folder under `src/physprior/problems/` with, at minimum:
 ```
 
 Register it in `physprior.problems.PROBLEMS`. The benchmark protocol is shared
-(`physprior.benchmark.protocol`) — do not reimplement the sweeps.
+(`physprior.benchmark.protocol`); do not reimplement the sweeps.
 
 If it needs a new dataset, add a loader under `physprior/data/sources/` and
 register it in `physprior/data/registry.py`. Loaders assert their units and

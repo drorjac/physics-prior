@@ -1394,7 +1394,7 @@ def _md_table(df: pd.DataFrame, fmt: str = "{:.2f}") -> str:
         for c in cols:
             v = r[c]
             if isinstance(v, float | np.floating):
-                cells.append("—" if not np.isfinite(v) else fmt.format(v))
+                cells.append("–" if not np.isfinite(v) else fmt.format(v))
             else:
                 cells.append(str(v))
         out.append("| " + " | ".join(cells) + " |")
@@ -1494,7 +1494,7 @@ def render_doc(path=None) -> str:
         ]
     ]
     parts = [
-        "# fields / rf — radio propagation",
+        "# fields / rf: radio propagation",
         "",
         "Where is the transmitter, and what is the received-power map, given a few",
         "noisy readings? A simulated track: the field is solved from the 2-D",

@@ -91,4 +91,4 @@ def test_method_block_names_both_jobs_when_both_run():
 def test_section_headings_are_canonical():
     """So the four cannot be renamed into something that only looks alike."""
     assert section(1).startswith("## 1 ")
-    assert section(2, "created").endswith("— created")
+    assert section(2, "created").endswith(": created")

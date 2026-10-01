@@ -3,8 +3,8 @@
 Newtonian orbital mechanics, where the law is exact and the question is what
 a method can recover from data that obeys it.
 
-**Real data** — Kepler's third law from the JPL DE441 ephemeris, eight
-planets. **Simulations** — the control: when the law is exactly what was put
+**Real data**: Kepler's third law from the JPL DE441 ephemeris, eight
+planets. **Simulations**: the control. When the law is exactly what was put
 in, whatever a method fails to recover is the method's own error.
 
 Code: [`src/physprior/problems/gravity`](../../src/physprior/problems/gravity)
@@ -18,7 +18,7 @@ Code: [`src/physprior/problems/gravity`](../../src/physprior/problems/gravity)
 |---|---|
 | `two_body` | Sun + one planet, started at perihelion from the vis-viva speed, in the centre-of-mass frame |
 | `three_body` | the Chenciner–Montgomery figure-eight choreography, and a perturbed copy of it |
-| `lyapunov_separation` | two figure-eights differing by 1 part in 10⁹, tracked until they separate — chaos as a measured exponent |
+| `lyapunov_separation` | two figure-eights differing by 1 part in 10⁹, tracked until they separate (chaos as a measured exponent) |
 | `solar_system` | eight planets from **real JPL initial conditions**, integrated forward |
 | `integrator_comparison` | velocity Verlet against RK4 over 200 years |
 
@@ -49,7 +49,7 @@ simulated periods, and the same force law from the *chaotic* three-body run.
 Symbolic regression returns the exponent as **−1.9999969** and `GM` to
 **0.6 ppb** from a simulated orbit. That is the floor: when the same
 machinery returns `GM_sun` from the real ephemeris with a tens-of-ppm
-residual, the residual cannot be blamed on the method — it is the two-body
+residual, the residual cannot be blamed on the method; it is the two-body
 formula neglecting the planets' masses.
 
 ## The real-data track: `gravity/kepler`
@@ -59,9 +59,9 @@ Kepler's third law, `P = 2π√(a³/GM)`, fitted to eight planets.
 | | |
 |---|---|
 | ![the track overview](../../figures/gravity/kepler/overview.png) | ![extrapolation beyond the fitted range](../../figures/gravity/kepler/extrapolation.png) |
-| **Overview** — every arm on the track. | **Extrapolation** — trained on the inner planets, asked about the outer. |
+| **Overview**: every arm on the track. | **Extrapolation**: trained on the inner planets, asked about the outer. |
 | ![data efficiency](../../figures/gravity/kepler/data_efficiency.png) | ![the physics weight dial](../../figures/gravity/kepler/physics_weight.png) |
-| **Data efficiency** — when does the black box catch up? | **The `w_phys` dial** — at `w_phys = 0` the recovered `GM_sun` is 19.5% wrong while the held-out error barely moves. |
+| **Data efficiency**: when does the black box catch up? | **The `w_phys` dial**: at `w_phys = 0` the recovered `GM_sun` is 19.5% wrong while the held-out error barely moves. |
 
 A neural correction watching a constant converge:
 

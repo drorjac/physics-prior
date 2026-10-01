@@ -63,7 +63,7 @@ SECTIONS = ("1 · The problem", "2 · The data", "3 · The method", "4 · The re
 def section(n: int, subtitle: str = "") -> str:
     """The canonical heading for movement `n`, so the four are never renamed
     into something that only looks like the same structure."""
-    tail = f" — {subtitle}" if subtitle else ""
+    tail = f": {subtitle}" if subtitle else ""
     return f"## {SECTIONS[n - 1]}{tail}"
 
 
@@ -78,13 +78,13 @@ def method_block(*, discovers: bool, recovers: bool, arms: str, note: str = "") 
     jobs = []
     if discovers:
         jobs.append(
-            "**Discovery** — find a law nobody supplied. Only `sr` (symbolic "
+            "**Discovery**: find a law nobody supplied. Only `sr` (symbolic "
             "regression) can do this; it is given numbers and an operator set, "
             "never an equation."
         )
     if recovers:
         jobs.append(
-            "**Recovery** — measure a constant *inside* a law that is supplied. "
+            "**Recovery**: measure a constant *inside* a law that is supplied. "
             "`physics` fits it classically with a covariance; `pinn` fits it "
             "with a neural correction alongside, and `w_phys` sets how much "
             "correction is allowed."
@@ -141,7 +141,7 @@ def conclusion_cells(scope: str):
 ## Conclusion
 
 Everything below is rendered from `results/` at execution time by
-`physprior.reporting.conclusions` — the verdicts, the margins and the prose.
+`physprior.reporting.conclusions`: the verdicts, the margins and the prose.
 A gap smaller than the seed-to-seed spread on the reporting seeds
 (11 / 23 / 42) is reported as a **tie**, not rounded into a win.
 """),
@@ -171,10 +171,10 @@ def nb_overview():
     return _nb(
         [
             md("""
-# physprior — what does a physics prior buy you?
+# physprior: what does a physics prior buy you?
 
 A neural network can fit almost any curve. A physicist writes a law with two
-constants in it. On **real measured data** — LIGO, COBE/FIRAS, NIST, JPL —
+constants in it. On **real measured data** (LIGO, COBE/FIRAS, NIST, JPL)
 and on **simulations where the answer is known exactly**, which should you
 use, and for what?
 
@@ -189,11 +189,11 @@ that *physics-informed* is compared against something rather than asserted.
 
 | arm | knows the law? | returns a constant? | returns a formula? |
 |---|---|---|---|
-| `oracle` | published law **and** constants — a ceiling, not a competitor | — | yes |
+| `oracle` | published law **and** constants; a ceiling, not a competitor | – | yes |
 | `physics` | the law, constants fitted | yes, with a covariance | yes |
 | `pinn` | the law **plus** a learned correction | yes | yes + correction |
-| `sr` | **no** — searches for a law | sometimes | whatever it finds |
-| `nn` | no — a tuned MLP | no | no |
+| `sr` | **no**, searches for a law | sometimes | whatever it finds |
+| `nn` | no, a tuned MLP | no | no |
 
 The `pinn` arm comes in two shapes, and which one a track uses follows from
 whether its law is a differential equation or an algebraic relation:
@@ -235,15 +235,15 @@ plt.show()
 """),
             md("""
 That is a real result, and it is not the one the field usually reports. It is
-also **not** evidence that physics-informed learning does not work — it is
+also **not** evidence that physics-informed learning does not work; it is
 evidence that these four tracks are mostly the wrong test.
 
 ## Three regimes, and only one of them is a fair test
 
 | regime | example here | who wins |
 |---|---|---|
-| the law is **exact** | `gravity/kepler` | `physics` — the prior has nothing to add |
-| the missing piece is **degenerate** with the law | `quantum/cmb` | nobody — the constant is not identifiable |
+| the law is **exact** | `gravity/kepler` | `physics`: the prior has nothing to add |
+| the missing piece is **degenerate** with the law | `quantum/cmb` | nobody: the constant is not identifiable |
 | the missing piece is **distinguishable** | [T7](tutorials/T7_when_the_prior_wins.ipynb) | **`pinn`, by an order of magnitude** |
 
 The third regime is the normal condition of applied physics, and it was
@@ -279,11 +279,11 @@ P.fig_cross_track_extrapolation(h["extrapolation_summary"]); plt.show()
 1. **Inside the training range, with enough clean data, a tuned black box is
    competitive.** Physics buys little there, and claims to the contrary
    usually compare against an untuned baseline.
-2. **Outside it the gap is orders of magnitude — but the mechanism is
+2. **Outside it the gap is orders of magnitude, but the mechanism is
    identifiability, not the mere presence of a law.** On `quantum/cmb`
    out-of-band error falls ~56× as the fitted band reaches the Rayleigh–Jeans
    regime *while in-band error gets worse*.
-3. **Only the physics arms return something a physicist can argue with** —
+3. **Only the physics arms return something a physicist can argue with**:
    QED in hydrogen, the post-Newtonian expansion in GW150914, and a
    truncation error masquerading as a 56σ refutation of general relativity.
 4. **The network eats the physics if you let it.** At `w_phys = 0` the
@@ -310,7 +310,7 @@ def nb_gravity():
             md("""
 # Problem: gravity
 
-Newtonian orbital mechanics — the case where the law is **exact**, so
+Newtonian orbital mechanics, the case where the law is **exact**, so
 whatever a method fails to recover is the method's own error.
 """),
             code(HEADER),
@@ -335,7 +335,7 @@ Three questions, and they are not the same question:
    what precision?
 3. Does knowing the law help **outside** the range the data covers?
 
-Before any fitting, here is the system itself — the Sun and Mercury, in the
+Before any fitting, here is the system itself: the Sun and Mercury, in the
 centre-of-mass frame, so the Sun moves too:
 """),
             code("""
@@ -349,7 +349,7 @@ display(gif("gravity/two_body_mercury.gif", 460,
 This track uses **both** kinds, and the order matters: the simulation is the
 control that the real-data number is read against.
 
-### 2a · Created — and the integrator is part of the physics model
+### 2a · Created, and the integrator is part of the physics model
 
 A simulation is only a control if its own error is smaller than the effect
 being studied. Velocity Verlet is *symplectic*: its energy error oscillates
@@ -393,7 +393,7 @@ display(gif("gravity/solar_system_inner.gif", 460,
 print("energy drift over the run:", m["simulations"]["solar_system_drift"])
 """),
             md("""
-### 2b · Pulled — JPL DE441
+### 2b · Pulled: JPL DE441
 
 Eight planets, from the JPL Horizons API. The loader records the URL, byte
 count and SHA-256 of every file it read, asserts the units it promises, and
@@ -434,7 +434,7 @@ plt.show()
                         "and its residual is read against that floor.\n\n"
                         "Because Kepler's law is an algebraic relation rather "
                         "than a differential equation, the `pinn` arm here is "
-                        "the **law + correction** form — panel B below, not the "
+                        "the **law + correction** form (panel B below), not the "
                         "residual form."
                     ),
                 )
@@ -446,8 +446,8 @@ P.fig_pinn_anatomy(); plt.show()
             md(f"""
 {section(4, "discovery first, on the simulation")}
 
-Symbolic regression is handed a simulated orbit's radius and acceleration —
-no equation, no template, no units — and asked what relates them.
+Symbolic regression is handed a simulated orbit's radius and acceleration
+(no equation, no template, no units) and asked what relates them.
 """),
             code("""
 fl = m["discovery"]["force_law"]
@@ -462,7 +462,7 @@ print(f"GM, log-log interc.: {fl['mu_loglog_rel_error_ppm']:+.1f} ppm")
 this machinery can do when the law is exactly what was put in. Any larger
 residual on real data is physics, not method.
 
-The same law again, from the *chaotic* three-body run — chaos destroys
+The same law again, from the *chaotic* three-body run; chaos destroys
 predictability, not the law generating it:
 """),
             code("""
@@ -491,7 +491,7 @@ print(f"GM ended at   {tr['GM_recovered']:.4e}   (true {tr['GM_true']:.4e})")
 print(f"final error   {tr['GM_rel_error_ppm']:+.0f} ppm, from data with "
       f"{tr['noise_frac']*100:.0f}% noise")
 """),
-            md("### Recovery on the real ephemeris — all five arms"),
+            md("### Recovery on the real ephemeris: all five arms"),
             code("""
 fits = {a: fit_arm(a, prob, np.arange(len(prob)), seed=11)
         for a in ["oracle","physics","pinn","sr","nn"]}
@@ -535,7 +535,7 @@ def nb_relativity():
 # Problem: relativity
 
 The case where the law is **an approximation you can truncate at the wrong
-order** — and where a plausible numerical choice once produced a 56σ
+order**, and where a plausible numerical choice once produced a 56σ
 refutation of general relativity.
 """),
             code(HEADER),
@@ -567,7 +567,7 @@ too early?*
             md(f"""
 {section(2, "created, then pulled")}
 
-### 2a · Created — the precession, from the equation above
+### 2a · Created: the precession, from the equation above
 
 Integrated twice, with the GR term on and off. The difference is the
 precession.
@@ -589,10 +589,10 @@ print(f"  Newtonian half-value          : {ld['deflection_newtonian_arcsec']:.4f
             md("""
 The perihelion is located by **root-finding `du/dφ`**, not by fitting a
 parabola to a sampled grid. The shift is 5e-7 rad per orbit and a grid
-estimate is good to ~1e-6 — bigger than the effect. The first version of this
+estimate is good to ~1e-6, bigger than the effect. The first version of this
 simulation duly reported a Newtonian "precession" 20% larger than the GR one.
 
-### 2b · Pulled — LIGO strain, and Mercury's ephemeris
+### 2b · Pulled: LIGO strain, and Mercury's ephemeris
 """),
             code("""
 from physprior.data.sources import gwosc as gw
@@ -624,7 +624,7 @@ print(f"{len(tr.t_s)} points. That is not a typo: the event's SNR of 24 is "
                         "says is exactly 1.\n\n"
                         "This track's law **is a differential equation**, so "
                         "its `pinn` arm is the residual PINN of Raissi et al. "
-                        "— panel A — not the law-plus-correction form the other "
+                        "(panel A), not the law-plus-correction form the other "
                         "tracks use. The chirp mass is an `nn.Parameter` inside "
                         "the residual, so it receives a gradient through the "
                         "physics term."
@@ -638,7 +638,7 @@ P.fig_pinn_anatomy(); plt.show()
             md(f"""
 {section(4, "does the fit notice a truncated law?")}
 
-Same data, same code, same fitting — only the PN order changes.
+Same data, same code, same fitting; only the PN order changes.
 """),
             code("""
 gwm = load_json("relativity/gw150914", "meta")
@@ -653,8 +653,8 @@ print("bound has not converged, whatever the optimiser reports")
 """),
             md("""
 **Goodness of fit does not diagnose a wrong law.** At Newtonian order the
-chirp mass is biased by ~+9 M☉ with a formal error of 4.1 — a confident wrong
-answer — while the RMSE hardly moves.
+chirp mass is biased by ~+9 M☉ with a formal error of 4.1 (a confident wrong
+answer) while the RMSE hardly moves.
 
 ### Is that bias real, or is it the pipeline's?
 
@@ -720,7 +720,7 @@ $$-\\tfrac{{1}}{{2}}\\psi''(x) + V(x)\\,\\psi(x) = E\\,\\psi(x)$$
 
 $$E_{{n}} = -\\frac{{R_{{H}}}}{{n^{{2}}}}$$
 
-It is very nearly right, and the interesting question is *how* it is wrong —
+It is very nearly right, and the interesting question is *how* it is wrong:
 relativistic and QED corrections shift the 1s level by about 10 ppm, and NIST
 measures the levels far more precisely than that.
 
@@ -729,8 +729,8 @@ measures the levels far more precisely than that.
 $$B_{{\\nu}}(T) = \\frac{{2h\\nu^{{3}}}}{{c^{{2}}}}
 \\frac{{1}}{{e^{{h\\nu/kT}} - 1}}$$
 
-Over the band FIRAS actually observed, $x = h\\nu/kT$ runs from 1.2 to 11.3 —
-almost all Wien — and there $e^{{-x}}$ and $1/(e^{{x}}-1)$ are nearly the same
+Over the band FIRAS actually observed, $x = h\\nu/kT$ runs from 1.2 to 11.3
+(almost all Wien), and there $e^{{-x}}$ and $1/(e^{{x}}-1)$ are nearly the same
 function. **The denominator is not identifiable from the data.** That is the
 whole track.
 """),
@@ -738,7 +738,7 @@ whole track.
             md(f"""
 {section(2, "created, then pulled")}
 
-### 2a · Created — and the solver's error is measured, not assumed
+### 2a · Created, and the solver's error is measured, not assumed
 """),
             code("""
 m = load_json("quantum", "problem_meta")
@@ -779,7 +779,7 @@ print(f"barrier height  : {tu['barrier_height']:.3f}")
 print(f"norm conserved to {tu['norm_drift']:.1e} -- unitary by construction")
 """),
             md("""
-### 2b · Pulled — NIST hydrogen levels, and the COBE/FIRAS monopole
+### 2b · Pulled: NIST hydrogen levels, and the COBE/FIRAS monopole
 """),
             code("""
 from physprior.problems.quantum import cmb, hydrogen
@@ -815,11 +815,11 @@ plt.show()
                         "symbolic regression finds `n^2`, `(n + 1/2)` and "
                         "`-1/n^2`. On **FIRAS** the same machinery fails to "
                         "find Planck's law and returns a Wien-like exponential "
-                        "instead — and that negative result is reported at the "
+                        "instead, and that negative result is reported at the "
                         "same size as the successes, with the control that "
                         "isolates its cause.\n\n"
                         "Both laws are algebraic, so both `pinn` arms are the "
-                        "**law + correction** form — panel B."
+                        "**law + correction** form (panel B)."
                     ),
                 )
             ),

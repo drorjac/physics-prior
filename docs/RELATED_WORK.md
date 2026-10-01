@@ -39,8 +39,8 @@ same terms; they were not tested here.
 
 ## A known model plus a learned correction
 
-The `pinn` arm's shape B — `y = law(x; θ) + σ_y·NN(x)`, with the correction's
-norm penalised — is closest to **APHYNITY** (Yin et al. 2021,
+The `pinn` arm's shape B (`y = law(x; θ) + σ_y·NN(x)`, with the correction's
+norm penalised) is closest to **APHYNITY** (Yin et al. 2021,
 `yin2021aphynity`), which augments an incomplete physical model with a network
 and keeps the augmentation minimal so the physical parameters stay
 identifiable. The statistical ancestor is **model discrepancy** in the

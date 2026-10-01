@@ -4,8 +4,8 @@ The problem where the law is an **expansion that can be truncated at the
 wrong order**, and where a plausible numerical choice once produced a 56σ
 refutation of general relativity.
 
-**Real data** — GW150914 strain from LIGO; Mercury's acceleration from
-DE441. **Simulations** — Schwarzschild orbits, post-Newtonian inspirals, and
+**Real data**: GW150914 strain from LIGO; Mercury's acceleration from
+DE441. **Simulations**: Schwarzschild orbits, post-Newtonian inspirals, and
 light bending.
 
 Code: [`src/physprior/problems/relativity`](../../src/physprior/problems/relativity)
@@ -26,7 +26,7 @@ Code: [`src/physprior/problems/relativity`](../../src/physprior/problems/relativ
 
 **Perihelion location is root-finding, not parabola-fitting.** Mercury's GR
 shift is 5×10⁻⁷ rad per orbit. Fitting a parabola to a sampled `u(φ)` grid is
-good to about 10⁻⁶ rad — *bigger than the effect* — and the first version of
+good to about 10⁻⁶ rad (*bigger than the effect*), and the first version of
 this simulation duly reported a Newtonian "precession" 20% larger than the GR
 one. Finding the root of `du/dφ` on the solver's dense output reaches ~10⁻⁹,
 and the simulated precession then matches `6πGM/(c²a(1−e²))` to six
@@ -42,10 +42,10 @@ physical limit rather than a choice.
 | | |
 |---|---|
 | ![track overview](../../figures/relativity/gw150914/overview.png) | ![extrapolation](../../figures/relativity/gw150914/extrapolation.png) |
-| **Overview.** With 4–5 training points against 2+ free parameters, everything overfits in-range. | **Extrapolation** — the counter-control. From four faint early cycles *every* fitted arm fails, physics included. |
+| **Overview.** With 4–5 training points against 2+ free parameters, everything overfits in-range. | **Extrapolation**: the counter-control. From four faint early cycles *every* fitted arm fails, physics included. |
 
 **Goodness of fit does not diagnose a wrong law.** The Newtonian inspiral law
-recovers a chirp mass biased by **+9 M☉** with a formal error of 4.1 — a
+recovers a chirp mass biased by **+9 M☉** with a formal error of 4.1: a
 confident wrong answer. Adding the 1.5PN tail and 2PN terms removes the bias
 while the RMSE barely moves.
 

@@ -63,7 +63,7 @@ methods, 0.1 and 1 for L-BFGS. Constant rates, no schedule, so the optimizer
 is what is measured. Budgets in evaluations: hydrogen 2000, oscillator 1500, heat 1000. The seed sets the network initialisation and moves the starting
 constants by ~30% in log space.
 
-Median over the reporting seeds 11/23/42 at the learning rate chosen on the tuning seeds. `evals to tol` is the number of loss-and-gradient evaluations until the data loss first reached the task's tolerance (— = never); `failure` is the fraction of seeds that never reached it or diverged or ended more than 10x above it; `param err` is the error in the key constant (R, gamma, D).
+Median over the reporting seeds 11/23/42 at the learning rate chosen on the tuning seeds. `evals to tol` is the number of loss-and-gradient evaluations until the data loss first reached the task's tolerance (– = never); `failure` is the fraction of seeds that never reached it or diverged or ended more than 10x above it; `param err` is the error in the key constant (R, gamma, D).
 
 
 **hydrogen (NIST, Bohr law)** (tolerance 1.00e-04 in units of sd_y^2)
@@ -75,17 +75,17 @@ Median over the reporting seeds 11/23/42 at the learning rate chosen on the tuni
 | physics | rmsprop | 0.001 | 1 | 2.34e-06 | 48 | 0 | 0.00305 | 0.00312 | 0.0489 |
 | physics | adam | 0.01 | 1 | 7.86e-13 | 8 | 0 | 5.23e-07 | 1.37e-06 | 0.00111 |
 | physics | lbfgs | 0.1 | 1 | 7.86e-13 | 3 | 0 | 5.25e-07 | 1.38e-06 | 0.00111 |
-| physics | lm | — | 1 | 7.86e-13 | 3 | 0 | 5.23e-07 | 1.37e-06 | 0.00111 |
+| physics | lm | – | 1 | 7.86e-13 | 3 | 0 | 5.23e-07 | 1.37e-06 | 0.00111 |
 | pinn | sgd | 0.01 | 2210 | 8.29e-07 | 55 | 0 | 0.00376 | 0.0439 | 0.00339 |
 | pinn | momentum | 0.1 | 2210 | 1.95e-10 | 36 | 0 | 6.73e-05 | 0.00354 | 0.00118 |
 | pinn | rmsprop | 0.001 | 2210 | 8.96e-07 | 75 | 0 | 0.00173 | 0.00221 | 0.0118 |
 | pinn | adam | 0.001 | 2210 | 4.72e-08 | 125 | 0 | 0.00137 | 0.0444 | 0.00226 |
 | pinn | lbfgs | 1 | 2210 | 3.73e-09 | 5 | 0 | 2.32e-04 | 0.0304 | 9.68e-04 |
-| nn | sgd | 0.1 | 2209 | 1.16e-04 | 1.18e+03 | 0.333 | 0.0331 | 0.0263 | — |
-| nn | momentum | 0.1 | 2209 | 3.30e-07 | 115 | 0 | 0.0036 | 0.0075 | — |
-| nn | rmsprop | 0.001 | 2209 | 0.00119 | — | 1 | 0.0549 | 0.292 | — |
-| nn | adam | 0.01 | 2209 | 2.27e-07 | 105 | 0 | 0.00853 | 0.0118 | — |
-| nn | lbfgs | 0.1 | 2209 | 3.04e-12 | 79 | 0 | 0.00322 | 0.232 | — |
+| nn | sgd | 0.1 | 2209 | 1.16e-04 | 1.18e+03 | 0.333 | 0.0331 | 0.0263 | – |
+| nn | momentum | 0.1 | 2209 | 3.30e-07 | 115 | 0 | 0.0036 | 0.0075 | – |
+| nn | rmsprop | 0.001 | 2209 | 0.00119 | – | 1 | 0.0549 | 0.292 | – |
+| nn | adam | 0.01 | 2209 | 2.27e-07 | 105 | 0 | 0.00853 | 0.0118 | – |
+| nn | lbfgs | 0.1 | 2209 | 3.04e-12 | 79 | 0 | 0.00322 | 0.232 | – |
 
 
 **damped oscillator (ODE)** (tolerance 0.00313 in units of sd_y^2)
@@ -97,17 +97,17 @@ Median over the reporting seeds 11/23/42 at the learning rate chosen on the tuni
 | physics | rmsprop | 0.001 | 2 | 0.00249 | 1.04e+03 | 0 | 0.0109 | 0.013 | 1.93 |
 | physics | adam | 0.01 | 2 | 0.00249 | 137 | 0 | 0.0111 | 0.0127 | 1.93 |
 | physics | lbfgs | 1 | 2 | 0.00249 | 8 | 0 | 0.0111 | 0.0127 | 1.93 |
-| physics | lm | — | 2 | 0.00249 | 13 | 0 | 0.0111 | 0.0127 | 1.93 |
-| pinn | sgd | 0.1 | 2211 | 0.244 | — | 1 | 0.726 | 0.449 | 43.3 |
-| pinn | momentum | 0.01 | 2211 | 0.0109 | — | 1 | 0.117 | 0.413 | 25.8 |
-| pinn | rmsprop | 0.001 | 2211 | 0.0258 | — | 1 | 0.21 | 0.431 | 36.2 |
+| physics | lm | – | 2 | 0.00249 | 13 | 0 | 0.0111 | 0.0127 | 1.93 |
+| pinn | sgd | 0.1 | 2211 | 0.244 | – | 1 | 0.726 | 0.449 | 43.3 |
+| pinn | momentum | 0.01 | 2211 | 0.0109 | – | 1 | 0.117 | 0.413 | 25.8 |
+| pinn | rmsprop | 0.001 | 2211 | 0.0258 | – | 1 | 0.21 | 0.431 | 36.2 |
 | pinn | adam | 0.01 | 2211 | 0.00316 | 845 | 0 | 0.055 | 0.17 | 11.5 |
 | pinn | lbfgs | 0.1 | 2211 | 0.00253 | 1.24e+03 | 0.333 | 0.0326 | 0.041 | 3.61 |
-| nn | sgd | 0.1 | 2209 | 0.0284 | — | 1 | 0.18 | 1.29 | — |
-| nn | momentum | 0.1 | 2209 | 0.00166 | 264 | 0.333 | 0.0643 | 1.66 | — |
-| nn | rmsprop | 0.001 | 2209 | 0.00468 | 953 | 0 | 0.084 | 1.26 | — |
-| nn | adam | 0.01 | 2209 | 0.00131 | 153 | 0 | 0.0947 | 1.36 | — |
-| nn | lbfgs | 1 | 2209 | 0.00126 | 156 | 0 | 0.0765 | 3.59 | — |
+| nn | sgd | 0.1 | 2209 | 0.0284 | – | 1 | 0.18 | 1.29 | – |
+| nn | momentum | 0.1 | 2209 | 0.00166 | 264 | 0.333 | 0.0643 | 1.66 | – |
+| nn | rmsprop | 0.001 | 2209 | 0.00468 | 953 | 0 | 0.084 | 1.26 | – |
+| nn | adam | 0.01 | 2209 | 0.00131 | 153 | 0 | 0.0947 | 1.36 | – |
+| nn | lbfgs | 1 | 2209 | 0.00126 | 156 | 0 | 0.0765 | 3.59 | – |
 
 
 **heat equation (PDE)** (tolerance 0.00278 in units of sd_y^2)
@@ -119,17 +119,17 @@ Median over the reporting seeds 11/23/42 at the learning rate chosen on the tuni
 | physics | rmsprop | 0.001 | 3 | 0.00163 | 783 | 0 | 0.0123 | 0.014 | 1.99 |
 | physics | adam | 0.01 | 3 | 0.00162 | 137 | 0 | 0.00934 | 0.00934 | 1.34 |
 | physics | lbfgs | 1 | 3 | 0.00162 | 9 | 0 | 0.00934 | 0.00934 | 1.34 |
-| physics | lm | — | 3 | 0.00162 | 9 | 0 | 0.00934 | 0.00934 | 1.34 |
-| pinn | sgd | 0.1 | 2244 | 0.0629 | — | 1 | 0.285 | 0.0577 | 10.1 |
-| pinn | momentum | 0.01 | 2244 | 0.0651 | — | 1 | 0.311 | 0.078 | 15.5 |
-| pinn | rmsprop | 0.01 | 2244 | 0.0723 | — | 1 | 0.345 | 0.261 | 73.8 |
+| physics | lm | – | 3 | 0.00162 | 9 | 0 | 0.00934 | 0.00934 | 1.34 |
+| pinn | sgd | 0.1 | 2244 | 0.0629 | – | 1 | 0.285 | 0.0577 | 10.1 |
+| pinn | momentum | 0.01 | 2244 | 0.0651 | – | 1 | 0.311 | 0.078 | 15.5 |
+| pinn | rmsprop | 0.01 | 2244 | 0.0723 | – | 1 | 0.345 | 0.261 | 73.8 |
 | pinn | adam | 0.01 | 2244 | 0.00223 | 546 | 0.333 | 0.054 | 0.035 | 2.79 |
 | pinn | lbfgs | 1 | 2244 | 0.00112 | 163 | 0 | 0.0371 | 0.00593 | 0.777 |
-| nn | sgd | 0.1 | 2241 | 0.0423 | — | 1 | 0.323 | 0.391 | — |
-| nn | momentum | 0.01 | 2241 | 0.0481 | — | 1 | 0.315 | 0.386 | — |
-| nn | rmsprop | 0.001 | 2241 | 0.0426 | — | 1 | 0.289 | 0.25 | — |
-| nn | adam | 0.01 | 2241 | 6.67e-04 | 387 | 0 | 0.116 | 0.194 | — |
-| nn | lbfgs | 0.1 | 2241 | 3.32e-04 | 244 | 0 | 0.154 | 0.52 | — |
+| nn | sgd | 0.1 | 2241 | 0.0423 | – | 1 | 0.323 | 0.391 | – |
+| nn | momentum | 0.01 | 2241 | 0.0481 | – | 1 | 0.315 | 0.386 | – |
+| nn | rmsprop | 0.001 | 2241 | 0.0426 | – | 1 | 0.289 | 0.25 | – |
+| nn | adam | 0.01 | 2241 | 6.67e-04 | 387 | 0 | 0.116 | 0.194 | – |
+| nn | lbfgs | 0.1 | 2241 | 3.32e-04 | 244 | 0 | 0.154 | 0.52 | – |
 
 ![03_lr_sensitivity](../../figures/optim/03_lr_sensitivity.png)
 
@@ -197,24 +197,24 @@ Perdikaris 2021; Krishnapriyan et al. 2021).
 
 | task | model | at | params | lambda_max | eig. > 1e-3 lambda_max | frac. abs(eig) < 1e-6 lambda_max | negative eig. | cond. (all) | cond. of constants block | lambda_max data (net) | lambda_max physics (net) | physics / data |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| heat | nn | adam | 2241 | 57.2 | 15 | 0.842 | 144 | — | — | — | — | — |
-| heat | nn | lbfgs | 2241 | 178 | 17 | 0.88 | 117 | — | — | — | — | — |
-| heat | physics | adam | 3 | 10.6 | 3 | 0 | 0 | 31.9 | 31.9 | — | — | — |
-| heat | physics | lbfgs | 3 | 10.6 | 3 | 0 | 0 | 31.9 | 31.9 | — | — | — |
-| heat | pinn | adam | 2244 | 115 | — | — | — | — | inf | 104 | 25.9 | 0.25 |
-| heat | pinn | lbfgs | 2244 | 437 | — | — | — | — | inf | 405 | 120 | 0.298 |
-| hydrogen | nn | adam | 2209 | 46.5 | 4 | 0.992 | 6 | — | — | — | — | — |
-| hydrogen | nn | lbfgs | 2209 | 216 | 4 | 0.997 | 0 | — | — | — | — | — |
-| hydrogen | physics | adam | 1 | 18.9 | 1 | 0 | 0 | 1 | 1 | — | — | — |
-| hydrogen | physics | lbfgs | 1 | 18.9 | 1 | 0 | 0 | 1 | 1 | — | — | — |
-| hydrogen | pinn | adam | 2210 | 25.1 | 3 | 0.997 | 0 | — | 1 | 5.22 | 5.22 | 1 |
-| hydrogen | pinn | lbfgs | 2210 | 26 | 3 | 0.998 | 0 | — | 1 | 5.81 | 5.81 | 1 |
-| oscillator | nn | adam | 2209 | 42.7 | 15 | 0.828 | 174 | — | — | — | — | — |
-| oscillator | nn | lbfgs | 2209 | 3.89e+03 | 9 | 0.99 | 2 | — | — | — | — | — |
-| oscillator | physics | adam | 2 | 60 | 2 | 0 | 0 | 165 | 165 | — | — | — |
-| oscillator | physics | lbfgs | 2 | 60 | 2 | 0 | 0 | 165 | 165 | — | — | — |
-| oscillator | pinn | adam | 2211 | 245 | — | — | — | — | 91.5 | 47 | 226 | 4.81 |
-| oscillator | pinn | lbfgs | 2211 | 4.38e+03 | — | — | — | — | 108 | 916 | 3.46e+03 | 3.77 |
+| heat | nn | adam | 2241 | 57.2 | 15 | 0.842 | 144 | – | – | – | – | – |
+| heat | nn | lbfgs | 2241 | 178 | 17 | 0.88 | 117 | – | – | – | – | – |
+| heat | physics | adam | 3 | 10.6 | 3 | 0 | 0 | 31.9 | 31.9 | – | – | – |
+| heat | physics | lbfgs | 3 | 10.6 | 3 | 0 | 0 | 31.9 | 31.9 | – | – | – |
+| heat | pinn | adam | 2244 | 115 | – | – | – | – | inf | 104 | 25.9 | 0.25 |
+| heat | pinn | lbfgs | 2244 | 437 | – | – | – | – | inf | 405 | 120 | 0.298 |
+| hydrogen | nn | adam | 2209 | 46.5 | 4 | 0.992 | 6 | – | – | – | – | – |
+| hydrogen | nn | lbfgs | 2209 | 216 | 4 | 0.997 | 0 | – | – | – | – | – |
+| hydrogen | physics | adam | 1 | 18.9 | 1 | 0 | 0 | 1 | 1 | – | – | – |
+| hydrogen | physics | lbfgs | 1 | 18.9 | 1 | 0 | 0 | 1 | 1 | – | – | – |
+| hydrogen | pinn | adam | 2210 | 25.1 | 3 | 0.997 | 0 | – | 1 | 5.22 | 5.22 | 1 |
+| hydrogen | pinn | lbfgs | 2210 | 26 | 3 | 0.998 | 0 | – | 1 | 5.81 | 5.81 | 1 |
+| oscillator | nn | adam | 2209 | 42.7 | 15 | 0.828 | 174 | – | – | – | – | – |
+| oscillator | nn | lbfgs | 2209 | 3.89e+03 | 9 | 0.99 | 2 | – | – | – | – | – |
+| oscillator | physics | adam | 2 | 60 | 2 | 0 | 0 | 165 | 165 | – | – | – |
+| oscillator | physics | lbfgs | 2 | 60 | 2 | 0 | 0 | 165 | 165 | – | – | – |
+| oscillator | pinn | adam | 2211 | 245 | – | – | – | – | 91.5 | 47 | 226 | 4.81 |
+| oscillator | pinn | lbfgs | 2211 | 4.38e+03 | – | – | – | – | 108 | 916 | 3.46e+03 | 3.77 |
 
 ![05_hessian_spectra](../../figures/optim/05_hessian_spectra.png)
 
@@ -346,28 +346,28 @@ fit's held-out predictions, in units of the spread of y.
 | track | split | variant | w_phys final | corr. RMS (train) | corr. RMS (held out) | nrmse in | nrmse out | out / physics | gap to physics (out) |
 |---|---|---|---|---|---|---|---|---|---|
 | gravity/kepler | extrap | balanced | 7.96e+05 | 1.37e-12 | 3.54e-04 | 1.14e-08 | 7.80e-05 | 1.03 | 3.88e-06 |
-| gravity/kepler | extrap | physics | — | — | — | 1.14e-08 | 7.56e-05 | 1 | — |
+| gravity/kepler | extrap | physics | – | – | – | 1.14e-08 | 7.56e-05 | 1 | – |
 | gravity/kepler | extrap | unbalanced | 1 | 5.22e-07 | 0.0309 | 5.72e-09 | 3.20e-04 | 4.24 | 3.39e-04 |
 | gravity/kepler | interp | balanced | 2.14e+05 | 6.06e-07 | 1.15e-06 | 4.67e-05 | 1.97e-06 | 2.66 | 1.23e-06 |
-| gravity/kepler | interp | physics | — | — | — | 4.67e-05 | 7.40e-07 | 1 | — |
+| gravity/kepler | interp | physics | – | – | – | 4.67e-05 | 7.40e-07 | 1 | – |
 | gravity/kepler | interp | unbalanced | 1 | 2.44e-05 | 3.68e-05 | 2.57e-05 | 3.98e-05 | 53.8 | 3.94e-05 |
 | quantum/cmb | extrap | balanced | 3.44e+04 | 3.83e-06 | 0.00157 | 1.34e-04 | 9.91e-04 | 1.73 | 7.26e-04 |
-| quantum/cmb | extrap | physics | — | — | — | 1.34e-04 | 5.72e-04 | 1 | — |
+| quantum/cmb | extrap | physics | – | – | – | 1.34e-04 | 5.72e-04 | 1 | – |
 | quantum/cmb | extrap | unbalanced | 1 | 1.62e-04 | 0.0258 | 1.05e-04 | 0.0117 | 20.4 | 0.0117 |
 | quantum/cmb | interp | balanced | 5.20e+05 | 4.87e-07 | 7.95e-07 | 5.99e-04 | 2.88e-04 | 1 | 9.56e-06 |
-| quantum/cmb | interp | physics | — | — | — | 5.99e-04 | 2.88e-04 | 1 | — |
+| quantum/cmb | interp | physics | – | – | – | 5.99e-04 | 2.88e-04 | 1 | – |
 | quantum/cmb | interp | unbalanced | 1 | 2.23e-04 | 1.74e-04 | 4.51e-04 | 2.91e-04 | 1.01 | 1.63e-04 |
 | quantum/helium | extrap | balanced | 1.10e+07 | 9.59e-07 | 7.93e-05 | 0.269 | 0.0857 | 0.999 | 1.45e-04 |
-| quantum/helium | extrap | physics | — | — | — | 0.269 | 0.0858 | 1 | — |
+| quantum/helium | extrap | physics | – | – | – | 0.269 | 0.0858 | 1 | – |
 | quantum/helium | extrap | unbalanced | 1 | 0.0734 | 0.207 | 0.135 | 0.325 | 3.79 | 0.379 |
 | quantum/helium | interp | balanced | 8.71e+05 | 2.42e-06 | 2.70e-06 | 0.0395 | 0.176 | 1 | 2.76e-06 |
-| quantum/helium | interp | physics | — | — | — | 0.0395 | 0.176 | 1 | — |
+| quantum/helium | interp | physics | – | – | – | 0.0395 | 0.176 | 1 | – |
 | quantum/helium | interp | unbalanced | 1 | 0.0271 | 0.0353 | 0.0203 | 0.166 | 0.939 | 0.0213 |
 | quantum/hydrogen | extrap | balanced | 1.25e+03 | 1.25e-06 | 3.49e-04 | 2.82e-06 | 6.35e-04 | 781 | 6.35e-04 |
-| quantum/hydrogen | extrap | physics | — | — | — | 1.71e-06 | 8.12e-07 | 1 | — |
+| quantum/hydrogen | extrap | physics | – | – | – | 1.71e-06 | 8.12e-07 | 1 | – |
 | quantum/hydrogen | extrap | unbalanced | 1 | 6.53e-06 | 0.00564 | 1.20e-05 | 0.0103 | 1.26e+04 | 0.0103 |
 | quantum/hydrogen | interp | balanced | 403 | 1.45e-05 | 1.22e-05 | 1.50e-05 | 1.45e-05 | 10.2 | 1.44e-05 |
-| quantum/hydrogen | interp | physics | — | — | — | 7.58e-07 | 1.43e-06 | 1 | — |
+| quantum/hydrogen | interp | physics | – | – | – | 7.58e-07 | 1.43e-06 | 1 | – |
 | quantum/hydrogen | interp | unbalanced | 1 | 1.54e-05 | 1.75e-05 | 1.23e-05 | 2.17e-05 | 15.2 | 2.19e-05 |
 
 

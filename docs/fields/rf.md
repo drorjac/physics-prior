@@ -1,4 +1,4 @@
-# fields / rf — radio propagation
+# fields / rf: radio propagation
 
 Where is the transmitter, and what is the received-power map, given a few
 noisy readings? A simulated track: the field is solved from the 2-D
@@ -143,16 +143,16 @@ exponent and P0:
 
 | scene | arm | map_rmse_room_db | map_rmse_beyond_db | tx_err_lambda |
 |---|---|---|---|---|
-| free | gp | 0.45 | 4.10 | — |
+| free | gp | 0.45 | 4.10 | – |
 | free | kriging | 0.45 | 0.15 | 0.48 |
-| free | nn | 1.46 | 7.89 | — |
+| free | nn | 1.46 | 7.89 | – |
 | free | oracle | 0.09 | 0.05 | 0.00 |
 | free | physics | 0.37 | 0.15 | 0.48 |
 | free | pinn | 0.37 | 0.15 | 0.48 |
 | free | pinn_free | 0.94 | 5.73 | 0.48 |
-| walls | gp | 0.60 | 18.94 | — |
+| walls | gp | 0.60 | 18.94 | – |
 | walls | kriging | 0.62 | 15.44 | 0.43 |
-| walls | nn | 2.94 | 14.64 | — |
+| walls | nn | 2.94 | 14.64 | – |
 | walls | oracle | 0.64 | 14.97 | 0.00 |
 | walls | physics | 0.57 | 15.44 | 0.43 |
 | walls | pinn | 0.57 | 15.43 | 0.43 |

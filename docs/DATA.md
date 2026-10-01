@@ -6,7 +6,7 @@ file it read, so any number can be traced back to the bytes it came from.
 
 | Track | File | Source | Reference |
 |---|---|---|---|
-| G | `H-H1_GWOSC_4KHZ_R1-1126259447-32.hdf5`, `L-L1_…` | [GWOSC](https://gwosc.org/eventapi/json/GWTC-1-confident/GW150914/) | Abbott et al., *Phys. Rev. X* **9**, 031040 (2019) — GWTC-1 |
+| G | `H-H1_GWOSC_4KHZ_R1-1126259447-32.hdf5`, `L-L1_…` | [GWOSC](https://gwosc.org/eventapi/json/GWTC-1-confident/GW150914/) | Abbott et al., *Phys. Rev. X* **9**, 031040 (2019), GWTC-1 |
 | Q | `firas_monopole_spec_v1.txt` | [NASA LAMBDA](https://lambda.gsfc.nasa.gov/data/cobe/firas/monopole_spec/) | Fixsen et al., *ApJ* **473**, 576 (1996), Table 4 |
 | A | `nist_h_levels.tsv` | [NIST ASD](https://physics.nist.gov/asd) `energy1.pl`, H I | Kramida et al., NIST ASD v5.12 |
 | He | `nist_he_levels.tsv` | [NIST ASD](https://physics.nist.gov/asd) `energy1.pl`, He I | Kramida et al., NIST ASD v5.12 |
@@ -19,7 +19,7 @@ file it read, so any number can be traced back to the bytes it came from.
 The project simultaneously handles cm⁻¹ and m⁻¹, MJy/sr and W m⁻² sr⁻¹ Hz⁻¹,
 AU/day and m/s, GPS seconds and seconds-before-merger, and solar masses and
 seconds. A silent unit slip in any of them would be indistinguishable from a
-discovery, so every loader asserts the range it promises — for example that
+discovery, so every loader asserts the range it promises, for example that
 the FIRAS peak is ~384 MJy/sr, that the H I ionisation limit is between
 109678 and 109679 cm⁻¹, and that Mercury's semi-major axis is ~0.387 AU.
 
@@ -46,7 +46,7 @@ all fetching goes through `physprior/data/cache.py`, not the shell.
   *shape*, the SR law-recovery result and the extrapolation behaviour are not
   affected by this.
 - **GW150914.** The frequency track is model-free but short: seven cycles.
-  That is a physical limit, not a choice — the event's SNR of 24 is
+  That is a physical limit, not a choice: the event's SNR of 24 is
   accumulated coherently over the waveform, and a per-cycle frequency needs
   per-cycle SNR.
 - **Kepler / GM_sun.** `P = 2π√(a³/GM)` ignores the planet's own mass and uses

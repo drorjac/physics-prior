@@ -13,7 +13,7 @@ they can run in a bare venv.
 
 ## Running them where the GPU actually works
 
-This machine is an **Apple M2, 10 GPU cores, Metal 3** — the hardware is
+This machine is an **Apple M2, 10 GPU cores, Metal 3**; the hardware is
 there. The project's own torch cannot reach it:
 
 ```

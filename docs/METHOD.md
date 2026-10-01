@@ -1,4 +1,4 @@
-# Method — the decisions, and why
+# Method: the decisions, and why
 
 This file records the choices that would otherwise be invisible in the code,
 including the ones that were made *after* something went wrong.
@@ -8,14 +8,14 @@ including the ones that were made *after* something went wrong.
 Each was chosen so that a **published value exists to be checked against**,
 and so that the law is genuinely non-trivial in at least one respect:
 
-- **G (GW150914)** — the only track where the data is so scarce (7 points)
+- **G (GW150914)**: the only track where the data is so scarce (7 points)
   that the black box cannot function at all, and the only one where the
   correct law is an *expansion* that can be truncated at the wrong order.
-- **Q (FIRAS)** — a transcendental law, and a band that covers only part of
+- **Q (FIRAS)**: a transcendental law, and a band that covers only part of
   its behaviour. It is the identifiability track.
-- **A (NIST H I)** — the cleanest law-discovery problem with real data, and
+- **A (NIST H I)**: the cleanest law-discovery problem with real data, and
   precise enough that the law's own *failure* (QED) is visible.
-- **R (DE441)** — two extremes in one source: Kepler, where the extrapolation
+- **R (DE441)**: two extremes in one source: Kepler, where the extrapolation
   is 20× in `a`, and the 1PN correction, which is 8×10⁻⁸ of the signal and
   therefore a numerics problem before it is a physics problem.
 
@@ -23,7 +23,7 @@ and so that the law is genuinely non-trivial in at least one respect:
 
 **`oracle` is not a competitor.** It has zero free physics parameters and
 exists to bound the others. When an arm beats it, that is a claim about the
-*published constant*, not about the method — and on track A the claim is
+*published constant*, not about the method, and on track A the claim is
 correct: the oracle carries Bohr's `R_H`, which the data says is 10.8 ppm low.
 
 **`physics` before `pinn`.** The classical parametric inverse problem is the
@@ -71,8 +71,8 @@ a plausible-looking criterion that measures the wrong thing.
 ## Why track R has a convergence study rather than a result
 
 The GR term is 8×10⁻⁸ of Mercury's acceleration. A 4th-order derivative at a
-3-hour step carries a truncation error of a few ×10⁻⁹ — a few per cent of the
-signal — and it is *correlated with the orbit*, so it does not average out. It
+3-hour step carries a truncation error of a few ×10⁻⁹ (a few per cent of the
+signal), and it is *correlated with the orbit*, so it does not average out. It
 lands almost entirely in `α`:
 
 | stencil | step | α |
@@ -132,7 +132,7 @@ which it used.
 
 ---
 
-# Part II — the simulations, and what they changed
+# Part II: the simulations, and what they changed
 
 The project originally had only real data. Adding simulations was not
 decoration: three results below exist *only* because a controlled case with a
@@ -148,7 +148,7 @@ and that number is the floor every real-data result has to be read against.
 Concretely: symbolic regression recovers the gravitational exponent as
 −1.9999969 and `GM` to 0.6 ppb from a simulated orbit. So when the same
 machinery returns `GM_sun` from the real ephemeris with a tens-of-ppm
-residual, that residual cannot be blamed on the method — it is the two-body
+residual, that residual cannot be blamed on the method; it is the two-body
 formula neglecting the planets' masses.
 
 ## The SNR threshold was wrong, and only an injection could show it
@@ -170,8 +170,8 @@ noise** and running the identical code:
 At 2.0 the extraction admits noise-induced extra zero crossings that read as
 200 Hz where the truth is 40 Hz; a handful of those wreck the fit. The
 threshold was re-chosen **on injections only**, and the real event
-re-measured with it. The real conclusions survived — 0PN still biased by about
-+9 M☉, 2PN still consistent with GWTC-1 — but they survived *as a result*
+re-measured with it. The real conclusions survived (0PN still biased by about
++9 M☉, 2PN still consistent with GWTC-1), but they survived *as a result*
 rather than as luck.
 
 This is the seed discipline (`tune on 3/7/19, report on 11/23/42`) extended to
@@ -198,7 +198,7 @@ the method that produced it.
 
 The PDE rung of the neglected-terms study recovers a diffusivity from
 `u_t = alpha u_xx + C(u, u_x)`. At `eps = 0` the modelled law is exactly
-right and `alpha` must come back 0.05. It came back **0.015** — 70 % wrong —
+right and `alpha` must come back 0.05. It came back **0.015** (70 % wrong)
 and stayed wrong through every fix that operates on the loss:
 gradient-norm balancing, a data-only warmup, a hard initial condition through
 a saturating gate, a curriculum that opens the time horizon gradually,
@@ -232,7 +232,7 @@ What remains is the general fact: **a network's accuracy in the k-th
 derivative is not controlled by its accuracy in the value.** High-frequency
 content costs almost nothing in function space and is amplified by every
 differentiation. This is why a PINN can report a small residual and a wrong
-constant at the same time — and why "the residual converged" is not evidence
+constant at the same time, and why "the residual converged" is not evidence
 that the physics was identified.
 
 The remedy that follows from the diagnosis is to penalise the wiggle one
@@ -265,8 +265,8 @@ moves it barely at all:
 | 0.1 | 0.01610 ± 0.00217 | 67.8 % |
 
 Monotone, consistent across all three seeds, and far too small: a 33× range of
-the weight buys 8 percentage points. `w_smooth = 0.03` ships — it helps, hurts
-nothing, and the mechanism behind it was measured rather than guessed — but
+the weight buys 8 percentage points. `w_smooth = 0.03` ships (it helps, hurts
+nothing, and the mechanism behind it was measured rather than guessed), but
 0.1 is not chosen despite its better mean, because its seed spread is four
 times larger and a difference that size is not resolved by three seeds.
 
@@ -323,12 +323,12 @@ four orders below the effect (invariant 5).
 least-squares `alpha` of the field it produced, to three digits, on every
 seed. It is doing precisely what it was asked to do. Whatever is wrong is
 wrong with the **field**, and nothing addressed to the loss weights, the
-schedule, the sampler or the parameterisation can reach it — which is why
+schedule, the sampler or the parameterisation can reach it, which is why
 none of them did.
 
 (With `C` free the ratio is ~0.45, because the correction absorbs the
 discrepancy and breaks that consistency. It lands nearer the truth than the
-field supports, by accident rather than by identification — a reminder that a
+field supports, by accident rather than by identification: a reminder that a
 closer number is not a better method.)
 
 ### So what is wrong with the field
@@ -346,15 +346,15 @@ self-defeating here: it degrades the very field it needs in order to identify
 That also explains the split that had looked paradoxical. The curvature
 penalty takes the data-only reading from 36 % wrong to 6.8 % and the trained
 arm only from 76 % to 68 %, because it fixes curvature and does nothing about
-the residual wrecking the fit — the data loss goes from 8.4×10⁻⁴ to order 1
+the residual wrecking the fit: the data loss goes from 8.4×10⁻⁴ to order 1
 once the physics term is enabled.
 
 The accurate statement of the failure is therefore **not** "the PINN did not
 converge". It is: *on this problem, in this configuration, the physics term
 costs more field accuracy than the physics constraint buys.* Whether that is
-fixable — by a different residual scaling, by solving for `alpha` in closed
+fixable (by a different residual scaling, by solving for `alpha` in closed
 form from a data-only field, or by a formulation that does not put `u` and
-`alpha` in the same optimisation — is open, and the arm stays
+`alpha` in the same optimisation) is open, and the arm stays
 `converged=False` until something demonstrates it.
 
 **The arm therefore stays marked `converged=False`.** A diagnosis is not a
@@ -363,7 +363,7 @@ result, and 69 % is not a recovered constant.
 ## Perihelion location: root-finding, not parabola-fitting
 
 Mercury's GR shift is 5×10⁻⁷ rad per orbit. Locating the perihelion by fitting
-a parabola to a sampled `u(φ)` grid is good to about 10⁻⁶ rad — *bigger than
+a parabola to a sampled `u(φ)` grid is good to about 10⁻⁶ rad, *bigger than
 the effect*, and the first version of this simulation reported a Newtonian
 "precession" 20% larger than the GR one. Finding the root of `du/dφ` on the
 solver's dense output instead reaches ~10⁻⁹, and the simulated precession then
@@ -379,8 +379,8 @@ Plain second-order finite differences give the hydrogen levels to ~300 ppm.
 The relativistic + QED shift in the real atom is 10.8 ppm. A solver 30× less
 accurate than the effect cannot see it, and differencing anyway would have
 reported discretisation error as physics. Two grids combined as
-`E + (E_fine − E_coarse)/3` reach 4 ppm, and the comparison becomes meaningful
-— it gives +15 ppm against NIST, agreeing with the fitting route's +10.8 ppm
+`E + (E_fine − E_coarse)/3` reach 4 ppm, and the comparison becomes meaningful:
+it gives +15 ppm against NIST, agreeing with the fitting route's +10.8 ppm
 within the solver's remaining error.
 
 The `r_min` sweep in the same module is the companion warning: at
@@ -398,7 +398,7 @@ unbinds. The integrator is part of the physics model.
 
 ## What the simulations do NOT do
 
-They do not validate the physics — the laws are put in by hand. They bound the
+They do not validate the physics; the laws are put in by hand. They bound the
 method. Any claim in this project of the form "the data says X" rests on the
 real data; the simulations only say how much of "X" could have been the
 method talking.

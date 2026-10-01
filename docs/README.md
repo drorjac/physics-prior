@@ -42,15 +42,15 @@ in advance, and it is the one page to read if you only read one.
 | [DATA.md](DATA.md) | provenance, units, and the caveats stated up front |
 | [TOOLING.md](TOOLING.md) | which package does what, and exactly how a formula comes out of symbolic regression |
 | [REPRODUCTION.md](REPRODUCTION.md) | the last full reproduction: what was re-run, what matched, and on what |
-| [RESULTS.md](RESULTS.md) | **generated** from `results/` by `physprior report` — do not edit |
+| [RESULTS.md](RESULTS.md) | **generated** from `results/` by `physprior report`; do not edit |
 
 ## Planning
 
 | Document | State |
 |---|---|
 | [plans/PLAN.md](plans/PLAN.md) | the audit, the PINN scorecard, and the Phase 2 outcome |
-| [plans/PHASE5_PLAN.md](plans/PHASE5_PLAN.md) | EM propagation, atmosphere and loss discovery — **at its approval gate** |
-| [plans/PHASE6_PLAN.md](plans/PHASE6_PLAN.md) | quantum interference tracks — **at its approval gate** |
+| [plans/PHASE5_PLAN.md](plans/PHASE5_PLAN.md) | EM propagation, atmosphere and loss discovery, **at its approval gate** |
+| [plans/PHASE6_PLAN.md](plans/PHASE6_PLAN.md) | quantum interference tracks, **at its approval gate** |
 | [plans/phase5-spec.md](plans/phase5-spec.md) | the Phase 5 specification as written |
 
 ---

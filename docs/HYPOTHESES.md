@@ -1,4 +1,4 @@
-# Hypotheses — the physical questions this project answers
+# Hypotheses: the physical questions this project answers
 
 Every experiment in the repository exists to answer one of the questions
 below. Each is stated as a question about physics and learning. Each carries
@@ -9,8 +9,8 @@ page carries none, so it cannot drift.
 
 | # | Question | Status |
 |---|---|---|
-| H1 | Inside the range the data covers, does knowing the law help? | **supported — barely** |
-| H2 | Out of range, is the gain from knowing the law, or from the data pinning the law's constants? | **supported — the constants** |
+| H1 | Inside the range the data covers, does knowing the law help? | **supported, barely** |
+| H2 | Out of range, is the gain from knowing the law, or from the data pinning the law's constants? | **supported: the constants** |
 | H3 | Does a learned correction help when the law is incomplete, and hurt when it is complete? | **supported on GW150914; refuted on helium by its own criterion; pulsars as predicted** |
 | H4 | Without the physics constraint, does a network absorb the physics and return wrong constants? | **supported** |
 | H5 | Can a good fit hide a wrong law? | **supported, twice on real data** |

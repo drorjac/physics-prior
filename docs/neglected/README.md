@@ -1,4 +1,4 @@
-# neglected terms — where a physics prior actually wins
+# neglected terms: where a physics prior actually wins
 
 Every other topic in this repository asks whether a physics prior helps on a
 particular dataset. This one asks **when** it helps, under conditions where
@@ -6,7 +6,7 @@ the answer is known, and it gives the same answer three times on three
 different kinds of law.
 
 > **A physics prior helps when the missing piece is *distinguishable* from
-> the law — not merely when the law is incomplete.**
+> the law, not merely when the law is incomplete.**
 >
 > If what the law leaves out looks like the law itself, the fit absorbs it
 > into the law's own constant. The curve then looks fine and the constant is
@@ -33,8 +33,8 @@ The truth is always **simulation + a term the model does not contain**:
 | PDE | `u_t = α u_xx` | advection, **or** `ε·α·u_xx` |
 
 Each rung has **two** missing terms on purpose. The first is
-*distinguishable* — the law has no way to imitate it. The second is
-*degenerate* — it is shaped like the law, so the law can swallow it. The
+*distinguishable*: the law has no way to imitate it. The second is
+*degenerate*: it is shaped like the law, so the law can swallow it. The
 contrast between them is the whole result, and a study with only the first
 kind would have reported that priors always help.
 
@@ -45,7 +45,7 @@ The three arms are `physics` (the law, constants fitted), `pinn`
 
 ---
 
-## Rung 1 — an algebraic law
+## Rung 1: an algebraic law
 
 ![the dial](../../figures/neglected/01_eps.png)
 
@@ -55,7 +55,7 @@ The three arms are `physics` (the law, constants fitted), `pinn`
 prior being *more* flexible than the truth.
 
 From `ε = 0.1` the ordering inverts and never comes back: at `ε = 0.8`,
-`physics` is at 0.1468 and the PINN at 0.0135 — **10.9× better** — while the
+`physics` is at 0.1468 and the PINN at 0.0135 (**10.9× better**) while the
 black box sits at 0.0473 regardless, because it never knew the law and so has
 nothing to lose.
 
@@ -85,7 +85,7 @@ At `ε = 0.3`, against added noise:
 | 5 % | 0.0549 | 0.0257 | PINN, by 2.1× |
 | 10 % | 0.0551 | 0.0645 | **`physics`** |
 
-`physics` is **biased but noise-immune** — it cannot fit the bump, and it
+`physics` is **biased but noise-immune**: it cannot fit the bump, and it
 cannot fit the noise either, so it sits flat whatever happens. The PINN's
 correction is flexible enough to represent the missing term, which means it
 is flexible enough to represent noise. Above roughly 7 % it starts doing so.
@@ -96,15 +96,15 @@ measurable property of the problem rather than a matter of taste.
 
 ![degenerate](../../figures/neglected/06_degenerate.png)
 
-Replace the bump with `ε·GM·R/r³` — one order higher in `1/r`, which is how a
-neglected oblateness or a first relativistic correction actually appears —
+Replace the bump with `ε·GM·R/r³` (one order higher in `1/r`, which is how a
+neglected oblateness or a first relativistic correction actually appears)
 and the advantage disappears. The missing term is absorbed into `GM`, the fit
 looks fine, and the recovered constant is wrong. **This is the control that
 makes the rest of the study mean something.**
 
 ---
 
-## Rung 2 — an ordinary differential equation
+## Rung 2: an ordinary differential equation
 
 Now the missing piece is a missing **force**, and recovering it means the
 network has learned a term of the equation of motion rather than a curve.
@@ -117,16 +117,16 @@ At a 60° initial amplitude, with damping left out of the law:
 |---|---|---|
 | `physics` (harmonic) | 0.2094 | 1.09 % |
 | `pinn` | **0.0130** | 3.33 % |
-| `nn` | 0.0146 | — |
+| `nn` | 0.0146 | – |
 
 **16× better.** A harmonic solution cannot decay, so there is no value of `ω`
-that hides the missing term — it is distinguishable, and the residual PINN
+that hides the missing term; it is distinguishable, and the residual PINN
 recovers it.
 
 ![the learned force](../../figures/neglected/07_ode_force.png)
 
 The correction is plotted against **what the missing force actually depends
-on** — velocity for damping, angle for the anharmonic term. Plotting a
+on**: velocity for damping, angle for the anharmonic term. Plotting a
 velocity-dependent force against angle draws a flat line and says nothing,
 which is a mistake worth naming.
 
@@ -134,13 +134,13 @@ which is a mistake worth naming.
 
 And the degenerate counterpart: leave out the anharmonic term and the
 harmonic law absorbs it by **shifting `ω`** (6.79 % off). The trajectory error
-is 0.0071 — better than the PINN's 0.0085 — so by fit quality alone you would
+is 0.0071 (better than the PINN's 0.0085), so by fit quality alone you would
 choose the wrong model. The same pattern as rung 1, in a different
 mathematical setting.
 
 ---
 
-## Rung 3 — a partial differential equation
+## Rung 3: a partial differential equation
 
 The cleanest version of the whole result, because here the absorption is
 **exact rather than approximate**. Adding `ε·α·u_xx` to a diffusion equation
@@ -158,8 +158,8 @@ Recovered `α` error, `physics` arm:
 ![diffusive](../../figures/neglected/12_pde_diffusive.png)
 ![advective](../../figures/neglected/12_pde_advective.png)
 
-Read the difference panels. The degenerate case's residual is **small** —
-the model reproduces the field almost perfectly — and its constant is 67 %
+Read the difference panels. The degenerate case's residual is **small**
+(the model reproduces the field almost perfectly), and its constant is 67 %
 wrong. The advective case's residual is **large and structured**, a dipole
 no diffusivity can remove, and its constant stays right to under 1 %.
 
@@ -191,14 +191,14 @@ the derivatives off the result
 | exact solution | **3.59** | **0.0500** | 0.1793 |
 | network, data loss 8.4×10⁻⁴ | **5.52** | 0.0322 | 0.1778 |
 
-The field is excellent — a data loss of 8.4×10⁻⁴ — and the **second
+The field is excellent (a data loss of 8.4×10⁻⁴), and the **second
 derivative is 54 % too large**. Since `α` is exactly the ratio
 `|u_t| / |u_xx|`, it comes out **36 % low** before any physics term has
 spoken.
 
 The third column is the proof that it is the *second* derivative and not the
 first. The product `α·|u_xx|` is the `u_t` scale, and the network's is 0.1778
-against the exact 0.1793 — **agreement to 0.8 %**. The first derivative is
+against the exact 0.1793: **agreement to 0.8 %**. The first derivative is
 right; the whole error is in the second, where nothing in the data loss can
 see it.
 
@@ -209,7 +209,7 @@ the analytic field (`test_implied_alpha_is_exact_on_the_exact_field`).
 
 **A network's accuracy in the k-th derivative is not controlled by its
 accuracy in the value.** High-frequency content costs almost nothing in
-function space and is amplified by every differentiation — which is why a
+function space and is amplified by every differentiation, which is why a
 PINN can report a small residual and a wrong constant simultaneously, and why
 "the residual converged" is not evidence that the physics was identified.
 
@@ -263,7 +263,7 @@ or not one was trained. Train the residual PINN, then ask its own field what
 **Exactly self-consistent.** The optimiser returns the least-squares `α` of
 the field it produced, on every seed. It is doing what it was asked. So the
 error is entirely in the **field**, and nothing addressed to loss weights,
-schedules, samplers or parameterisation can reach it — which is why none of
+schedules, samplers or parameterisation can reach it, which is why none of
 them did.
 
 What is wrong with the field:
@@ -275,7 +275,7 @@ What is wrong with the field:
 
 **Turning the physics term on makes the field about twice as bad at
 identifying the constant as having no physics term at all.** The residual is
-self-defeating here — it degrades the very field it needs. The accurate
+self-defeating here: it degrades the very field it needs. The accurate
 statement is not "the PINN did not converge" but: *on this problem, in this
 configuration, the physics term costs more field accuracy than the physics
 constraint buys.* See [METHOD.md](../METHOD.md).
@@ -298,5 +298,5 @@ right constant".
 3. **The prior is a bias–variance trade.** Above ~7 % noise here, the
    correction starts fitting noise and the rigid model wins.
 4. **Check the constant, not the loss.** Three separate results in this
-   repository — the Newtonian chirp-mass bias, the Mercury stencil, and this
-   study — are all the same statement in different clothes.
+   repository (the Newtonian chirp-mass bias, the Mercury stencil, and this
+   study) are all the same statement in different clothes.

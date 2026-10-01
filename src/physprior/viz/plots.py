@@ -552,7 +552,7 @@ def fig_phase2_improvement(df, title=None):
 
     ax.set_yticks([y for y, _ in labels], [t for _, t in labels])
     ax.set_xscale("log")
-    ax.set_xlabel("held-out nRMSE (log scale) — lower is better")
+    ax.set_xlabel("held-out nRMSE (log scale); lower is better")
     ax.set_xlim(right=ax.get_xlim()[1] * 40)
     ax.set_ylim(-1.15, len(rows) - 0.3)
     ax.grid(axis="y", visible=False)
@@ -841,7 +841,7 @@ def fig_pinn_anatomy():
 
     # --- A: residual PINN -------------------------------------------------
     ax = axes[0]
-    ax.set_title("A · Residual PINN — the network IS the solution", loc="left")
+    ax.set_title("A · Residual PINN: the network IS the solution", loc="left")
     _box(ax, (0.02, 0.62), 0.16, 0.14, "t\ncollocation", SURFACE, INK_MUTED, 8.4)
     _box(
         ax, (0.26, 0.62), 0.22, 0.14, "NN$_\\theta$(t)", tint, ARM_COLOR["physics"], 10
@@ -901,7 +901,7 @@ def fig_pinn_anatomy():
 
     # --- B: law + correction ---------------------------------------------
     ax = axes[1]
-    ax.set_title("B · Law + correction — the network is the residue", loc="left")
+    ax.set_title("B · Law + correction: the network is the residue", loc="left")
     _box(ax, (0.02, 0.62), 0.14, 0.14, "x", SURFACE, INK_MUTED, 9)
     _box(
         ax,
@@ -1001,7 +1001,7 @@ def fig_ablation_effect(summary, title=None):
     ax.set_xscale("log")
     ax.set_xlim(4e-2, 3e2)
     ax.set_ylim(-0.9, len(options) - 0.4)
-    ax.set_xlabel("error ratio to the unswitched arm  (log) — left is better")
+    ax.set_xlabel("error ratio to the unswitched arm  (log); left is better")
     ax.grid(axis="y", visible=False)
     ax.set_title(title or "One switch at a time, on the tuning seeds")
     ax.annotate(
@@ -1116,7 +1116,7 @@ def fig_neglected_sweep(df, key, xlabel, title=None, metric="nrmse_in", logx=Fal
     if logx:
         ax.set_xscale("log")
     ax.set_xlabel(xlabel)
-    ax.set_ylabel("held-out nRMSE (log) — lower is better")
+    ax.set_ylabel("held-out nRMSE (log); lower is better")
     ax.set_title(title or "Where the physics prior pays")
     ax.set_xlim(right=g.index[-1] + 0.14 * (g.index[-1] - g.index[0]))
     ax.legend(loc="upper left")

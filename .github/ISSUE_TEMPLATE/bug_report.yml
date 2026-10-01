@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         If you are reporting a **number** rather than a crash, please say which
-        result and where you read it — `results/<problem>/…`, a figure, or a
+        result and where you read it: `results/<problem>/…`, a figure, or a
         line in the README.
   - type: textarea
     id: what

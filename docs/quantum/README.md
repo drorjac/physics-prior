@@ -5,9 +5,9 @@ failure is visible**; helium, where the law is incomplete by design and the
 missing piece depends on inputs the law ignores; and the CMB, where the law is
 transcendental and the observed band cannot identify it.
 
-**Real data** — NIST hydrogen levels; NIST helium terms; the COBE/FIRAS
+**Real data**: NIST hydrogen levels; NIST helium terms; the COBE/FIRAS
 blackbody.
-**Simulations** — the Schrödinger equation, solved and measured.
+**Simulations**: the Schrödinger equation, solved and measured.
 
 Code: [`src/physprior/problems/quantum`](../../src/physprior/problems/quantum)
 · Results: [`results/quantum`](../../results/quantum)
@@ -37,7 +37,7 @@ reported discretisation error as physics.
 
 ## Learning the wave function, and inverting the spectrum
 
-`methods/eigen_pinn.py` solves the Schrodinger equation as a PINN — **no data
+`methods/eigen_pinn.py` solves the Schrodinger equation as a PINN: **no data
 at all**, only the operator equation and a boundary. The first four levels of
 the infinite well come out at 0.000%, 0.041%, 0.060% and 0.045% of the exact
 eigenvalues.
@@ -47,7 +47,7 @@ potential that produced it.
 
 ![the potential recovered from six eigenvalues](../../figures/quantum/inverse_potential.png)
 
-Six numbers in, `V(x) = x²/2` out — the word "harmonic" appears nowhere. Four
+Six numbers in, `V(x) = x²/2` out; the word "harmonic" appears nowhere. Four
 things make it work, and each is a general lesson:
 
 - **ψ = 0 solves the equation**, so every objective is a ratio of inner
@@ -57,7 +57,7 @@ things make it work, and each is a general lesson:
 - **One spectrum does not determine a 1-D potential** (Borg–Marchenko; "can
   one hear the shape of a drum?"). Symmetry is imposed architecturally, and
   it buys *identifiability* rather than accuracy.
-- **Where no state has support, the data says nothing about `V`** — every
+- **Where no state has support, the data says nothing about `V`**: every
   term of the residual is proportional to ψ. An unconstrained network puts a
   bump in the tail and invents spurious bound states, so a Tikhonov term on
   `V''` states a preference for the smoothest potential consistent with the
@@ -73,7 +73,7 @@ every state with its own network:
 | time | 100 s | **18 s** |
 
 Both are kept, because that comparison is a measurement rather than an
-opinion — and the PINN is what remains when no such solver exists.
+opinion, and the PINN is what remains when no such solver exists.
 
 ## The real-data track: `quantum/hydrogen`
 
@@ -82,7 +82,7 @@ Bohr's law fitted to the NIST levels.
 | | |
 |---|---|
 | ![track overview](../../figures/quantum/hydrogen/overview.png) | ![the residual against Bohr](../../figures/quantum/hydrogen/bohr_residual.png) |
-| **Overview** — every arm on the track. | **The law's own failure.** The fitted ionisation limit sits **10.8 ppm above** Bohr's prediction. |
+| **Overview**: every arm on the track. | **The law's own failure.** The fitted ionisation limit sits **10.8 ppm above** Bohr's prediction. |
 
 That shift is relativistic and QED corrections to the 1s level, and it is
 reached **twice, independently**: by fitting Bohr's law to the NIST levels,
@@ -131,7 +131,7 @@ size per seed is `pinn_correction.csv`.
 
 ## The real-data track: `quantum/cmb`
 
-The Planck function fitted to the COBE/FIRAS monopole — the identifiability
+The Planck function fitted to the COBE/FIRAS monopole: the identifiability
 track.
 
 | | |
@@ -142,7 +142,7 @@ track.
 **In-band accuracy is anti-correlated with having found the law.** Out-of-band
 error falls ~56× as the fitted band reaches into the Rayleigh–Jeans regime
 while the *in-band* error gets worse. Over FIRAS's own coverage, `x = hν/kT`
-runs from 1.2 to 11.3 — almost all Wien — and there `exp(−x)` and
+runs from 1.2 to 11.3 (almost all Wien), and there `exp(−x)` and
 `1/(exp(x) − 1)` are nearly the same function. The denominator is not
 identifiable from the data.
 

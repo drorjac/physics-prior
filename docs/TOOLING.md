@@ -1,4 +1,4 @@
-# Tooling — what runs, and how a formula actually comes out
+# Tooling: what runs, and how a formula actually comes out
 
 Every dependency is declared in `pyproject.toml`. The heavy ones are optional
 extras: the data layer, the simulations and the classical fits run without
@@ -15,14 +15,14 @@ Versions below match `requirements.lock`, the environment the committed results 
 
 | Package | Version | What it does here |
 |---|---|---|
-| **PySR** | 2.5.0 | symbolic regression — the only arm that returns a law it was not given |
+| **PySR** | 2.5.0 | symbolic regression; the only arm that returns a law it was not given |
 | **Julia** | 1.11.9 | PySR's search engine (`SymbolicRegression.jl`), driven through `juliacall` 0.9.36; PySR resolves `SymbolicRegression.jl` 2.4.1 |
 | **SymPy** | 1.14.0 | parses PySR's output into an expression tree, simplifies it, and `lambdify`s it back to a numpy function |
 | **PyTorch** | 2.11.0 | the neural arms. `torch.autograd.grad` supplies the derivative in the PINN's ODE residual; the physical constants are ordinary `nn.Parameter`s |
 | **SciPy** | 1.18.1 | `curve_fit` (the `physics` arm, with covariance), `solve_ivp`/DOP853 (Schwarzschild and photon geodesics), `eigh_tridiagonal` (the Schrödinger solver), `signal` (whitening, Butterworth, Hilbert, resampling) |
 | **NumPy** | 2.5.3 | the integrators, the finite-difference stencils, everything else |
 | **h5py** | 3.14.0 | reads the LIGO strain files |
-| **requests** | 2.34.2 | all downloads (**not** `curl` — see `docs/DATA.md`) |
+| **requests** | 2.34.2 | all downloads (**not** `curl`; see `docs/DATA.md`) |
 | **pandas / matplotlib** | 3.0.5 / 3.11.1 | results tables and figures; `PillowWriter` writes the GIFs, since ffmpeg is not installed |
 
 ---
@@ -35,7 +35,7 @@ the actual output of the gravity run at each step.
 ### 1 · What PySR is given
 
 Only numbers. For the force law it is a simulated orbit's radius and
-acceleration magnitude — no equation, no template, no units:
+acceleration magnitude: no equation, no template, no units:
 
 ```python
 fit_sr(r_scaled.reshape(-1, 1), a_scaled,
@@ -57,7 +57,7 @@ Two choices do real work and are stated wherever they are made:
 
 ### 2 · What comes back
 
-A Pareto front — one best expression at each complexity — kept in
+A Pareto front (one best expression at each complexity) kept in
 `fit.extra["pareto"]`. The selected one is a string:
 
 ```text
@@ -108,7 +108,7 @@ Two bugs in this function were found by using it, both now in the tests:
 ### 5 · Reading a constant off the law
 
 Once the exponent is known, the constant is *not* taken from the log-log
-intercept — that minimises error in `log a`, not in `a`, and extrapolates to
+intercept: that minimises error in `log a`, not in `a`, and extrapolates to
 `r = 1 m`, far outside the data. With the exponent fixed, regress directly:
 
 ```python
@@ -179,7 +179,7 @@ RuntimeError: The MPS backend is supported on MacOS 14.0+
 ```
 
 torch 2.11 requires macOS 14; this machine runs 13.4. So `is_built()` is True
-(the code is compiled in) and `is_available()` is False (the OS is too old) —
+(the code is compiled in) and `is_available()` is False (the OS is too old):
 an **OS constraint**, not a missing GPU and not missing code. PyTorch raised
 that floor at 2.9, so `torch==2.8.0` reaches the same GPU on the same machine,
 which is how the numbers below were obtained. See `benchmarks/README.md`.
@@ -194,7 +194,7 @@ The 2-D field residual with second derivatives, ms per epoch:
 | 10,000 | 856.3 | 354.8 | 109.2 | 7.84× |
 | 50,000 | 6455.5 | 3374.3 | 955.4 | 6.76× |
 
-Roughly **7× once the collocation set is large** — which is the field case and
+Roughly **7× once the collocation set is large**, which is the field case and
 only the field case. The 1-D tracks fit in ~25 s and are bottlenecked by the
 optimiser's *serial* epochs; a few hundred points do not fill a GPU.
 
@@ -204,7 +204,7 @@ On the analytic field, where α = 0.05 exactly:
 
 | | implied α | relative error |
 |---|---|---|
-| cpu float64 | 0.050000000000 | — |
+| cpu float64 | 0.050000000000 | – |
 | cpu float32 | 0.050000000991 | 2.0×10⁻⁸ |
 | mps float32 | 0.049999999585 | 8.3×10⁻⁹ |
 
@@ -212,7 +212,7 @@ On the analytic field, where α = 0.05 exactly:
 argued that a float32 second derivative "loses about half its digits" and
 concluded single precision was unsafe here. The digit count is right and the
 conclusion was wrong: the worst pointwise error in `u_xx` is 6×10⁻⁷ relative,
-while the *network's* error in `u_xx` is 60 % — eight orders of magnitude
+while the *network's* error in `u_xx` is 60 %, eight orders of magnitude
 larger. Arithmetic precision is not what limits this problem, and the warning
 in `resolve()` now says so.
 
@@ -226,8 +226,8 @@ package's own torch cannot reach the GPU on this OS. Every number in
 
 | Problem | Method | Why |
 |---|---|---|
-| N-body orbits | velocity Verlet (`physprior/numerics/integrators.py`) | symplectic: energy error oscillates and stays bounded instead of drifting. RK4 is implemented alongside purely to show the difference — at 4-day steps over 200 years Verlet drifts 2% and RK4 drifts 412%, i.e. the orbit unbinds |
-| Schwarzschild orbit, photon geodesic | `solve_ivp`, DOP853, `rtol=1e-12`, dense output | the perihelion is then located by `brentq` on `du/dφ` rather than by fitting a parabola to a sampled grid — Mercury's shift is 5e-7 rad per orbit and a grid estimate is only good to ~1e-6, i.e. bigger than the effect |
+| N-body orbits | velocity Verlet (`physprior/numerics/integrators.py`) | symplectic: energy error oscillates and stays bounded instead of drifting. RK4 is implemented alongside purely to show the difference: at 4-day steps over 200 years Verlet drifts 2% and RK4 drifts 412%, i.e. the orbit unbinds |
+| Schwarzschild orbit, photon geodesic | `solve_ivp`, DOP853, `rtol=1e-12`, dense output | the perihelion is then located by `brentq` on `du/dφ` rather than by fitting a parabola to a sampled grid; Mercury's shift is 5e-7 rad per orbit and a grid estimate is only good to ~1e-6, i.e. bigger than the effect |
 | Schrödinger, bound states | `eigh_tridiagonal` on a second-order finite-difference Laplacian | direct, and its O(dx²) error is measured by `grid_convergence` rather than assumed. Richardson extrapolation from two grids takes hydrogen from 300 ppm to 4 ppm, which is what makes the 10.8 ppm QED comparison possible at all |
 | Schrödinger, time dependent | split-operator with FFTs | unitary by construction; the norm holds to 5e-15 |
 | Acceleration from an ephemeris | 6th-order central differences | 4th order at a 3-hour step leaves a truncation error of a few 1e-9, which is a few per cent of the GR term and lands entirely in the fitted coefficient |
@@ -248,5 +248,5 @@ fit.history["phys_loss"]   # the physics term on its own
 
 `physprior/viz/animate.py` turns that into a GIF with the fit on the left and
 the constant walking toward its published value on the right. The same module
-animates orbits and wavefunctions. All GIFs, at 100 dpi — ffmpeg is not
+animates orbits and wavefunctions. All GIFs, at 100 dpi; ffmpeg is not
 installed here and a GIF renders anywhere.

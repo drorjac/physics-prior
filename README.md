@@ -1,4 +1,4 @@
-# physprior — what does a physics prior buy you?
+# physprior: what does a physics prior buy you?
 
 [![CI](https://github.com/drorjac/physics-prior/actions/workflows/ci.yml/badge.svg)](https://github.com/drorjac/physics-prior/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-blue)](pyproject.toml)
@@ -6,13 +6,13 @@
 [![Code style: ruff](https://img.shields.io/badge/lint-ruff-261230)](https://docs.astral.sh/ruff/)
 
 A controlled comparison of **physics-informed machine learning** (PINNs and
-symbolic regression) against a **purely data-driven** neural network — on
+symbolic regression) against a **purely data-driven** neural network, on
 **real measured data** from LIGO, NASA, NIST and JPL, *and* on **simulations
 you can watch**, where the governing law is known exactly.
 
 > **The goal, in one sentence.** Measure what a physics prior is actually
-> worth — in accuracy, data efficiency, noise tolerance, extrapolation, and
-> the ability to hand back a physical constant and a closed-form law — **and
+> worth (in accuracy, data efficiency, noise tolerance, extrapolation, and
+> the ability to hand back a physical constant and a closed-form law), **and
 > measure what it costs when the prior is wrong.**
 
 > **The answer so far.** A physics-informed network (law + learned
@@ -38,9 +38,9 @@ says what is new.
 The package is organised along the two axes that question needs:
 
 ```text
-physprior.data       the data layer     — one loader per source; downloads once,
+physprior.data       the data layer     : one loader per source; downloads once,
                                           records provenance, asserts its units
-physprior.problems   the physics        — gravity · relativity · quantum, each
+physprior.problems   the physics        : gravity · relativity · quantum, each
                                           with its simulations, its real-data
                                           benchmark tracks and its discovery
                                           experiments side by side
@@ -56,7 +56,7 @@ physprior --version
 ```
 
 `torch` (the `nn`/`pinn` arms) and `pysr` (the `sr` arm) are **optional
-extras** — the data layer, the simulations and the classical fits run without
+extras**: the data layer, the simulations and the classical fits run without
 either.
 
 ## Use
@@ -88,8 +88,8 @@ physprior summary-md         # SUMMARY.md, the project on one page, from results
 every number against `results/`; the last run is recorded in
 [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md).
 
-Every writable path is overridable — `PHYSPRIOR_RESULTS_DIR`,
-`PHYSPRIOR_DATA_DIR`, `PHYSPRIOR_CACHE_DIR`, `PHYSPRIOR_OFFLINE=1` — so the
+Every writable path is overridable (`PHYSPRIOR_RESULTS_DIR`,
+`PHYSPRIOR_DATA_DIR`, `PHYSPRIOR_CACHE_DIR`, `PHYSPRIOR_OFFLINE=1`), so the
 package behaves the same from a checkout, a wheel, or CI.
 
 ---
@@ -123,9 +123,9 @@ tutorial is [T14](notebooks/tutorials/T14_butterfly_and_the_pinn.ipynb).
 ![the anatomy of both PINN forms](figures/summary/pinn_anatomy.png)
 
 They are not variants of one architecture. **A** is used where the law is a
-differential equation — the network *is* the solution, and the physical
+differential equation: the network *is* the solution, and the physical
 constant sits inside the residual so it receives a gradient through the
-physics term. **B** is used where the law is an algebraic relation — the
+physics term. **B** is used where the law is an algebraic relation: the
 network is a *correction* to it, and `w_phys` is a continuous dial between
 the classical fit and a black box. The tutorials build both.
 
@@ -146,9 +146,9 @@ physprior tutorials --execute
 |---|---|---|
 | **T1** | [what a PINN is](notebooks/tutorials/T1_what_is_a_pinn.ipynb) | a network trained on an **equation**, not data: collocation points, autograd derivatives, why `tanh` and never `ReLU`, conditions as **hard** constraints |
 | **T2** | [forward and inverse](notebooks/tutorials/T2_forward_and_inverse.ipynb) | recovering an unknown constant from sparse noisy data, and the `w_phys` dial that decides whether it means anything |
-| **T3** | [gravity](notebooks/tutorials/T3_gravity.ipynb) | the law is **exact** — Kepler on real JPL data, five arms at matched capacity |
-| **T4** | [relativity](notebooks/tutorials/T4_relativity.ipynb) | the law is a **truncated expansion** — a 9 M☉ bias the RMSE cannot see |
-| **T5** | [quantum](notebooks/tutorials/T5_quantum_wavefunction.ipynb) | **no data at all** — learning ψ and E together, and the four ways it breaks |
+| **T3** | [gravity](notebooks/tutorials/T3_gravity.ipynb) | the law is **exact**: Kepler on real JPL data, five arms at matched capacity |
+| **T4** | [relativity](notebooks/tutorials/T4_relativity.ipynb) | the law is a **truncated expansion**: a 9 M☉ bias the RMSE cannot see |
+| **T5** | [quantum](notebooks/tutorials/T5_quantum_wavefunction.ipynb) | **no data at all**: learning ψ and E together, and the four ways it breaks |
 | **T6** | [when PINNs fail](notebooks/tutorials/T6_when_pinns_fail.ipynb) | the failure catalogue, measured: which of seven standard improvements help, and which cost 98× |
 | **T7** | [when the prior wins](notebooks/tutorials/T7_when_the_prior_wins.ipynb) | a law with a **term left out**, where the correction has something real to learn |
 | **T8** | [a network from scratch](notebooks/tutorials/T8_network_from_scratch.ipynb) | an MLP in NumPy with hand-written backprop, a gradient check, and SGD through Adam written by hand |
@@ -160,7 +160,7 @@ physprior tutorials --execute
 | **T14** | [the butterfly and the PINN](notebooks/tutorials/T14_butterfly_and_the_pinn.ipynb) | a chaotic inverse problem: the butterfly effect, a PINN drawn as a block diagram, why the vanilla PINN collapses and the recipe that fixes it, the loss term by term, and the PINN against a tuned black box and classical shooting |
 
 The difficulty rises with the physics, and each domain breaks the previous
-one's assumption — by T5 the prior *is* the problem statement.
+one's assumption; by T5 the prior *is* the problem statement.
 
 ---
 
@@ -175,7 +175,7 @@ one's assumption — by T5 the prior *is* the problem statement.
 
 **Why both halves.** The simulations are the *control*: when the law is
 exactly what was put in, whatever a method fails to recover is the **method's
-own error**. Every real-data number is read against that floor — and three
+own error**. Every real-data number is read against that floor, and three
 results here exist only because both halves are present.
 
 ## Studies across problems
@@ -212,15 +212,15 @@ Each of these reports on the reporting seeds only and generates its page from
 
 | Arm | What it is | Knows the law? | Returns a constant? | Returns a formula? |
 |---|---|---|---|---|
-| `oracle` | the published law with published constants; **the ceiling, not a competitor** | yes | — | yes |
+| `oracle` | the published law with published constants; **the ceiling, not a competitor** | yes | – | yes |
 | `physics` | the published law with its constants fitted | yes | yes, with an error bar | yes |
-| `pinn` | `y = law(x; θ) + σ_y·NN(x)`, loss `= MSE/σ_y² + w_phys·mean(NN²)`, θ trainable — or an ODE residual where the law is a differential equation | yes | yes | yes + a correction |
+| `pinn` | `y = law(x; θ) + σ_y·NN(x)`, loss `= MSE/σ_y² + w_phys·mean(NN²)`, θ trainable, or an ODE residual where the law is a differential equation | yes | yes | yes + a correction |
 | `sr` | symbolic regression (PySR) over a chosen operator set | **no** | sometimes | yes, whatever it finds |
 | `nn` | a plain MLP, grid-tuned on held-out data | no | no | no |
 
 `w_phys` is the **dial**: at `w_phys → ∞` the neural correction is crushed and
 `pinn` becomes `physics`; at `w_phys = 0` it is a black box wearing a physics
-hat. The black box is **not** handicapped — its width, depth and weight decay
+hat. The black box is **not** handicapped: its width, depth and weight decay
 are searched on held-out data on the tuning seeds, then frozen.
 
 ## The protocol
@@ -230,7 +230,7 @@ Every benchmark track goes through the same six questions
 extrapolation · parameter recovery · law recovery.
 
 **Seed discipline:** tune on 3 / 7 / 19, report on 11 / 23 / 42. Never select
-on a reported seed — or on the real data. Signal-processing choices are
+on a reported seed, or on the real data. Signal-processing choices are
 calibrated on *injected* signals with known answers.
 
 ---
@@ -254,7 +254,7 @@ calibrated on *injected* signals with known answers.
 | relativity | GR coefficient alpha (Mercury) | 1 | 1.00012 | 1.65e-05 | +1.21e-04 |
 | relativity | perihelion advance [arcsec/century] | 42.98 | 42.9852 |  | +0.005 |
 
-Extrapolation — error outside the training range relative to inside:
+Extrapolation: error outside the training range relative to inside:
 
 | track | arm | n_seeds | nrmse_in | nrmse_out | out/in | out/in range |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -299,11 +299,11 @@ Full tables: [`docs/RESULTS.md`](docs/RESULTS.md) · raw CSVs: [`results/`](resu
 competitive.** Physics buys little there. Any claim to the contrary is usually
 a comparison against an untuned baseline.
 
-**2 · Outside it the gap is orders of magnitude — but the mechanism is
+**2 · Outside it the gap is orders of magnitude, but the mechanism is
 identifiability, not the mere presence of a law.** On `quantum/cmb`,
 out-of-band error falls ~56× as the fitted band reaches into the
 Rayleigh-Jeans regime while the **in-band error gets worse**. On
-`relativity/gw150914` — the counter-control — extrapolation from four faint
+`relativity/gw150914` (the counter-control), extrapolation from four faint
 early cycles defeats *every* fitted arm, physics included. A physics prior
 buys extrapolation when the data can identify its parameter, and not
 otherwise.
@@ -311,17 +311,17 @@ otherwise.
 **3 · Only the physics arms return something a physicist can argue with.**
 And three times the argument was worth having:
 
-- **hydrogen** — fitting Bohr's law to the NIST levels returns the measured
+- **hydrogen**: fitting Bohr's law to the NIST levels returns the measured
   ionisation limit to a few parts in 10⁹. That limit sits **10.8 ppm above**
   Bohr's prediction: relativistic and QED corrections to the 1s level. The
   same shift is reached independently by solving Schrödinger's equation and
   differencing against NIST. A black box fits the same levels and can say
   nothing about QED.
-- **GW150914** — the Newtonian inspiral law recovers a chirp mass biased by
+- **GW150914**: the Newtonian inspiral law recovers a chirp mass biased by
   **+9 M☉** with a formal error of 4.1: a confident wrong answer. Adding the
   1.5PN tail and 2PN terms removes the bias while the RMSE barely moves.
   *Goodness of fit does not diagnose a wrong law.*
-- **Mercury** — the acceleration differentiated out of the ephemeris at a
+- **Mercury**: the acceleration differentiated out of the ephemeris at a
   plausible step size gives a GR coefficient of **α = 1.1343 ± 0.0024**: a
   13.4% violation of general relativity at **56 formal sigma**. It is entirely
   finite-difference truncation error. With a 6th-order stencil α agrees with
@@ -345,14 +345,14 @@ constant means anything:
 | quantum | `T_CMB` | **1.33 %** | 0.017 % |
 
 At `w_phys = 0` the neural correction is free, absorbs the signal, and the
-physical parameter drifts to whatever is left over — while the held-out error
+physical parameter drifts to whatever is left over, while the held-out error
 barely changes. A PINN that fits well is not thereby measuring anything. The
 physics term is not a regulariser you tune for accuracy; it is what makes the
 parameter identifiable.
 
 **5 · A pipeline you have not injected into has no error budget.** The
 GW150914 chirp mass is extracted through a chain of signal-processing choices.
-One — the envelope SNR a cycle must clear — was set to 2.0 a priori and looked
+One, the envelope SNR a cycle must clear, was set to 2.0 a priori and looked
 perfectly reasonable. Injecting a **known** chirp mass into the **real
 detector noise** and running the identical code says otherwise:
 
@@ -427,17 +427,17 @@ the notebooks stay small.
 |---|---|
 | [`docs/CONTRIBUTIONS.md`](docs/CONTRIBUTIONS.md) | what the project adds, separated into likely new, known in kind, and reproduced as checks |
 | [`docs/HYPOTHESES.md`](docs/HYPOTHESES.md) | the physical questions, the evidence for each, and what would refute it |
-| [`docs/neglected/`](docs/neglected) | **when** a physics prior helps — the controlled study, on an algebraic law, an ODE and a PDE. Start here |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | what was decided, against what, and why — and what is still open |
-| [`docs/RELATED_WORK.md`](docs/RELATED_WORK.md) | the prior work — PINNs, APHYNITY, PySR, the benchmark suites — and what this project adds ([`references.bib`](docs/references.bib)) |
+| [`docs/neglected/`](docs/neglected) | **when** a physics prior helps: the controlled study, on an algebraic law, an ODE and a PDE. Start here |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | what was decided, against what, and why, and what is still open |
+| [`docs/RELATED_WORK.md`](docs/RELATED_WORK.md) | the prior work (PINNs, APHYNITY, PySR, the benchmark suites) and what this project adds ([`references.bib`](docs/references.bib)) |
 | [`docs/gravity/`](docs/gravity) · [`docs/relativity/`](docs/relativity) · [`docs/quantum/`](docs/quantum) · [`docs/fields/`](docs/fields) | one folder per physics topic: its simulations, its tracks, its figures and its caveats |
 | [`docs/reconstruction/`](docs/reconstruction) · [`docs/dynamics/`](docs/dynamics) · [`docs/optimization/`](docs/optimization) · [`docs/theory/`](docs/theory) | the studies across problems |
 | [`docs/plans/`](docs/plans) | the audit, the Phase 2 outcome, and the phases waiting at their approval gates |
 | [`docs/TOOLING.md`](docs/TOOLING.md) | which package does what, and **exactly how a formula comes out of symbolic regression** |
 | [`docs/DATA.md`](docs/DATA.md) | provenance, units, and the caveats stated up front |
-| [`docs/METHOD.md`](docs/METHOD.md) | design decisions — including the ones made after something went wrong |
+| [`docs/METHOD.md`](docs/METHOD.md) | design decisions, including the ones made after something went wrong |
 | [`docs/RESULTS.md`](docs/RESULTS.md) | generated from `results/` |
-| [`benchmarks/`](benchmarks) | what a GPU is worth here, measured — and why `mps.is_available()` is False on a machine that has one |
+| [`benchmarks/`](benchmarks) | what a GPU is worth here, measured, and why `mps.is_available()` is False on a machine that has one |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | the rules this project holds itself to, and why |
 
 ## Layout
@@ -446,7 +446,7 @@ the notebooks stay small.
 src/physprior/
   config.py          resolved paths and switches, all env-overridable
   exceptions.py      PhysPriorError · DataError · UnitError · ConvergenceError
-  units.py           require() — guards that do not vanish under python -O
+  units.py           require(): guards that do not vanish under python -O
   constants.py       physical constants, each with its source
   data/              the data layer
     cache.py           download once, checksum, record provenance
@@ -460,7 +460,7 @@ src/physprior/
   methods/           neural · pinn (oracle/physics/pinn) · symbolic
   numerics/          integrators (Verlet, RK4) · stencils (+ Richardson)
   benchmark/         protocol (splits, sweeps, scoring) · metrics
-                     neglected.py — the controlled study: three rungs of one ladder
+                     neglected.py: the controlled study: three rungs of one ladder
   viz/               plots · animate · palette (validated, not eyeballed)
   methods/device.py  which device and dtype, and why they are not independent
   reconstruction/    sparse-sensor field reconstruction in 1-D, 2-D, 3-D
@@ -477,7 +477,7 @@ GWOSC (Abbott et al. 2019, GWTC-1) · COBE/FIRAS (Fixsen et al. 1996,
 ApJ 473, 576) · NIST ASD v5.12 (Kramida et al.) · JPL Horizons / DE441.
 Each loader records the URL, byte count and SHA-256 of the file it read, in
 that problem's `meta.json`. Raw downloads are ~20 MB and are **not**
-committed — `physprior data fetch` re-obtains them.
+committed; `physprior data fetch` re-obtains them.
 
 ## Sibling project
 

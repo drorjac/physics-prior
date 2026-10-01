@@ -20,7 +20,7 @@ physprior tutorials T5             # just one
 | **T4** | [relativity](T4_relativity.ipynb) | the law is a **truncated expansion**. A 9 M☉ bias that the RMSE cannot see, and the residual-PINN form for differential laws |
 | **T5** | [quantum](T5_quantum_wavefunction.ipynb) | **no data at all**. Learning ψ and E together from an operator equation: the trivial solution, hard boundaries, orthogonality, spectral bias |
 | **T6** | [when PINNs fail](T6_when_pinns_fail.ipynb) | the failure catalogue, measured on real data. Which of seven standard improvements actually help, and which make things 98× worse |
-| **T7** | [when the prior wins](T7_when_the_prior_wins.ipynb) | the regime the other tracks were missing: a law with a **term left out**. Where the PINN beats both `physics` and `nn` by an order of magnitude — and the condition under which it does not |
+| **T7** | [when the prior wins](T7_when_the_prior_wins.ipynb) | the regime the other tracks were missing: a law with a **term left out**. Where the PINN beats both `physics` and `nn` by an order of magnitude, and the condition under which it does not |
 | **T8** | [a network from scratch](T8_network_from_scratch.ipynb) | an MLP in NumPy: forward pass, hand-written backprop checked against finite differences and autograd, initialisation, and SGD through Adam written by hand |
 | **T9** | [optimizers and loss functions](T9_optimizers_and_losses.ipynb) | which optimizer reaches a physics fit, a PINN and a black box, the curvature each lands in, robust losses under outliers, and what loss balancing does to the `pinn` arm |
 | **T10** | [spatial fields](T10_spatial_fields.ipynb) | reconstructing a map: station temperatures and the lapse rate over the Alps, kriging, and a simulated radio field where the physics fit also finds the transmitter |
@@ -51,9 +51,9 @@ microseconds and exact) and for T5's square well (a tridiagonal
 diagonalisation is milliseconds and more accurate). Both are included anyway,
 because having the exact answer is what makes the failure modes *measurable*.
 
-**T7 is the one to read if you only read one.** T6 shows the `pinn` arm winning one cell in twelve on the real tracks; T7 shows why — those tracks are mostly the exact-law and the degenerate cases — and builds the third regime, where the same arm wins by an order of magnitude.
+**T7 is the one to read if you only read one.** T6 shows the `pinn` arm winning one cell in twelve on the real tracks; T7 shows why (those tracks are mostly the exact-law and the degenerate cases) and builds the third regime, where the same arm wins by an order of magnitude.
 
-The value is in the cases the classical method cannot reach — an unknown
+The value is in the cases the classical method cannot reach: an unknown
 constant inside a differential law, a potential known only pointwise, a
-geometry with no mesh — and in knowing which of the standard remedies survive
+geometry with no mesh, and in knowing which of the standard remedies survive
 contact with real data. T6 has the measurements.
