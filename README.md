@@ -5,6 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/lint-ruff-261230)](https://docs.astral.sh/ruff/)
 
+*Written 2024–2025.*
+
 A controlled comparison of **physics-informed machine learning** (PINNs and
 symbolic regression) against a **purely data-driven** neural network, on
 **real measured data** from LIGO, NASA, NIST and JPL, *and* on **simulations
