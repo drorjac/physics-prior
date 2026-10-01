@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-01
+
+### Changed
+
+- The README is short: the question, the method, a figure gallery and the
+  results in brief. The detailed findings moved to `docs/FINDINGS.md`, where
+  `tests/test_claims.py` checks their numbers; the tables stay in
+  `docs/RESULTS.md`.
+- The top level holds only what must be there. `scripts/` and `benchmarks/`
+  are one `tools/` folder, with `requirements.lock`; the changelog and the
+  contributing guide are in `docs/`.
+- Plain punctuation throughout the docs, notebooks and figure labels.
+
 ### Added
 
 - **The Lorenz study** (`physprior lorenz`, `physprior.lorenz`). An inverse
@@ -252,6 +265,7 @@ First public release.
   the dense solution, which the 5e-7 rad per orbit effect requires.
 - The noise sweep now scores against clean held-out values, not noisy ones.
 
-[Unreleased]: https://github.com/drorjac/physics-prior/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/drorjac/physics-prior/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/drorjac/physics-prior/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/drorjac/physics-prior/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/drorjac/physics-prior/releases/tag/v0.1.0
