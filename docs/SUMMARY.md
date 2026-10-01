@@ -36,7 +36,7 @@ flowchart LR
 
 ## Where the physics-informed network pays: a chaotic inverse problem
 
-![the butterfly effect](figures/lorenz/butterfly.gif)
+![the butterfly effect](../figures/lorenz/butterfly.gif)
 
 40 noisy observations of one Lorenz-63 trajectory, 2.7 Lyapunov times long. The PINN fits the trajectory and the three constants of the law together:
 
@@ -53,7 +53,7 @@ flowchart LR
   L --> OPT["Adam (cosine lr, warm-up + ramp) then L-BFGS"]
 ```
 
-![block diagram](figures/lorenz/block_diagram.png)
+![block diagram](../figures/lorenz/block_diagram.png)
 
 Against a black-box network of the same kind, tuned on separate seeds:
 
@@ -67,7 +67,7 @@ Against a black-box network of the same kind, tuned on separate seeds:
 
 Against classical fitting of the same law, from the same wrong start: single shooting misses the constants by 47.9 %; multiple shooting recovers them to 0.37 %; single shooting started from the PINN's answer reaches 0.36 %. A well-built classical fit is as good as the PINN on the constants. The PINN needs no segmentation, returns a smooth trajectory and derivative, and gives shooting a start in the right basin.
 
-![every method](figures/lorenz/main.png)
+![every method](../figures/lorenz/main.png)
 
 ### Noise
 
@@ -82,7 +82,7 @@ Against classical fitting of the same law, from the same wrong start: single sho
 
 The black box cannot interpolate a chaotic trajectory between 40 points even without noise, while the PINN's error scales with the noise, so the factor is largest on clean data. With fewer observations it is 4.5 at 160 points and 28 at 20. At 10 points only the PINN still recovers the constants: 1.5 %, against 36 % for multiple shooting.
 
-![noise sweep](figures/lorenz/noise.png)
+![noise sweep](../figures/lorenz/noise.png)
 
 ### Making the PINN train
 
@@ -98,29 +98,29 @@ The black box cannot interpolate a chaotic trajectory between 40 points even wit
 
 A vanilla PINN fails on 2 of 3 seeds: it stalls in a minimum that fits neither the data nor the law. Fitting the data first and ramping the physics weight in is the change that matters most; a cosine learning rate, fresh collocation points each step, an L-BFGS finish and Fourier features of time tighten the worst seed. Gradient-norm balancing rescues most of the vanilla recipe; causal weighting adds nothing to the final one. The time derivative is propagated in forward mode by hand, 1.4x cheaper per step than reverse-mode autograd, and `torch.compile` gives a further 1.21x.
 
-![loss terms](figures/lorenz/loss_breakdown.png)
+![loss terms](../figures/lorenz/loss_breakdown.png)
 
 ### The butterfly effect
 
 Trajectories that start 1e-8 apart separate at the rate 0.900 per unit time (reference lambda_1 = 0.9056), and every forecast inherits that: an error e in the state reaches the validity threshold in about ln(0.4/e)/lambda_1, whatever produced it.
 
-![separation](figures/lorenz/separation.png)
+![separation](../figures/lorenz/separation.png)
 
-Full page: [docs/lorenz](docs/lorenz/README.md). Tutorial: [T14](notebooks/tutorials/T14_butterfly_and_the_pinn.ipynb).
+Full page: [docs/lorenz](lorenz/README.md). Tutorial: [T14](../notebooks/tutorials/T14_butterfly_and_the_pinn.ipynb).
 
 ## What the other studies found
 
 Each line is a conclusion from the page it links to, where the numbers are generated from `results/`.
 
-- **In range, with enough clean data, a tuned black box is competitive.** The prior buys little there ([RESULTS](docs/RESULTS.md)).
-- **A learned correction pays when the law is incomplete in a way the law cannot imitate** ([neglected terms](docs/neglected/README.md)). When the missing term has the law's own shape, the fitted constant absorbs it and comes out wrong while the curve looks right.
-- **Goodness of fit does not diagnose a wrong law.** GW150914 at Newtonian order gives a biased chirp mass with barely a change in RMSE ([relativity](docs/relativity/README.md)).
-- **The network eats the physics if the physics weight is zero.** The constants drift while held-out error hardly moves ([optimization](docs/optimization/README.md)).
-- **The prior's advantage grows with dimension** in field reconstruction from sparse sensors ([reconstruction](docs/reconstruction/README.md)).
-- **Structure in a learned time-stepper keeps energy bounded** where black boxes drift ([dynamics](docs/dynamics/README.md)).
-- **The operator set is a prior for symbolic regression**: a law outside it is not found ([theory](docs/theory/symbolic_regression.md)).
+- **In range, with enough clean data, a tuned black box is competitive.** The prior buys little there ([RESULTS](RESULTS.md)).
+- **A learned correction pays when the law is incomplete in a way the law cannot imitate** ([neglected terms](neglected/README.md)). When the missing term has the law's own shape, the fitted constant absorbs it and comes out wrong while the curve looks right.
+- **Goodness of fit does not diagnose a wrong law.** GW150914 at Newtonian order gives a biased chirp mass with barely a change in RMSE ([relativity](relativity/README.md)).
+- **The network eats the physics if the physics weight is zero.** The constants drift while held-out error hardly moves ([optimization](optimization/README.md)).
+- **The prior's advantage grows with dimension** in field reconstruction from sparse sensors ([reconstruction](reconstruction/README.md)).
+- **Structure in a learned time-stepper keeps energy bounded** where black boxes drift ([dynamics](dynamics/README.md)).
+- **The operator set is a prior for symbolic regression**: a law outside it is not found ([theory](theory/symbolic_regression.md)).
 
-Every mission with its goal and conclusion: [MISSIONS](docs/MISSIONS.md). What is new: [CONTRIBUTIONS](docs/CONTRIBUTIONS.md). A tour in plots: [summary notebook](notebooks/summary.ipynb).
+Every mission with its goal and conclusion: [MISSIONS](MISSIONS.md). What is new: [CONTRIBUTIONS](CONTRIBUTIONS.md). A tour in plots: [summary notebook](../notebooks/summary.ipynb).
 
 ## Constants recovered from real data
 
@@ -143,8 +143,8 @@ Every mission with its goal and conclusion: [MISSIONS](docs/MISSIONS.md). What i
 ## Limits
 
 - The Lorenz study is a simulation with the law known exactly; it measures the method, not a discovery.
-- On algebraic laws that are already right, the PINN's correction extrapolates worse than the fitted law; helium refutes the prediction stated for it ([HYPOTHESES](docs/HYPOTHESES.md)).
-- Every number is on CPU in float64; the GPU paths are written but not used for results ([benchmarks](benchmarks/README.md)).
+- On algebraic laws that are already right, the PINN's correction extrapolates worse than the fitted law; helium refutes the prediction stated for it ([HYPOTHESES](HYPOTHESES.md)).
+- Every number is on CPU in float64; the GPU paths are written but not used for results ([benchmarks](../benchmarks/README.md)).
 
 ## Reproduce
 

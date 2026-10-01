@@ -23,7 +23,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **T14, the butterfly and the PINN**: the study as an executable tutorial,
   with the block diagram, the loss term by term, and a vanilla PINN failing
   beside the recipe that fixes it.
-- **`SUMMARY.md`** (`physprior summary-md`): the project on one page,
+- **`docs/SUMMARY.md`** (`physprior summary-md`): the project on one page,
   generated from `results/`, with the pipeline and the Lorenz PINN as
   diagrams. The summary notebook opens with the Lorenz study.
 

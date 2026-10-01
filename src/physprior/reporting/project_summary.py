@@ -1,4 +1,4 @@
-"""SUMMARY.md: the project on one page, generated from results/.
+"""docs/SUMMARY.md: the project on one page, generated from results/.
 
     physprior summary-md [--check]
 
@@ -265,8 +265,16 @@ def render(path=None) -> str:
         "```",
         "",
     ]
+    # written in docs/, so links are relative to it
     text = "\n".join(parts)
-    out = path or get_settings().root / PAGE
+    for a, b in (
+        ("](docs/", "]("),
+        ("](figures/", "](../figures/"),
+        ("](notebooks/", "](../notebooks/"),
+        ("](benchmarks/", "](../benchmarks/"),
+    ):
+        text = text.replace(a, b)
+    out = path or get_settings().root / "docs" / PAGE
     out.write_text(text)
     return text
 
@@ -277,5 +285,5 @@ def check() -> bool:
 
     with tempfile.TemporaryDirectory() as d:
         fresh = render(Path(d) / PAGE)
-    committed = (get_settings().root / PAGE).read_text()
+    committed = (get_settings().root / "docs" / PAGE).read_text()
     return fresh == committed

@@ -213,7 +213,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     bw.add_argument("track", nargs="?", default=None, help="one track (default: all)")
 
-    smd = sub.add_parser("summary-md", help="write SUMMARY.md from results/")
+    smd = sub.add_parser("summary-md", help="write docs/SUMMARY.md from results/")
     smd.add_argument(
         "--check", action="store_true", help="write nothing; exit 1 if it is stale"
     )

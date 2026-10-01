@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/lint-ruff-261230)](https://docs.astral.sh/ruff/)
 
-*Written 2024–2025.*
+*Written 2024–2025, released 2026.*
 
 Physics-informed neural networks (PINNs) build a known law into a network.
 This project measures what that is worth. It compares models that know the
@@ -61,7 +61,7 @@ checked by tests.
 - Recovered from real data by the fitted law: hydrogen's QED shift, Mercury's
   relativistic precession, the Sun's GM and the CMB temperature.
 
-One page with every result: [SUMMARY.md](SUMMARY.md). The findings with their
+One page with every result: [docs/SUMMARY.md](docs/SUMMARY.md). The findings with their
 numbers: [docs/FINDINGS.md](docs/FINDINGS.md). All tables:
 [docs/RESULTS.md](docs/RESULTS.md).
 
