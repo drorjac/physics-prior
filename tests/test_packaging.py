@@ -96,11 +96,10 @@ def test_package_is_typed(pyproject):
     assert "physprior" in pyproject["tool"]["setuptools"]["package-data"]
 
 
-def test_readme_results_section_is_generated_not_typed():
+def test_results_tables_are_generated_not_typed():
+    """The README carries no results table; it links the generated one."""
     readme = (ROOT / "README.md").read_text()
-    assert "<!-- RESULTS:START -->" in readme and "<!-- RESULTS:END -->" in readme
-    start = readme.index("<!-- RESULTS:START -->")
-    end = readme.index("<!-- RESULTS:END -->")
-    assert "|" in readme[start:end], (
-        "the README's generated results section is empty -- run `physprior report`"
-    )
+    assert "docs/RESULTS.md" in readme
+    assert "<!-- RESULTS:START -->" not in readme
+    results = (ROOT / "docs" / "RESULTS.md").read_text()
+    assert "|" in results, "docs/RESULTS.md has no table -- run `physprior report`"

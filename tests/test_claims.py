@@ -1,13 +1,13 @@
 """The narrative must not drift from the results.
 
-The results TABLES in the README and docs/RESULTS.md are generated from
-`results/` by `physprior report`, so they cannot drift. The handful of numbers
-quoted in the prose -- "+9 Msun", "10.8 ppm", "1.13 +- 0.002" -- are written
-by hand, and this file is what stops them going stale: each one is recomputed
-from `results/` and checked to still appear in the README.
+The results tables in docs/RESULTS.md are generated from `results/` by
+`physprior report`, so they cannot drift. The handful of numbers quoted in the
+prose of docs/FINDINGS.md -- "+9 Msun", "10.8 ppm", "1.13 +- 0.002" -- are
+written by hand, and this file is what stops them going stale: each one is
+recomputed from `results/` and checked to still appear in docs/FINDINGS.md.
 
-If one of these fails after a re-run, the number in the README is wrong and
-the README is what must change.
+If one of these fails after a re-run, the number in docs/FINDINGS.md is wrong
+and that page is what must change.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ from physprior.io import load_json, load_table
 
 @pytest.fixture(scope="module")
 def readme() -> str:
-    return (get_settings().root / "README.md").read_text()
+    return (get_settings().root / "docs" / "FINDINGS.md").read_text()
 
 
 @pytest.fixture(scope="module")

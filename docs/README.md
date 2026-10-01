@@ -33,6 +33,7 @@ in advance, and it is the one page to read if you only read one.
 
 | Document | What it answers |
 |---|---|
+| [FINDINGS.md](FINDINGS.md) | the main results of the benchmark tracks, with the numbers behind them |
 | [MISSIONS.md](MISSIONS.md) | every task: goal, conclusion for the PINN, and status, clear results first |
 | [CONTRIBUTIONS.md](CONTRIBUTIONS.md) | what the project adds, how new each part is, and how strong the evidence |
 | [HYPOTHESES.md](HYPOTHESES.md) | the physical questions the project answers, and what would refute each |
