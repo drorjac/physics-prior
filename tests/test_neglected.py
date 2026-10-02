@@ -295,3 +295,20 @@ def test_derivative_accuracy_figure_is_finite():
     # the bug that shipped a 100,991 px figure: a data value used as a
     # coordinate. Width is in inches and must stay sane.
     assert fig.get_size_inches()[0] < 20
+
+
+def test_derivative_study_reference_is_the_walled_solution():
+    """The reference field in `derivative_accuracy_study` must satisfy the
+    solver's zero walls. The free-space Gaussian misses by ~0.06 at t_max;
+    the method-of-images form matches the solver to its own grid error."""
+    torch = pytest.importorskip("torch")
+    from physprior.benchmark.neglected import NeglectedPDE, pde_exact_diffusive
+
+    sys_ = NeglectedPDE(eps=0.0, noise=0.0, shape="diffusive")
+    t, x, u = sys_.solve(30)
+    xx, tt = np.meshgrid(x, t)
+    ex = pde_exact_diffusive(
+        torch.tensor(xx), torch.tensor(tt), sys_.alpha, sys_.length, 0.08
+    ).numpy()
+    assert np.max(np.abs(ex - u)) < 2e-3
+    assert np.allclose(ex[:, [0, -1]], 0.0, atol=1e-12)

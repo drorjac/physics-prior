@@ -110,3 +110,44 @@ def test_lr_selection_ignores_diverged_runs():
         }
     )
     assert float(O.select_lr(g).lr.iloc[0]) == 0.1
+
+
+def test_lbfgs_rejected_trial_point_is_not_divergence(monkeypatch):
+    """The strong-Wolfe line search tries points above the starting loss and
+    rejects them. Only the accepted point may mark a run as diverged."""
+    monkeypatch.setattr(O, "DIVERGE_FACTOR", 1.0)
+    monkeypatch.setattr(O, "RECORD_EVERY", 1)
+    spec = O.RunSpec("oscillator", "physics", "lbfgs", 1.0, 7, 80, record=True)
+    row, curve, _ = O.run_one(spec)
+    losses = [c["loss"] for c in curve]
+    assert max(losses) > losses[0]  # a trial point above the start was tried
+    assert not row["diverged"]
+    assert np.isfinite(row["final_data_loss"])
+
+
+def test_lr_selection_marks_a_group_where_every_rate_diverged():
+    import pandas as pd
+
+    g = pd.DataFrame(
+        {
+            "task": ["a"] * 4,
+            "model": ["nn"] * 4,
+            "optimizer": ["sgd"] * 4,
+            "lr": [0.1, 0.1, 1.0, 1.0],
+            "final_data_loss": [1e-2, 2e-2, 1e-5, 1e-5],
+            "diverged": [True] * 4,
+        }
+    )
+    assert np.isnan(float(O.select_lr(g).lr.iloc[0]))
+
+
+def test_cache_key_changes_with_the_module_settings(monkeypatch):
+    spec = O.RunSpec("oscillator", "nn", "adam", 1e-2, 3, 40)
+    O._task_hash.cache_clear()
+    before = O._spec_key(spec)
+    monkeypatch.setattr(O, "DIVERGE_FACTOR", 1e3)
+    O._task_hash.cache_clear()
+    after = O._spec_key(spec)
+    O._task_hash.cache_clear()
+    assert before != after
+    assert before.startswith(repr(spec))

@@ -13,6 +13,8 @@ service being down.
 
 from __future__ import annotations
 
+import os
+import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -48,11 +50,20 @@ def cached_get(
         resp = requests.get(url, params=params, timeout=TIMEOUT)
         resp.raise_for_status()
     except requests.RequestException as exc:
-        raise DownloadError(f"could not fetch {url}: {exc}") from exc
-    path.write_bytes(resp.content)
-    if path.stat().st_size == 0:
-        path.unlink()
+        status = exc.response.status_code if exc.response is not None else None
+        raise DownloadError(f"could not fetch {url}: {exc}", status=status) from exc
+    if not resp.content:
         raise DownloadError(f"empty response from {url}")
+    # Written to a temporary file in the same directory and renamed, so an
+    # interrupted download never leaves a partial file that looks cached.
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{filename}.", suffix=".part")
+    try:
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(resp.content)
+        Path(tmp).replace(path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
     return path
 
 

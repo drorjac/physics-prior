@@ -131,7 +131,7 @@ def _plot_real_vs_sim(d):
 
 def run_discovery(quick: bool = False) -> dict:
     print(f"[{PROBLEM}] injection tests (the pipeline's own error budget)", flush=True)
-    seeds = (11, 23, 42, 101) if quick else (11, 23, 42, 101, 202, 303, 404, 505)
+    seeds = discovery.VALIDATION_SEEDS[:4] if quick else discovery.VALIDATION_SEEDS
     out: dict[str, Any] = {"injection": discovery.injection_test(seeds=seeds)}
     save_table(
         pd.DataFrame(out["injection"].pop("trials")), PROBLEM, "injection_trials"

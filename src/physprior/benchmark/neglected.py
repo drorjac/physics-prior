@@ -55,6 +55,12 @@ from physprior.methods.base import REPORT_SEEDS
 # usable -- the same reason the rest of the package works in AU and years.
 GM_TRUE = 1.0
 R_REF = 1.0
+# Every fitted constant starts at this fraction of its true value, the same
+# for every arm, so no arm is handed the answer as its starting point. At 0.7
+# the pendulum's frequency fit fell into a wrong basin (omega 0.3 or 0.6) on
+# some seeds; 0.8 recovers the effective frequency at every amplitude the
+# study uses (10 to 120 degrees).
+START_FRAC = 0.8
 
 
 @dataclass
@@ -137,13 +143,18 @@ class ArmResult:
     # configuration, and a number from a fit that did not converge is not a
     # measurement.
     converged: bool = True
+    # Set by `run_pde` for `physics`: it is fitted to the clean, dense
+    # solution, not to the noisy samples the `pinn` arm sees.
+    noise_free: bool = False
 
 
 def _fit_physics(sys_, r, y):
     """`curve_fit` on the law alone -- it has no way to express the rest."""
     from scipy.optimize import curve_fit
 
-    popt, _ = curve_fit(lambda rr, gm: sys_.law(rr, gm), r, y, p0=[1.0], maxfev=20000)
+    popt, _ = curve_fit(
+        lambda rr, gm: sys_.law(rr, gm), r, y, p0=[START_FRAC * GM_TRUE], maxfev=20000
+    )
     gm = float(popt[0])
     return (lambda rq: sys_.law(rq, gm)), gm, 1
 
@@ -162,7 +173,7 @@ def _fit_pinn(sys_, r, y, *, w_phys, epochs, seed, width=32, depth=3, lr=5e-3):
     yt = torch.tensor(y, dtype=DTYPE)
 
     net = mlp(1, width, depth)
-    log_gm = torch.nn.Parameter(torch.zeros((), dtype=DTYPE))
+    log_gm = torch.nn.Parameter(torch.tensor(np.log(START_FRAC * GM_TRUE), dtype=DTYPE))
     opt = torch.optim.Adam([*net.parameters(), log_gm], lr=lr)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
     history: dict[str, list] = {"epoch": [], "data": [], "phys": [], "GM": []}
@@ -447,7 +458,9 @@ def _ode_fit_physics(sys_, t, theta):
     def model(tt, omega, a):
         return a * np.cos(omega * tt)
 
-    popt, _ = curve_fit(model, t, theta, p0=[1.0, sys_.amplitude], maxfev=40000)
+    popt, _ = curve_fit(
+        model, t, theta, p0=[START_FRAC * sys_.omega, sys_.amplitude], maxfev=40000
+    )
     omega = float(popt[0])
     return (lambda tq: model(np.asarray(tq, float), *popt)), omega
 
@@ -487,7 +500,9 @@ def _ode_fit_pinn(
 
     net = mlp(1, width, depth)  # theta(t)
     corr_raw = mlp(2, width, depth)  # C(theta), the missing force
-    log_w = torch.nn.Parameter(torch.zeros((), dtype=DTYPE))
+    log_w = torch.nn.Parameter(
+        torch.tensor(np.log(START_FRAC * sys_.omega), dtype=DTYPE)
+    )
     opt = torch.optim.Adam([*net.parameters(), *corr_raw.parameters(), log_w], lr=lr)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
     history: dict[str, list] = {"epoch": [], "data": [], "phys": [], "GM": []}
@@ -629,7 +644,7 @@ def run_ode(
             abs(omega - sys_.omega) / sys_.omega * 100,
             npar,
             correction_error=float(
-                np.sqrt(np.mean((force(grid) - true_force) ** 2)) / denom
+                np.sqrt(np.mean((force(grid, grid_d) - true_force) ** 2)) / denom
             ),
             history=hist,
         )
@@ -741,6 +756,10 @@ def _pde_fit_physics(sys_):
 
     Least squares on the modelled PDE alone. It has no term for anything
     else, so whatever else is happening is pushed into alpha.
+
+    It reads the clean solution on the full grid, because finite differences
+    need neighbouring values that the scattered samples do not have. Its
+    result is therefore noise-free, and `run_pde` marks it so.
     """
     t, x, u = sys_.solve(80)
     dx = float(x[1] - x[0])
@@ -1021,10 +1040,18 @@ def _pde_fit_pinn(
 
     def predict(xq, tq):
         with torch.no_grad():
-            return u_of(
-                torch.tensor(np.asarray(xq, float).ravel(), dtype=DTYPE),
-                torch.tensor(np.asarray(tq, float).ravel(), dtype=DTYPE),
-            ).numpy()
+            return (
+                u_of(
+                    torch.tensor(
+                        np.asarray(xq, float).ravel(), dtype=DTYPE, device=dev
+                    ),
+                    torch.tensor(
+                        np.asarray(tq, float).ravel(), dtype=DTYPE, device=dev
+                    ),
+                )
+                .cpu()
+                .numpy()
+            )
 
     n_params = 1 + sum(p.numel() for p in [*net.parameters(), *corr.parameters()])
     return predict, alpha_hat, n_params, history
@@ -1054,6 +1081,7 @@ def run_pde(
             float("nan"),
             abs(alpha_phys - sys_.alpha) / sys_.alpha * 100,
             1,
+            noise_free=True,
         )
     ]
     predict, alpha_hat, npar, hist = _pde_fit_pinn(
@@ -1105,6 +1133,28 @@ def pde_pinn_converged(
     )
 
 
+def pde_exact_diffusive(xq, tq, alpha, length, ic_width, n_images: int = 4):
+    """The Gaussian release under pure diffusion with zero walls at 0 and L.
+
+    In free space a Gaussian stays Gaussian, s^2 -> s^2 + 4 alpha t. The walls
+    are added by the method of images: a copy of the source reflected in each
+    wall with opposite sign, repeated with period 2L. By t_max the width is
+    half the domain, so the walls matter and the free-space form alone is
+    wrong there. Works on torch tensors, so it can be differentiated.
+    """
+    import torch
+
+    s2 = ic_width**2 + 4.0 * alpha * tq
+    amp = ic_width / torch.sqrt(s2)
+    c = 0.5 * length
+    u = torch.zeros_like(xq * tq)
+    for k in range(-n_images, n_images + 1):
+        shift = 2.0 * k * length
+        u = u + torch.exp(-((xq - c - shift) ** 2) / s2)
+        u = u - torch.exp(-((xq + c - shift) ** 2) / s2)
+    return amp * u
+
+
 def derivative_accuracy_study(
     n: int = 500,
     noise: float = 0.02,
@@ -1140,9 +1190,7 @@ def derivative_accuracy_study(
     rng = np.random.default_rng(seed)
 
     def exact(xq, tq):
-        """A Gaussian under pure diffusion stays Gaussian: s^2 -> s^2 + 4 a t."""
-        s2 = ic_width**2 + 4.0 * sys_.alpha * tq
-        return (ic_width / torch.sqrt(s2)) * torch.exp(-((xq - 0.5 * length) ** 2) / s2)
+        return pde_exact_diffusive(xq, tq, sys_.alpha, length, ic_width)
 
     def fit(w_smooth):
         torch.manual_seed(seed)

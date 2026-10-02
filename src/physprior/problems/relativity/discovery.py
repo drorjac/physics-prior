@@ -24,6 +24,7 @@ from scipy.optimize import curve_fit
 from physprior.constants import GW150914_MCHIRP_DETECTOR
 from physprior.data.sources import gwosc as gwdata
 from physprior.exceptions import UnitError
+from physprior.methods.base import REPORT_SEEDS, TUNE_SEEDS
 
 from . import spacetime
 from .gw150914 import ETA, make_law
@@ -31,6 +32,13 @@ from .gw150914 import ETA, make_law
 # The real conditioned GW150914 strain peaks at about 8.5x the off-source
 # noise rms. The injection is scaled to match, so the comparison is fair.
 TARGET_PEAK_SNR = 8.5
+
+# Injection seeds. The SNR cut is chosen on the CALIBRATION set (the tuning
+# seeds plus extra noise stretches) and checked on the VALIDATION set (the
+# reporting seeds plus their own extras). The two sets share no seed, so the
+# injection test is not scored on the noise the cut was chosen on.
+CALIBRATION_SEEDS = (*TUNE_SEEDS, 606, 707, 808, 909, 1010, 1111, 1212)
+VALIDATION_SEEDS = (*REPORT_SEEDS, 101, 202, 303, 404, 505)
 
 
 def _place(
@@ -98,7 +106,7 @@ def _inject(
 
 def injection_test(
     mchirp_true: float = GW150914_MCHIRP_DETECTOR,
-    seeds=(11, 23, 42, 101, 202, 303, 404, 505),
+    seeds=VALIDATION_SEEDS,
     pn_orders=(0, 3),
     peak_snr: float = TARGET_PEAK_SNR,
     snr_threshold: float | None = None,
@@ -210,7 +218,7 @@ def real_vs_simulated_track() -> dict:
 
 def threshold_calibration(
     thresholds=(2.0, 2.5, 3.0, 3.5, 4.0),
-    seeds=(11, 23, 42, 101, 202, 303, 404, 505, 606, 707),
+    seeds=CALIBRATION_SEEDS,
     mchirp_true: float = GW150914_MCHIRP_DETECTOR,
     pn_order: int = 3,
 ) -> list[dict]:

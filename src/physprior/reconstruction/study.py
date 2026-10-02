@@ -96,11 +96,11 @@ def make_scene(field: F.Field) -> Scene:
 def _hull_mask(x: np.ndarray, X: np.ndarray) -> np.ndarray:
     if x.shape[1] == 1:
         return (X[:, 0] >= x[:, 0].min()) & (X[:, 0] <= x[:, 0].max())
-    from scipy.spatial import Delaunay
+    from scipy.spatial import Delaunay, QhullError
 
     try:
         return Delaunay(x).find_simplex(X) >= 0
-    except Exception:  # degenerate design
+    except QhullError:  # degenerate design
         return np.zeros(len(X), bool)
 
 

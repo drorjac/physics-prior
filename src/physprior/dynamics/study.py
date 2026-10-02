@@ -17,11 +17,14 @@ with one torch thread per worker.
 
 from __future__ import annotations
 
+import hashlib
+import inspect
 import os
 import time
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass, field, replace
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -140,6 +143,19 @@ def _cached(key: str, make: Callable[[], dict]) -> dict:
     return arrs
 
 
+@cache
+def _system_hash(kind: str, name: str) -> str:
+    """Part of every trajectory cache key: the system's parameters (dt,
+    substeps, rollout lengths) and the source of the module that defines its
+    field, initial-condition ranges and reference solver. Changing any of
+    them makes a new key, so a stale trajectory file is never reused."""
+    mod = S if kind == "ode" else PD
+    sys = S.get_system(name) if kind == "ode" else PD.PDES[name]
+    h = hashlib.sha256(repr(sys).encode())
+    h.update(Path(inspect.getfile(mod)).read_bytes())
+    return h.hexdigest()[:12]
+
+
 def _n_roll(kind: str, name: str, opts: StudyOptions) -> int:
     n = S.get_system(name).test_steps if kind == "ode" else PD.PDES[name].test_steps
     return min(n, opts.horizon_cap) if opts.horizon_cap else n
@@ -148,13 +164,14 @@ def _n_roll(kind: str, name: str, opts: StudyOptions) -> int:
 def ode_data(name: str, n_traj: int, seed: int, opts: StudyOptions) -> S.OdeData:
     sys = S.get_system(name)
     n = _n_roll("ode", name, opts)
+    tag = _system_hash("ode", name)
     fx = _cached(
-        f"ode_{name}_fixed_{opts.n_test}_{opts.n_val}_{n}",
+        f"ode_{name}_fixed_{opts.n_test}_{opts.n_val}_{n}_{tag}",
         lambda: S.fixed_sets(sys, opts.n_test, opts.n_val, n),
     )
     fx.setdefault("ood", None)
     tr = _cached(
-        f"ode_{name}_train_{n_traj}_{seed}",
+        f"ode_{name}_train_{n_traj}_{seed}_{tag}",
         lambda: {"train": S.train_set(sys, n_traj, seed)},
     )
     return S.assemble(sys, tr["train"], fx)
@@ -162,12 +179,13 @@ def ode_data(name: str, n_traj: int, seed: int, opts: StudyOptions) -> S.OdeData
 
 def pde_data(name: str, n_traj: int, seed: int, opts: StudyOptions) -> PD.PdeData:
     n = _n_roll("pde", name, opts)
+    tag = _system_hash("pde", name)
     fx = _cached(
-        f"pde_{name}_fixed_{opts.n_test}_{opts.n_val}_{n}",
+        f"pde_{name}_fixed_{opts.n_test}_{opts.n_val}_{n}_{tag}",
         lambda: PD.pde_fixed_sets(name, opts.n_test, opts.n_val, n),
     )
     tr = _cached(
-        f"pde_{name}_train_{n_traj}_{seed}",
+        f"pde_{name}_train_{n_traj}_{seed}_{tag}",
         lambda: {"train": PD.pde_train_set(name, n_traj, seed)},
     )
     return PD.pde_assemble(name, tr["train"], fx)

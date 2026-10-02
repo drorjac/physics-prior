@@ -168,7 +168,7 @@ def load_station_year(sid: str, year: int) -> tuple[pd.DataFrame, dict] | None:
     try:
         path = cached_get(url, f"isd_lite_{sid}-{year}.gz")
     except DownloadError as exc:
-        if "404" in str(exc):
+        if exc.status == 404:
             missing.add(sid)
             manifest.write_text(json.dumps(sorted(missing)))
             return None

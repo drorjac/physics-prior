@@ -168,8 +168,11 @@ def _pinn_ode_arm(prob, idx, seed, w_phys, options=DEFAULT_PINN):
         if on and name not in _ODE_SUPPORTS
     ]
     if options.ensemble > 1:
+        # Member seeds as in methods.pinn.fit_pinn: seed + k would land on
+        # other tuning or reporting seeds.
         members = [
-            _pinn_ode_once(prob, idx, seed + k, w_phys) for k in range(options.ensemble)
+            _pinn_ode_once(prob, idx, seed * 1000 + k, w_phys)
+            for k in range(options.ensemble)
         ]
         first = members[0]
         keys = first.params.keys()

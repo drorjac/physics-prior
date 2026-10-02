@@ -296,8 +296,9 @@ def fit_pinn(
     constant walk toward its published value is the clearest picture in this
     project of what the physics term in the loss is doing.
 
-    With `options.ensemble > 1` the members are trained from consecutive
-    seeds and averaged; the spread of the recovered constants across members
+    With `options.ensemble > 1` the members are trained from seeds
+    `seed * 1000 + k`, which do not collide with the tuning or reporting
+    seeds, and averaged; the spread of the recovered constants across members
     is reported as `param_sigma`, which is the arm's only error bar.
     """
     if options.ensemble <= 1:
@@ -331,7 +332,7 @@ def fit_pinn(
             depth=depth,
             epochs=epochs,
             lr=lr,
-            seed=seed + k,
+            seed=seed * 1000 + k,
             weight_decay=weight_decay,
             name=name,
             record_every=record_every if k == 0 else 0,
@@ -387,9 +388,12 @@ def _fit_pinn_once(
     set_seed(seed)
     std = Standardiser.fit(x, y)
     xs = torch.tensor(std.x(x), dtype=DTYPE)
-    xt = torch.tensor(
-        np.atleast_2d(np.asarray(x, float)).reshape(len(y), -1), dtype=DTYPE
-    )
+    # The law sees x in physical units, laid out (N, d) as Standardiser lays
+    # it out: a (d, N) input is transposed, never reshaped.
+    x2 = np.atleast_2d(np.asarray(x, float))
+    if x2.shape[0] != len(y):
+        x2 = x2.T
+    xt = torch.tensor(x2, dtype=DTYPE)
     yt = torch.tensor(np.asarray(y, float).ravel(), dtype=DTYPE)
 
     use_early = options.early_stopping and len(y) >= MIN_POINTS_FOR_EARLY_STOPPING

@@ -107,7 +107,7 @@ def _assemble(step: str = FD_STEP, order: int = FD_ORDER, span=SPAN):
     a_pert = np.zeros_like(r)
     for cmd, gm_km in PERTURBERS.items():
         other = eph.vectors(cmd, span[0], span[1], step)
-        assert np.allclose(other.jd, me.jd), "perturber grid mismatch"
+        require(bool(np.allclose(other.jd, me.jd)), f"{cmd}: perturber grid mismatch")
         gm = gm_km * 1e9
         d = other.r_m - r
         a_pert += gm * (

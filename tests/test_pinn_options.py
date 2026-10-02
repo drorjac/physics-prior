@@ -125,7 +125,8 @@ def test_ensemble_reports_a_spread_over_its_members():
 def test_ensemble_prediction_is_the_mean_of_its_members():
     x, y = _toy()
     members = [
-        fit_pinn(x, y, _law_t, PARAMS, epochs=300, seed=11 + k, options=DEFAULT_PINN)
+        # member seeds are seed * 1000 + k, clear of the tuning and reporting seeds
+        fit_pinn(x, y, _law_t, PARAMS, epochs=300, seed=11000 + k, options=DEFAULT_PINN)
         for k in range(3)
     ]
     ens = fit_pinn(

@@ -283,6 +283,15 @@ def stlsq(
                 active = new_active
                 break
             active = new_active
+        else:
+            # Out of iterations with the support still changing: the last
+            # solve was on the previous support, so re-solve on the final one.
+            As = A[:, active]
+            sol = np.linalg.solve(
+                As.T @ As + ridge * np.eye(As.shape[1]), As.T @ dX[:, j]
+            )
+            coef = np.zeros(n_terms)
+            coef[active] = sol / norms[active]
         coef[~active] = 0.0
         Xi[:, j] = coef
     return Xi

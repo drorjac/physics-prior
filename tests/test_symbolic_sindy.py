@@ -53,3 +53,17 @@ def test_finite_difference_noise_follows_sigma_over_dt():
     assert np.mean([r["rms_err"] for r in sg]) < 0.3 * np.mean(
         [r["rms_err"] for r in rows]
     )
+
+
+def test_stlsq_out_of_iterations_resolves_on_the_final_support():
+    """With max_iter=1 the support is cut once. The coefficients returned
+    must be the least-squares fit on that support, not the first solve."""
+    rng = np.random.default_rng(5)
+    X = rng.normal(size=(300, 2))
+    Theta, _ = library(X, ("a", "b"), degree=2)
+    dX = (2.0 * X[:, 0] - 0.5 * X[:, 0] * X[:, 1] + 0.05 * X[:, 1] ** 2)[:, None]
+    dX = dX + rng.normal(0.0, 0.05, dX.shape)
+    Xi = stlsq(Theta, dX, threshold=0.1, max_iter=1)
+    active = np.flatnonzero(Xi[:, 0])
+    ref, *_ = np.linalg.lstsq(Theta[:, active], dX[:, 0], rcond=None)
+    assert np.allclose(Xi[active, 0], ref, rtol=1e-5, atol=1e-8)

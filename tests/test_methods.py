@@ -1,6 +1,7 @@
 """Methods: each arm must recover a known answer on data where we know it."""
 
 import numpy as np
+import pytest
 
 from physprior.benchmark.protocol import Problem, split_extrapolate, split_random
 from physprior.methods.neural import train_mlp
@@ -86,3 +87,70 @@ def test_problem_orients_x():
         theta_published={},
     )
     assert p.x.shape == (10, 1)
+
+
+def _noise_problem(impl):
+    x = np.linspace(1.0, 4.0, 20)
+    return Problem(
+        track="t",
+        x=x,
+        y=2.5 * x**1.5,
+        law_np=law_np,
+        law_t=law_t,
+        params=[PhysParam("a", 1.0)],
+        theta_published={"a": 2.5},
+        sigma=np.full(20, 0.1),
+        arm_impl={"physics": impl},
+    )
+
+
+def test_noise_sweep_widens_sigma_and_restores_the_problem():
+    """The arms see the measurement sigma and the added noise in quadrature,
+    and the problem comes back unchanged even when an arm raises."""
+    from physprior.benchmark.protocol import sweep_noise
+
+    seen = []
+
+    def impl(prob, idx, seed, w_phys):
+        seen.append(float(prob.sigma[0]))
+        if len(seen) == 2:
+            raise RuntimeError("arm failed")
+        return oracle(law_np, {"a": 2.5})
+
+    prob = _noise_problem(impl)
+    y0, s0 = prob.y.copy(), prob.sigma.copy()
+    with pytest.raises(RuntimeError):
+        sweep_noise(prob, [0.0, 0.1], seeds=(11,), arms=("physics",), progress=False)
+    assert seen[0] == pytest.approx(0.1)
+    assert seen[1] == pytest.approx(np.hypot(0.1, 0.1 * np.std(y0)))
+    assert np.array_equal(prob.y, y0) and np.array_equal(prob.sigma, s0)
+
+
+def test_score_records_why_a_prediction_failed():
+    from physprior.benchmark.protocol import score
+    from physprior.methods.base import Fit
+
+    def broken(xq):
+        raise ValueError("no prediction")
+
+    prob = _noise_problem(lambda *a: None)
+    fit = Fit(name="physics", predict=broken)
+    row = score(prob, fit, np.arange(10), np.arange(10, 20))
+    assert row["rmse_in"] == np.inf
+    assert "no prediction" in row["error"]
+
+
+def test_pinn_reads_a_d_by_n_input_as_its_transpose():
+    """A (d, N) input must reach the law as (N, d), the layout Standardiser
+    uses, not as a reshape that mixes the columns."""
+    rng = np.random.default_rng(0)
+    x = rng.uniform(1.0, 2.0, (30, 2))
+    y = 2.0 * x[:, 0] + x[:, 1]
+
+    def lin_t(xx, a):
+        return a * xx[:, 0] + xx[:, 1]
+
+    kw = {"w_phys": 10.0, "epochs": 200, "seed": 11}
+    a = fit_pinn(x, y, lin_t, [PhysParam("a", 1.0)], **kw)
+    b = fit_pinn(x.T, y, lin_t, [PhysParam("a", 1.0)], **kw)
+    assert a.params["a"] == pytest.approx(b.params["a"], rel=1e-10)

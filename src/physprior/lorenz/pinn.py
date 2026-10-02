@@ -360,21 +360,36 @@ def fit(obs: Observations, cfg: PinnConfig, seed: int) -> LorenzFit:
         )
         calls = [0]
 
-        def closure():
-            lb.zero_grad(set_to_none=True)
+        def finish_loss():
             ld = data_loss()
             if cfg.physics:
                 r = residual(grid)
-                loss = ld + w_final * (r**2).mean()
-            else:
-                r, loss = None, ld
+                return ld, r, ld + w_final * (r**2).mean()
+            return ld, None, ld
+
+        def closure():
+            lb.zero_grad(set_to_none=True)
+            ld, r, loss = finish_loss()
             loss.backward()
             if calls[0] % cfg.record_every == 0:
                 record(cfg.steps + calls[0], "lbfgs", ld.detach(), r, w_final, 1.0)
             calls[0] += 1
             return loss
 
-        lb.step(closure)
+        # The finish is a proposal, as in methods.pinn._refine_lbfgs: kept
+        # only if it lowers the loss and leaves every parameter finite.
+        before = [p.detach().clone() for p in params]
+        start = float(finish_loss()[2].detach())
+        try:
+            lb.step(closure)
+            end = float(finish_loss()[2].detach())
+        except (RuntimeError, ValueError):
+            end = float("nan")
+        finite = all(bool(torch.isfinite(p).all()) for p in params)
+        if not (np.isfinite(end) and finite and end <= start):
+            with torch.no_grad():
+                for p, b in zip(params, before, strict=True):
+                    p.copy_(b)
 
     seconds = time.perf_counter() - t0
     th = theta().detach().numpy().copy() if cfg.physics else None

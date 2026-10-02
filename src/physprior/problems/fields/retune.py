@@ -79,7 +79,7 @@ def rf() -> dict[str, float]:
     from physprior.problems.fields import rf as R
 
     ppw = int(load_json(R.TRACK, "solver")["ppw"])
-    cfgs = load_json(R.TRACK, "nn_cfg")
+    cfgs = load_json(R.TRACK, R.NN_CFG_NAME)
     budget = load_table(R.TRACK, "sweep_budget")
     noise = load_table(R.TRACK, "sweep_noise")
     head = load_json(R.TRACK, "headline")

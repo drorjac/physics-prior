@@ -373,14 +373,19 @@ def make_problem(sc: Scenario, nn_cfg: dict | None = None) -> Problem:
 
 
 def tune_nn(sc: Scenario, epochs: int = EPOCHS) -> dict:
-    """The MLP's configuration, on the TUNING seeds, on a split of the pool.
+    """The MLP's configuration, on the TUNING seeds, on a random half of the
+    extrapolation training split (the transmitter's room).
 
-    Validation is against the noisy readings, as it would have to be with
-    real receivers; the truth map is never consulted.
+    The receivers beyond the room are scored by the extrapolation study, so
+    they take no part in the choice. Validation is against the noisy
+    readings, as it would have to be with real receivers; the truth map is
+    never consulted.
     """
     from physprior.methods.neural import tune_mlp
 
-    a, b = split_random(len(sc.pool_x), len(sc.pool_x) // 2, seed=TUNE_SEEDS[0])
+    itr, _ = extrapolation_split(make_problem(sc))
+    a_idx, b_idx = split_random(len(itr), len(itr) // 2, seed=TUNE_SEEDS[0])
+    a, b = itr[a_idx], itr[b_idx]
     return tune_mlp(
         sc.pool_x[a],
         sc.pool_noisy[a],
@@ -469,29 +474,31 @@ def sweep_noise(
     """
     rows = []
     base = prob.y.copy()
-    for s_db in noise_dbs:
-        for seed in seeds:
-            rng = np.random.default_rng(1000 + seed)
-            prob.y = sc.pool_truth + rng.normal(0.0, s_db, len(base))
-            itr, ite = split_random(len(prob), n_train, seed)
-            for arm in arms:
-                f = fit_arm(arm, prob, itr, seed)
-                rows.append(
-                    _row(
-                        prob,
-                        sc,
-                        f,
-                        itr,
-                        ite,
-                        eval_y=sc.pool_truth,
-                        sweep="noise",
-                        noise_db=s_db,
-                        n_train=n_train,
-                        seed=seed,
+    try:
+        for s_db in noise_dbs:
+            for seed in seeds:
+                rng = np.random.default_rng(1000 + seed)
+                prob.y = sc.pool_truth + rng.normal(0.0, s_db, len(base))
+                itr, ite = split_random(len(prob), n_train, seed)
+                for arm in arms:
+                    f = fit_arm(arm, prob, itr, seed)
+                    rows.append(
+                        _row(
+                            prob,
+                            sc,
+                            f,
+                            itr,
+                            ite,
+                            eval_y=sc.pool_truth,
+                            sweep="noise",
+                            noise_db=s_db,
+                            n_train=n_train,
+                            seed=seed,
+                        )
                     )
-                )
-        print(f"   [{sc.name}] noise {s_db} dB done", flush=True)
-    prob.y = base
+            print(f"   [{sc.name}] noise {s_db} dB done", flush=True)
+    finally:
+        prob.y = base
     return pd.DataFrame(rows)
 
 
@@ -1237,6 +1244,11 @@ def scenarios(ppw: int) -> dict[str, Scenario]:
     return scs
 
 
+# The cached tuning result. Renamed from "nn_cfg" when tuning moved from the
+# whole pool to the transmitter's room, so the old choice is not reused.
+NN_CFG_NAME = "nn_cfg_room"
+
+
 def nn_configs(scs: dict[str, Scenario], quick: bool) -> dict[str, dict]:
     """Tuned once per scene, on the tuning seeds, and cached in results/."""
     from physprior.io import load_json
@@ -1245,11 +1257,11 @@ def nn_configs(scs: dict[str, Scenario], quick: bool) -> dict[str, dict]:
         base = {"width": 32, "depth": 3, "weight_decay": 1e-4}
         return {n: dict(base) for n in scs}
     try:
-        return load_json(TRACK, "nn_cfg")
+        return load_json(TRACK, NN_CFG_NAME)
     except FileNotFoundError:
         pass
     cfgs = {n: tune_nn(sc) for n, sc in scs.items()}
-    save_json(cfgs, TRACK, "nn_cfg")
+    save_json(cfgs, TRACK, NN_CFG_NAME)
     return cfgs
 
 
@@ -1368,9 +1380,14 @@ def finalise(quick: bool = False, seconds: float | None = None) -> dict:
     from physprior.io import load_json
 
     meta = _meta_base(quick)
-    for name in ("solver", "scenes", "nn_cfg", "headline"):
+    for name, file in (
+        ("solver", "solver"),
+        ("scenes", "scenes"),
+        ("nn_cfg", NN_CFG_NAME),
+        ("headline", "headline"),
+    ):
         try:
-            meta[name] = load_json(TRACK, name)
+            meta[name] = load_json(TRACK, file)
         except FileNotFoundError:
             meta[name] = None
     meta["seconds"] = seconds

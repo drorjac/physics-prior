@@ -150,7 +150,7 @@ def fit_arm(
         if "options" in inspect.signature(impl).parameters:
             return impl(prob, idx, seed, w_phys, options=pinn_options)
         fit = impl(prob, idx, seed, w_phys)
-        if pinn_options is not pinn_mod.DEFAULT_PINN:
+        if pinn_options != pinn_mod.DEFAULT_PINN:
             fit.extra["options"] = pinn_options.tag
             fit.extra["engaged"] = False
         return fit
@@ -245,8 +245,10 @@ def score(
         xq, yq = prob.x[idx], truth[idx]
         try:
             pred = np.asarray(fit.predict(xq), float).ravel()
-        except Exception:
+        except Exception as e:
+            # Scored as a failure (infinite error), with the reason kept.
             pred = np.full(len(yq), np.nan)
+            row.setdefault("error", f"{type(e).__name__}: {e}")
         row[f"rmse_{label}"] = rmse(yq, pred)
         row[f"nrmse_{label}"] = nrmse(yq, pred, scale=float(np.std(truth)))
         row[f"mape_{label}"] = mape(yq, pred)
@@ -313,42 +315,52 @@ def sweep_noise(
     pinn_options: pinn_mod.PinnOptions = pinn_mod.FROZEN_PINN,
 ) -> pd.DataFrame:
     """Noise is added as a fraction of the spread of y, on top of whatever
-    measurement noise the real data already carries."""
+    measurement noise the real data already carries.
+
+    Where the data has a measurement sigma, the sigma the arms see is that
+    and the added noise in quadrature, so a fit with absolute sigma reports
+    an uncertainty that includes the injected noise."""
     rows = []
     base_y = prob.y.copy()
+    base_sigma = prob.sigma
     scale = float(np.std(base_y))
     n_train = n_train or max(int(0.7 * len(prob)), 4)
-    for frac in noise_fracs:
-        for seed in seeds:
-            rng = np.random.default_rng(1000 + seed)
-            prob.y = base_y + rng.normal(0.0, frac * scale, len(base_y))
-            itr, ite = split_random(len(prob), n_train, seed)
-            for arm in arms:
-                f = fit_arm(
-                    arm,
-                    prob,
-                    itr,
-                    seed,
-                    w_phys=w_phys,
-                    sr_fast=True,
-                    pinn_options=pinn_options,
-                )
-                rows.append(
-                    score(
+    try:
+        for frac in noise_fracs:
+            if base_sigma is not None:
+                prob.sigma = np.hypot(base_sigma, frac * scale)
+            for seed in seeds:
+                rng = np.random.default_rng(1000 + seed)
+                prob.y = base_y + rng.normal(0.0, frac * scale, len(base_y))
+                itr, ite = split_random(len(prob), n_train, seed)
+                for arm in arms:
+                    f = fit_arm(
+                        arm,
                         prob,
-                        f,
                         itr,
-                        ite,
-                        eval_y=base_y,
-                        sweep="noise",
-                        noise_frac=frac,
-                        seed=seed,
-                        n_train=n_train,
+                        seed,
+                        w_phys=w_phys,
+                        sr_fast=True,
+                        pinn_options=pinn_options,
                     )
-                )
-        if progress:
-            print(f"  noise frac={frac:.3f} done", flush=True)
-    prob.y = base_y
+                    rows.append(
+                        score(
+                            prob,
+                            f,
+                            itr,
+                            ite,
+                            eval_y=base_y,
+                            sweep="noise",
+                            noise_frac=frac,
+                            seed=seed,
+                            n_train=n_train,
+                        )
+                    )
+            if progress:
+                print(f"  noise frac={frac:.3f} done", flush=True)
+    finally:
+        prob.y = base_y
+        prob.sigma = base_sigma
     return pd.DataFrame(rows)
 
 

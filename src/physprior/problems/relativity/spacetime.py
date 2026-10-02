@@ -117,10 +117,11 @@ def schwarzschild_orbit(
         except ValueError:
             break
     peri_arr = np.asarray(peri, dtype=float)
+    # No perihelion found means no measurement: NaN, not a zero shift.
     prec = (
         float((peri_arr[-1] - 2.0 * np.pi * len(peri_arr)) / len(peri_arr))
         if len(peri_arr)
-        else 0.0
+        else float("nan")
     )
 
     return OrbitRun(

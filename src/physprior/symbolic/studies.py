@@ -505,17 +505,21 @@ def study_tune(quick: bool = False) -> dict:
     rows = []
     grid = PARSIMONY_GRID if not quick else PARSIMONY_GRID[:2]
     seeds = TUNE_SEEDS if not quick else TUNE_SEEDS[:1]
-    # runs are deterministic given (parsimony, law, seed): reuse finished ones
+    # runs are deterministic given (parsimony, law, seed): reuse finished ones.
+    # A parsimony value with only some of its runs is re-run whole, so its
+    # partial rows are dropped first rather than counted twice.
     done = pd.DataFrame()
     if not quick:
         try:
             done = load_table(AREA, "tune_gp_runs")
             done = done[done.parsimony.isin(grid) & done.seed.isin(seeds)]
+            n_runs = done.groupby("parsimony")["seed"].transform("size")
+            done = done[n_runs == len(LAWS) * len(seeds)]
             rows = done.to_dict("records")
         except FileNotFoundError:
             pass
     for p in grid:
-        if len(done) and (done.parsimony == p).sum() == len(LAWS) * len(seeds):
+        if len(done) and (done.parsimony == p).any():
             continue
         cfg = GPConfig(parsimony=p)
         for name, law in LAWS.items():
@@ -539,6 +543,10 @@ def study_tune(quick: bool = False) -> dict:
         rate=("recovered", "mean"), sec=("seconds", "mean")
     )
     chosen = float(agg.sort_values(["rate", "sec"], ascending=[False, True]).index[0])
+    # A quick run's choice comes from a cut-down grid and one seed. It is not
+    # saved, so `_gp_config` keeps reading the full tuning result.
+    if quick:
+        return {"chosen_parsimony": chosen}
     save_table(df, AREA, "tune_gp_runs")
     save_json(
         {

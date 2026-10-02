@@ -207,6 +207,7 @@ def pde(quick: bool = False) -> None:
                             "arm": res.arm,
                             "nrmse": res.nrmse_in,
                             "alpha_error_pct": res.gm_error_pct,
+                            "noise_free": res.noise_free,
                         }
                     )
             print(f"  {shape} eps={eps} done", flush=True)

@@ -30,11 +30,13 @@ evaluations are charged like any other step.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from functools import cache
 from typing import Any
 
 import numpy as np
@@ -45,8 +47,10 @@ from physprior.benchmark.metrics import nrmse
 from physprior.io import _default as _io_default
 from physprior.methods.base import REPORT_SEEDS, TUNE_SEEDS
 from physprior.optim.problems import (
+    DEPTH,
     MODELS,
     TASKS,
+    WIDTH,
     Model,
     full_hessian,
     get_task,
@@ -66,6 +70,9 @@ RECORD_EVERY = 20
 # A loss that grows past this multiple of its starting value has diverged.
 DIVERGE_FACTOR = 1e6
 FULL_HESSIAN_MAX = 2500
+# Part of every cache key: bump it when the training loop changes what a
+# cached run means.
+CACHE_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -147,6 +154,9 @@ def run_one(spec: RunSpec) -> tuple[dict, list[dict], dict | None]:
             row.update(grad_data=gd, grad_phys=gp)
         curve.append(row)
 
+    def blown_up(lv: float) -> bool:
+        return not np.isfinite(lv) or lv > DIVERGE_FACTOR * max(state["l0"], 1e-12)
+
     def evaluate() -> torch.Tensor:
         data = m.data_loss()
         phys = m.phys_loss() if m.kind == "pinn" else torch.zeros((), dtype=data.dtype)
@@ -154,7 +164,9 @@ def run_one(spec: RunSpec) -> tuple[dict, list[dict], dict | None]:
         d, lv = float(data.detach()), float(loss.detach())
         if state["l0"] is None:
             state["l0"] = lv
-        if not np.isfinite(lv) or lv > DIVERGE_FACTOR * max(state["l0"], 1e-12):
+        # L-BFGS's line search may try a bad point and reject it, so for
+        # L-BFGS divergence is judged on the accepted point after each step.
+        if spec.optimizer != "lbfgs" and blown_up(lv):
             state["diverged"] = True
         if state["first_tol"] is None and d <= task.tol:
             state["first_tol"] = state["evals"]
@@ -167,8 +179,6 @@ def run_one(spec: RunSpec) -> tuple[dict, list[dict], dict | None]:
         def closure():
             opt.zero_grad()
             loss = evaluate()
-            if state["diverged"]:
-                return loss.detach()
             loss.backward()
             return loss
 
@@ -177,6 +187,9 @@ def run_one(spec: RunSpec) -> tuple[dict, list[dict], dict | None]:
             try:
                 opt.step(closure)
             except RuntimeError:
+                state["diverged"] = True
+                break
+            if blown_up(float(m.loss().detach())):
                 state["diverged"] = True
             if state["evals"] == before:  # converged: L-BFGS stops calling
                 break
@@ -291,7 +304,7 @@ def run_lm(task_name: str, seed: int) -> dict:
     x0 = np.array([float(r.detach()) for r in raw])
     count = {"n": 0, "first_tol": None}
 
-    def resid(z):
+    def raw_resid(z):
         with torch.no_grad():
             for r, v in zip(raw, z, strict=True):
                 r.fill_(float(v))
@@ -302,12 +315,19 @@ def run_lm(task_name: str, seed: int) -> dict:
         d = float(np.sum(res**2))
         if count["first_tol"] is None and np.isfinite(d) and d <= task.tol:
             count["first_tol"] = count["n"]
+        return res
+
+    def resid(z):
+        res = raw_resid(z)
         return np.where(np.isfinite(res), res, 1e6)
 
     t0 = time.time()
     sol = least_squares(resid, x0, method="lm", xtol=1e-15, ftol=1e-15, max_nfev=2000)
-    resid(sol.x)
-    final = float(np.sum(sol.fun**2))
+    # The clamp above keeps MINPACK running; the loss reported is unclamped,
+    # so a solution with non-finite residuals counts as diverged.
+    final = float(np.sum(raw_resid(sol.x) ** 2))
+    if not np.isfinite(final):
+        final = np.inf
     theta = m.theta()
     row: dict[str, Any] = {
         "task": task_name,
@@ -327,7 +347,10 @@ def run_lm(task_name: str, seed: int) -> dict:
         "seconds": time.time() - t0,
     }
     for label, x, y in (("in", task.x_in, task.y_in), ("out", task.x_out, task.y_out)):
-        row[f"nrmse_{label}"] = nrmse(y, m.predict(x), scale=task.scale)
+        pred = m.predict(x)
+        row[f"nrmse_{label}"] = (
+            nrmse(y, pred, scale=task.scale) if np.all(np.isfinite(pred)) else np.inf
+        )
     for k, v in theta.items():
         row[f"theta_{k}"] = v
         row[f"err_{k}_pct"] = (v - task.truth[k]) / task.truth[k] * 100.0
@@ -354,26 +377,60 @@ def _cache_path(name: str):
     return d / f"{name}.jsonl"
 
 
+@cache
+def _task_hash(name: str) -> str:
+    """Hash of what defines a run besides its RunSpec: the task's data and
+    starting constants, the network shape, and this module's run rules."""
+    task = get_task(name)
+    h = hashlib.sha256()
+    arrays = (task.x_train, task.y_train, task.x_in, task.y_in, task.x_out, task.y_out)
+    for a in (*arrays, task.x_colloc, task.x_lo, task.x_hi):
+        if a is not None:
+            h.update(np.ascontiguousarray(a, float).tobytes())
+    cfg = {
+        "version": CACHE_VERSION,
+        "params": [asdict(p) for p in task.params],
+        "truth": task.truth,
+        "noise_sd": task.noise_sd,
+        "pinn_shape": task.pinn_shape,
+        "width": WIDTH,
+        "depth": DEPTH,
+        "diverge_factor": DIVERGE_FACTOR,
+        "record_every": RECORD_EVERY,
+        "full_hessian_max": FULL_HESSIAN_MAX,
+    }
+    h.update(json.dumps(cfg, sort_keys=True, default=str).encode())
+    return h.hexdigest()[:16]
+
+
+def _spec_key(spec: RunSpec) -> str:
+    return f"{spec!r}|{_task_hash(spec.task)}"
+
+
 def _pool_map(specs: list[RunSpec], workers: int, cache: str | None = None):
     """Run the specs, in parallel if asked. With `cache`, each finished run
     is appended to a JSON-lines file under the cache directory and skipped
-    on a rerun, so an interrupted study resumes where it stopped."""
+    on a rerun, so an interrupted study resumes where it stopped. The key
+    carries a hash of the task and module settings (`_task_hash`), so a
+    record written under other settings is not reused."""
     done: dict[str, tuple] = {}
     path = _cache_path(cache) if cache else None
     if path is not None and path.exists():
         for line in path.read_text().splitlines():
             rec = json.loads(line)
             done[rec["key"]] = tuple(rec["result"])
-    todo = [s for s in specs if repr(s) not in done]
+    todo = [s for s in specs if _spec_key(s) not in done]
     if todo:
         print(f"  {len(todo)} runs to do, {len(specs) - len(todo)} cached", flush=True)
 
     def store(spec, result):
-        done[repr(spec)] = result
+        done[_spec_key(spec)] = result
         if path is not None:
             with path.open("a") as fh:
                 fh.write(
-                    json.dumps({"key": repr(spec), "result": result}, default=_default)
+                    json.dumps(
+                        {"key": _spec_key(spec), "result": result}, default=_default
+                    )
                     + "\n"
                 )
 
@@ -387,7 +444,7 @@ def _pool_map(specs: list[RunSpec], workers: int, cache: str | None = None):
                 store(futs[fut], fut.result())
                 if k % 25 == 0:
                     print(f"  {k}/{len(todo)} runs", flush=True)
-    return [done[repr(sp)] for sp in specs]
+    return [done[_spec_key(sp)] for sp in specs]
 
 
 def _init_worker() -> None:
@@ -408,7 +465,11 @@ def select_lr(grid: pd.DataFrame) -> pd.DataFrame:
         g.groupby(["task", "model", "optimizer", "lr"])["score"].median().reset_index()
     )
     idx = med.groupby(["task", "model", "optimizer"])["score"].idxmin()
-    return med.loc[idx].rename(columns={"score": "tune_median_data_loss"})
+    out = med.loc[idx].rename(columns={"score": "tune_median_data_loss"})
+    # idxmin of an all-infinite group is its first rate. Every rate diverged
+    # there, so no rate is chosen: lr is NaN and the reporting run is skipped.
+    out.loc[~np.isfinite(out["tune_median_data_loss"]), "lr"] = np.nan
+    return out
 
 
 def run(
@@ -448,6 +509,9 @@ def run(
     #    the Adam and L-BFGS solutions
     chosen = select_lr(grid)
     save_table(chosen, AREA, "lr_chosen")
+    for r in chosen[chosen["lr"].isna()].itertuples():
+        print(f"  {r.task}/{r.model}/{r.optimizer}: every rate diverged", flush=True)
+    chosen = chosen[chosen["lr"].notna()]
     specs = [
         RunSpec(
             r.task,

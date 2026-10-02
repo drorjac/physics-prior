@@ -19,7 +19,15 @@ class DataError(PhysPriorError):
 
 
 class DownloadError(DataError):
-    """A remote source was unreachable or returned something unusable."""
+    """A remote source was unreachable or returned something unusable.
+
+    `status` is the HTTP status code when the server answered with one, so a
+    caller can tell "not found" apart from an outage without parsing text.
+    """
+
+    def __init__(self, message: str, status: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status
 
 
 class UnitError(DataError):

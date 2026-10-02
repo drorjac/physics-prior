@@ -220,3 +220,22 @@ def test_injection_recovers_the_injected_chirp_mass():
     assert r["n_usable"] >= 5
     assert abs(r["pn3"]["bias_pct"]) < 10.0  # 2PN is unbiased
     assert r["pn0"]["bias_pct"] > 10.0  # Newtonian is not
+
+
+def test_no_perihelion_found_is_nan_not_zero():
+    """Less than one orbit has no perihelion to measure. A shift of 0.0
+    would read as a Newtonian orbit; NaN reads as no measurement."""
+    from physprior.problems.relativity import spacetime as sim
+
+    run = sim.schwarzschild_orbit(n_orbits=0.5)
+    assert len(run.perihelion_phi) == 0
+    assert np.isnan(run.precession_per_orbit)
+
+
+def test_snr_cut_is_calibrated_on_seeds_it_is_not_validated_on():
+    from physprior.methods.base import REPORT_SEEDS, TUNE_SEEDS
+    from physprior.problems.relativity import discovery as d
+
+    assert set(TUNE_SEEDS) <= set(d.CALIBRATION_SEEDS)
+    assert set(REPORT_SEEDS) <= set(d.VALIDATION_SEEDS)
+    assert not set(d.CALIBRATION_SEEDS) & set(d.VALIDATION_SEEDS)
