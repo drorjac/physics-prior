@@ -1,0 +1,11 @@
+family,setting,fitness
+fixed,lambda = 0.01,-1.7901734190178675
+fixed,lambda = 0.03,-1.9423247076962558
+fixed,lambda = 0.1,-2.1483121504067593
+fixed,lambda = 0.3,-1.7626072464862492
+fixed,lambda = 1,-1.417277553007144
+fixed,lambda = 3,-0.3228775612785469
+fixed,lambda = 10,-0.033850029407282545
+gradnorm,scale = 0.1,-1.2296702284999288
+gradnorm,scale = 1,-0.6230126314760591
+gradnorm,scale = 10,-0.002945834095133405

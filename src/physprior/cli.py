@@ -13,6 +13,7 @@
     physprior reconstruct [--quick] [--workers N] [--doc-only]
     physprior dynamics [--quick] [--doc-only]
     physprior lorenz [--quick] [--workers N] [--doc-only] [--no-gif]
+    physprior lossdisc [forward|inverse] [--quick] [--workers N] [--doc-only]
     physprior budget-weight [TRACK]
     physprior summary [--execute]
     physprior summary-md [--check]
@@ -205,6 +206,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     lz.add_argument(
         "--no-gif", action="store_true", help="skip the butterfly animation"
+    )
+
+    ld = sub.add_parser(
+        "lossdisc",
+        help="PINN loss weightings found by symbolic regression, against the "
+        "hand-designed ones",
+    )
+    ld.add_argument(
+        "trial",
+        nargs="?",
+        choices=("forward", "inverse"),
+        default=None,
+        help="one trial (default: both)",
+    )
+    ld.add_argument("--quick", action="store_true", help="short runs, for a smoke test")
+    ld.add_argument("--workers", type=int, default=7, help="parallel processes")
+    ld.add_argument(
+        "--doc-only", action="store_true", help="redraw figures and page from results/"
     )
 
     bw = sub.add_parser(
@@ -437,6 +456,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 run_lorenz(opts=o)
             lorenz_figures.regenerate(gif=not args.no_gif)
             lorenz_doc.render_doc()
+            return 0
+        if args.command == "lossdisc":
+            from physprior.lossdisc import doc as lossdisc_doc
+
+            if not args.doc_only:
+                from physprior.lossdisc.study import run as run_lossdisc
+
+                run_lossdisc(quick=args.quick, workers=args.workers, only=args.trial)
+            if not args.quick:
+                lossdisc_doc.render_doc()
             return 0
         if args.command == "budget-weight":
             from physprior.benchmark import budget_weight

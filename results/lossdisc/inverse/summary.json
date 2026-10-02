@@ -1,0 +1,139 @@
+{
+  "trial": "inverse",
+  "quick": false,
+  "train_config": {
+    "width": 32,
+    "depth": 3,
+    "steps": 3000,
+    "lr": 0.01,
+    "n_col": 128,
+    "grad_every": 10
+  },
+  "search_config": {
+    "population": 32,
+    "generations": 12,
+    "tournament": 3,
+    "elite": 4,
+    "p_crossover": 0.35,
+    "p_subtree": 0.25,
+    "p_point": 0.15,
+    "p_scale": 0.1,
+    "max_size": 11,
+    "init_depth": 3,
+    "parsimony": 0.01,
+    "seed": 0
+  },
+  "train_tasks": [
+    "sho_f3",
+    "damped_f3",
+    "duffing_f2.5"
+  ],
+  "test_tasks": [
+    "sho_f2.5",
+    "sho_f4",
+    "damped_f3.5",
+    "duffing_f3",
+    "pendulum_f3",
+    "vdp_f2.5"
+  ],
+  "tuned": {
+    "fixed": {
+      "setting": "lambda = 0.1",
+      "fitness": -2.1483121504067593
+    },
+    "gradnorm": {
+      "setting": "scale = 0.1",
+      "fitness": -1.2296702284999288
+    }
+  },
+  "learned": {
+    "rule": "(-2.631)",
+    "size": 1,
+    "tree": [
+      "c",
+      -2.631423219969027
+    ]
+  },
+  "n_rules_trained": 367,
+  "search_seconds": 7362.718973332958,
+  "comparison": {
+    "test": {
+      "methods": {
+        "fixed": {
+          "median_err": 0.005085241330388457,
+          "median_err_u": 0.023498058434893766,
+          "mean_log10": -1.8524885302953398,
+          "fail_rate": 0.05555555555555555,
+          "n": 18
+        },
+        "gradnorm": {
+          "median_err": 0.08751729780647022,
+          "median_err_u": 0.21492506427542873,
+          "mean_log10": -0.8467202491655942,
+          "fail_rate": 0.4444444444444444,
+          "n": 18
+        },
+        "learned": {
+          "median_err": 0.0049260296516295266,
+          "median_err_u": 0.024145596991130152,
+          "mean_log10": -1.943864269986909,
+          "fail_rate": 0.0,
+          "n": 18
+        }
+      },
+      "learned_vs": {
+        "fixed": {
+          "wins": 9,
+          "losses": 9,
+          "mean_gain_decades": 0.09137573969156981,
+          "wilcoxon_p": 1.0
+        },
+        "gradnorm": {
+          "wins": 18,
+          "losses": 0,
+          "mean_gain_decades": 1.097144020821315,
+          "wilcoxon_p": 7.62939453125e-06
+        }
+      }
+    },
+    "train": {
+      "methods": {
+        "fixed": {
+          "median_err": 0.006735303159902339,
+          "median_err_u": 0.02171725740218829,
+          "mean_log10": -1.9599104011811148,
+          "fail_rate": 0.0,
+          "n": 9
+        },
+        "gradnorm": {
+          "median_err": 0.07489262386574946,
+          "median_err_u": 0.1540525941355197,
+          "mean_log10": -0.8618114011047502,
+          "fail_rate": 0.4444444444444444,
+          "n": 9
+        },
+        "learned": {
+          "median_err": 0.006440229147943399,
+          "median_err_u": 0.02254702196830784,
+          "mean_log10": -1.9043419280918856,
+          "fail_rate": 0.0,
+          "n": 9
+        }
+      },
+      "learned_vs": {
+        "fixed": {
+          "wins": 2,
+          "losses": 7,
+          "mean_gain_decades": -0.05556847308922931,
+          "wilcoxon_p": 0.42578125
+        },
+        "gradnorm": {
+          "wins": 9,
+          "losses": 0,
+          "mean_gain_decades": 1.0425305269871354,
+          "wilcoxon_p": 0.00390625
+        }
+      }
+    }
+  }
+}

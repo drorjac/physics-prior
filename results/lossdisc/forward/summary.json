@@ -1,0 +1,173 @@
+{
+  "trial": "forward",
+  "quick": false,
+  "train_config": {
+    "width": 32,
+    "depth": 3,
+    "steps": 3000,
+    "lr": 0.01,
+    "n_col": 128,
+    "grad_every": 10
+  },
+  "search_config": {
+    "population": 32,
+    "generations": 12,
+    "tournament": 3,
+    "elite": 4,
+    "p_crossover": 0.35,
+    "p_subtree": 0.25,
+    "p_point": 0.15,
+    "p_scale": 0.1,
+    "max_size": 11,
+    "init_depth": 3,
+    "parsimony": 0.01,
+    "seed": 0
+  },
+  "train_tasks": [
+    "sho_f2.5",
+    "damped_f2.5",
+    "duffing_f2"
+  ],
+  "test_tasks": [
+    "sho_f2",
+    "sho_f3",
+    "damped_f3",
+    "duffing_f2.5",
+    "pendulum_f2.5",
+    "vdp_f2"
+  ],
+  "tuned": {
+    "uniform": {
+      "setting": "g = 0",
+      "fitness": -0.22559674308874791
+    },
+    "causal": {
+      "setting": "eps = 30",
+      "fitness": -0.39723538716997453
+    }
+  },
+  "learned": {
+    "rule": "((4.489) * (-(exp((t * tau)) + ((-3.238) + q))))",
+    "size": 11,
+    "tree": [
+      "*",
+      [
+        "c",
+        4.489191267725281
+      ],
+      [
+        "neg",
+        [
+          "+",
+          [
+            "exp",
+            [
+              "*",
+              [
+                "x",
+                0
+              ],
+              [
+                "x",
+                3
+              ]
+            ]
+          ],
+          [
+            "+",
+            [
+              "c",
+              -3.2381095417292207
+            ],
+            [
+              "x",
+              2
+            ]
+          ]
+        ]
+      ]
+    ]
+  },
+  "n_rules_trained": 367,
+  "search_seconds": 5514.742601125035,
+  "comparison": {
+    "test": {
+      "methods": {
+        "causal": {
+          "median_err": 0.6020558958818587,
+          "median_err_u": null,
+          "mean_log10": -0.35354576527542575,
+          "fail_rate": 0.6666666666666666,
+          "n": 18
+        },
+        "learned": {
+          "median_err": 0.19418259514350505,
+          "median_err_u": null,
+          "mean_log10": -0.6128347049641021,
+          "fail_rate": 0.4444444444444444,
+          "n": 18
+        },
+        "uniform": {
+          "median_err": 0.7869814733533249,
+          "median_err_u": null,
+          "mean_log10": -0.14084591402847554,
+          "fail_rate": 0.8333333333333334,
+          "n": 18
+        }
+      },
+      "learned_vs": {
+        "causal": {
+          "wins": 14,
+          "losses": 4,
+          "mean_gain_decades": 0.2592889396886764,
+          "wilcoxon_p": 0.0047454833984375
+        },
+        "uniform": {
+          "wins": 18,
+          "losses": 0,
+          "mean_gain_decades": 0.4719887909356266,
+          "wilcoxon_p": 7.62939453125e-06
+        }
+      }
+    },
+    "train": {
+      "methods": {
+        "causal": {
+          "median_err": 0.3498185627095939,
+          "median_err_u": null,
+          "mean_log10": -0.21321773850837625,
+          "fail_rate": 0.7777777777777778,
+          "n": 9
+        },
+        "learned": {
+          "median_err": 0.10880296318052414,
+          "median_err_u": null,
+          "mean_log10": -0.7598670991176475,
+          "fail_rate": 0.3333333333333333,
+          "n": 9
+        },
+        "uniform": {
+          "median_err": 0.5249820095732873,
+          "median_err_u": null,
+          "mean_log10": -0.20232540428347232,
+          "fail_rate": 1.0,
+          "n": 9
+        }
+      },
+      "learned_vs": {
+        "causal": {
+          "wins": 8,
+          "losses": 1,
+          "mean_gain_decades": 0.5466493606092713,
+          "wilcoxon_p": 0.01171875
+        },
+        "uniform": {
+          "wins": 9,
+          "losses": 0,
+          "mean_gain_decades": 0.5575416948341751,
+          "wilcoxon_p": 0.00390625
+        }
+      }
+    }
+  }
+}
