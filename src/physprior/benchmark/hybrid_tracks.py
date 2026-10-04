@@ -1,0 +1,204 @@
+"""The gated hybrid on the other tracks: law, network, PINN and hybrid.
+
+Arms: `physics` (least squares on the law), `nn` (the track's tuned MLP),
+`pinn` (law + penalised network), `hybrid` (the gated hybrid of
+`methods.hybrid`, as in the link study) and `hybrid_ood` (the same with the
+network's share fading away from the training inputs).
+
+Tracks: the real-data tracks whose law has a torch form (gravity/kepler,
+quantum/hydrogen, quantum/cmb), where the law is right to the precision of
+the data, and one simulated track where it is not:
+
+    pendulum   the period of a pendulum against its amplitude theta0. The
+               truth is the complete elliptic integral,
+               T = 4 sqrt(L/g) K(sin(theta0 / 2)); the law the arms are given
+               is the small-angle one, T = 2 pi sqrt(L/g), with L = 1 m and
+               g to be recovered. 0.2 % noise, theta0 in [0.05, 2.5] rad.
+
+Splits, for every track: `interp` (random 70 % of the points), `few`
+(random 8 points) and `extrap` (the lower half of x, tested on the upper
+half). Seeds 11, 23, 42.
+
+Outputs: results/hybrid_tracks/runs.csv and docs/hybrid_tracks/README.md.
+"""
+
+from __future__ import annotations
+
+import logging
+import math
+
+import numpy as np
+import pandas as pd
+import torch
+from scipy.special import ellipk
+
+from physprior.config import get_settings
+from physprior.methods.base import REPORT_SEEDS
+from physprior.methods.pinn import PhysParam
+
+from .protocol import Problem, fit_arm, score, split_extrapolate, split_random
+
+log = logging.getLogger(__name__)
+
+ARMS = ("physics", "nn", "pinn", "hybrid", "hybrid_ood")
+SPLITS = ("interp", "few", "extrap")
+G_TRUE = 9.80665  # standard gravity, m/s^2 (CGPM 1901)
+
+
+def _pendulum_law(x, g):
+    return 2 * np.pi * np.sqrt(1.0 / g) * np.ones_like(np.asarray(x)[..., 0])
+
+
+def _pendulum_law_t(x, g):
+    return 2 * math.pi * torch.sqrt(1.0 / g) * torch.ones_like(x[..., 0])
+
+
+_pendulum_law.expression = "2 pi sqrt(L/g)"  # type: ignore[attr-defined]
+
+
+def pendulum(n: int = 60, noise: float = 0.002, seed: int = 0) -> Problem:
+    rng = np.random.default_rng(seed)
+    th = np.sort(rng.uniform(0.05, 2.5, n))
+    T = 4 * np.sqrt(1.0 / G_TRUE) * ellipk(np.sin(th / 2) ** 2)
+    T = T * (1 + noise * rng.standard_normal(n))
+    return Problem(
+        track="sim/pendulum",
+        x=th[:, None],
+        y=T,
+        law_np=_pendulum_law,
+        law_t=_pendulum_law_t,
+        params=[PhysParam("g", 9.0, True, 1.0, 30.0)],
+        theta_published={"g": G_TRUE},
+        xlabel="amplitude theta0 (rad)",
+        ylabel="period T (s)",
+        nn_cfg={"width": 32, "depth": 3, "weight_decay": 1e-4, "epochs": 4000},
+        notes="small-angle law against the exact period",
+    )
+
+
+def problems() -> list[Problem]:
+    from physprior.problems.gravity import kepler
+    from physprior.problems.quantum import cmb, hydrogen
+
+    out = [pendulum()]
+    for mod in (kepler, hydrogen, cmb):
+        out.append(mod.problem()[0])
+    return out
+
+
+def _split(prob: Problem, split: str, seed: int):
+    n = len(prob)
+    if split == "interp":
+        return split_random(n, int(0.7 * n), seed)
+    if split == "few":
+        return split_random(n, min(8, n - 2), seed)
+    return split_extrapolate(prob.x[:, 0], 0.5)
+
+
+def run(seeds=REPORT_SEEDS, arms=ARMS, splits=SPLITS) -> pd.DataFrame:
+    rows = []
+    for prob in problems():
+        for split in splits:
+            for seed in seeds:
+                itr, ite = _split(prob, split, seed)
+                for arm in arms:
+                    f = fit_arm(arm, prob, itr, seed)
+                    row = score(prob, f, itr, ite, split=split, seed=seed)
+                    for k, v in prob.theta_published.items():
+                        if k in f.params:
+                            row[f"err_{k}_pct"] = 100 * abs(f.params[k] / v - 1)
+                    if "gate_train_mean" in f.extra:
+                        row["gate_train"] = f.extra["gate_train_mean"]
+                        row["gate_test"] = float(
+                            np.mean(f.extra["gate_at"](prob.x[ite]))
+                        )
+                    rows.append(row)
+                log.info("%s %s seed %d done", prob.track, split, seed)
+    df = pd.DataFrame(rows)
+    out = get_settings().results("hybrid_tracks")
+    df.to_csv(out / "runs.csv", index=False)
+    return df
+
+
+LABEL = {
+    "physics": "physics (law, least squares)",
+    "nn": "network",
+    "pinn": "PINN",
+    "hybrid": "gated hybrid",
+    "hybrid_ood": "gated hybrid + distance trust",
+}
+SPLIT_LABEL = {
+    "interp": "random 70 %",
+    "few": "8 points",
+    "extrap": "lower half -> upper half",
+}
+
+
+def render_doc() -> str:
+    """docs/hybrid_tracks/README.md from results/hybrid_tracks/runs.csv."""
+    df = pd.read_csv(get_settings().results_dir / "hybrid_tracks" / "runs.csv")
+    L = [
+        "# The gated hybrid on the other tracks",
+        "",
+        "<!-- Generated by physprior.benchmark.hybrid_tracks.render_doc() from "
+        "results/hybrid_tracks. Do not edit by hand. -->",
+        "",
+        "The gated hybrid built for rain from microwave links (`docs/cml/`) is "
+        "a general arm: a law branch with trainable constants and a network "
+        "branch, fused by a learned gate and trained in phases "
+        "(`src/physprior/methods/hybrid.py`). Here it runs on three real-data "
+        "tracks where the law is right to the precision of the data, and on a "
+        "simulated pendulum where the law given to every arm is the "
+        "small-angle one and the truth is not. `hybrid_ood` is an extension "
+        "not in the paper: the network's share fades with the distance to "
+        "the nearest training input, so far from the data the output returns "
+        "to the law.",
+        "",
+        "Median over seeds 11, 23, 42 of the held-out NRMSE (`out`), and the "
+        "mean gate on the held-out points (1 = all law).",
+        "",
+    ]
+    for track in dict.fromkeys(df["track"]):
+        g = df[df["track"] == track]
+        L += [
+            f"## {track}",
+            "",
+            "| split | " + " | ".join(LABEL[a] for a in ARMS) + " |",
+            "|---|" + "---|" * len(ARMS),
+        ]
+        for split in SPLITS:
+            h = g[g["split"] == split].groupby("arm")["nrmse_out"].median()
+            cells = []
+            best = h.min()
+            for a in ARMS:
+                v = h.get(a, np.nan)
+                s = f"{v:.3g}" if np.isfinite(v) else "-"
+                cells.append(f"**{s}**" if np.isfinite(v) and v == best else s)
+            L.append(f"| {SPLIT_LABEL[split]} | " + " | ".join(cells) + " |")
+        gates = g.groupby(["split", "arm"])["gate_test"].median().dropna()
+        if not gates.empty:
+            L += [
+                "",
+                "Mean gate on held-out points: "
+                + "; ".join(
+                    f"{SPLIT_LABEL[s]} {LABEL[a]} {v:.2f}"
+                    for (s, a), v in gates.items()
+                )
+                + ".",
+            ]
+        errs = [c for c in g.columns if c.startswith("err_") and g[c].notna().any()]
+        for c in errs:
+            e = g.groupby(["split", "arm"])[c].median().dropna()
+            name = c[len("err_") : -len("_pct")]
+            L += [
+                "",
+                f"Error in {name} (%, median): "
+                + "; ".join(f"{SPLIT_LABEL[s]} {a} {v:.3g}" for (s, a), v in e.items())
+                + ".",
+            ]
+        L.append("")
+    text = "\n".join(L).rstrip() + "\n"
+    p = get_settings().root / "docs" / "hybrid_tracks" / "README.md"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(text)
+    return text

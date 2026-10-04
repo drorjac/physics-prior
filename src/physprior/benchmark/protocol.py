@@ -182,6 +182,25 @@ def fit_arm(
         f.expression = f"{law}  + NN(x)" if law else "law + NN(x)"
         return f
 
+    if arm in ("hybrid", "hybrid_ood"):
+        from physprior.methods.hybrid import fit_hybrid
+
+        if prob.law_t is None:
+            raise ValueError(f"{prob.track}: the hybrid needs a closed-form law")
+        cfg = dict(prob.nn_cfg)
+        cfg.pop("tuned_val_rmse", None)
+        return fit_hybrid(
+            xtr,
+            ytr,
+            prob.law_np,
+            prob.law_t,
+            prob.params,
+            sigma=sig,
+            seed=seed,
+            ood=arm == "hybrid_ood",
+            **cfg,
+        )
+
     if arm == "nn":
         cfg = dict(prob.nn_cfg)
         cfg.pop("tuned_val_rmse", None)

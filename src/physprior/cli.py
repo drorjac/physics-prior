@@ -14,6 +14,8 @@
     physprior dynamics [--quick] [--doc-only]
     physprior lorenz [--quick] [--workers N] [--doc-only] [--no-gif]
     physprior lossdisc [forward|inverse] [--quick] [--workers N] [--doc-only]
+    physprior hybrid-tracks [--doc-only]
+    physprior cml [build|run|doc] [--stage S ...] [--quick] [--workers N]
     physprior budget-weight [TRACK]
     physprior summary [--execute]
     physprior summary-md [--check]
@@ -225,6 +227,32 @@ def build_parser() -> argparse.ArgumentParser:
     ld.add_argument(
         "--doc-only", action="store_true", help="redraw figures and page from results/"
     )
+
+    cm = sub.add_parser(
+        "cml",
+        help="rain from microwave links: power law vs GRU vs gated hybrid",
+    )
+    cm.add_argument(
+        "action",
+        nargs="?",
+        choices=("build", "run", "doc"),
+        default="run",
+        help="build: reduce the archives; run: experiments then page; doc: page only",
+    )
+    cm.add_argument(
+        "--stage",
+        nargs="+",
+        choices=("main", "budget", "noise"),
+        default=["main", "budget", "noise"],
+        help="which experiments",
+    )
+    cm.add_argument("--quick", action="store_true", help="short runs, for a smoke test")
+    cm.add_argument("--workers", type=int, default=4, help="parallel processes")
+
+    ht = sub.add_parser(
+        "hybrid-tracks", help="the gated hybrid against law, network and PINN"
+    )
+    ht.add_argument("--doc-only", action="store_true", help="page from results/")
 
     bw = sub.add_parser(
         "budget-weight",
@@ -466,6 +494,32 @@ def main(argv: Sequence[str] | None = None) -> int:
                 run_lossdisc(quick=args.quick, workers=args.workers, only=args.trial)
             if not args.quick:
                 lossdisc_doc.render_doc()
+            return 0
+        if args.command == "hybrid-tracks":
+            from physprior.benchmark import hybrid_tracks
+
+            if not args.doc_only:
+                hybrid_tracks.run()
+            hybrid_tracks.render_doc()
+            return 0
+        if args.command == "cml":
+            if args.action == "build":
+                import importlib
+
+                for name in ("openmrg", "openrainer", "netherlands", "openmesh"):
+                    mod = importlib.import_module(f"physprior.cml.sources.{name}")
+                    print(f"{name}: {mod.build()}")
+                return 0
+            if args.action == "run":
+                from physprior.cml.study import run as run_cml
+
+                run_cml(
+                    stages=tuple(args.stage), workers=args.workers, quick=args.quick
+                )
+            if not args.quick:
+                from physprior.cml import doc as cml_doc
+
+                cml_doc.render_doc()
             return 0
         if args.command == "budget-weight":
             from physprior.benchmark import budget_weight

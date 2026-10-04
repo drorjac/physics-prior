@@ -1,0 +1,13 @@
+{
+  "datasets": [
+    "netherlands",
+    "openmesh",
+    "openmrg",
+    "openrainer",
+    "sim_ar1",
+    "sim_ar1_waa",
+    "sim_iid",
+    "sim_iid_waa"
+  ],
+  "gap_min": 60
+}
