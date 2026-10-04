@@ -141,7 +141,7 @@ Failure rate over the whole learning-rate grid on the tuning seeds, all tasks po
 | model | sgd | momentum | rmsprop | adam | lbfgs |
 |---|---|---|---|---|---|
 | physics | 0.5 | 0.389 | 0.528 | 0.139 | 0 |
-| pinn | 0.833 | 0.778 | 0.917 | 0.528 | 0.167 |
+| pinn | 0.833 | 0.778 | 0.917 | 0.528 | 0.0556 |
 | nn | 0.972 | 0.694 | 0.917 | 0.5 | 0 |
 
 
@@ -159,7 +159,7 @@ Fastest optimizer to the tolerance (median evaluations, reporting seeds):
 | heat | pinn | lbfgs | 163 | 546 | 163 |
 | heat | nn | lbfgs | 244 | 387 | 244 |
 
-For `physics` the fastest method on every task is second-order (L-BFGS or LM): heat 9, hydrogen 3, oscillator 8 evaluations to tolerance. Over the whole learning-rate grid L-BFGS fails least for every family (physics 0, pinn 0.167, nn 0; first-order methods 0.139 to 0.972), and among first-order methods adam is the least sensitive to the rate. On the residual PINNs the methods that reach the tolerance on at least one seed are: adam, lbfgs.
+For `physics` the fastest method on every task is second-order (L-BFGS or LM): heat 9, hydrogen 3, oscillator 8 evaluations to tolerance. Over the whole learning-rate grid L-BFGS fails least for every family (physics 0, pinn 0.0556, nn 0; first-order methods 0.139 to 0.972), and among first-order methods adam is the least sensitive to the rate. On the residual PINNs the methods that reach the tolerance on at least one seed are: adam, lbfgs.
 
 
 45 learning rates were selected, all on the tuning seeds (`results/optim/lr_chosen.csv`).

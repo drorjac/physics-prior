@@ -66,16 +66,26 @@ parameter identifiable.
 GW150914 chirp mass is extracted through a chain of signal-processing choices.
 One, the envelope SNR a cycle must clear, was set to 2.0 a priori and looked
 perfectly reasonable. Injecting a **known** chirp mass into the **real
-detector noise** and running the identical code says otherwise:
+detector noise** and running the identical code says otherwise. On the
+calibration injections (the tuning seeds 3/7/19 and seven more noise
+stretches):
 
 | SNR cut | median `Mc` recovered (true 31.17) | bias | trials within 20% |
 |---|---|---|---|
-| 2.0 | 9.3 | **−70 %** | 0 / 10 |
-| 2.5 | 29.4 | −5.7 % | 6 / 10 |
-| **3.0** | **30.9** | **−0.9 %** | **9 / 10** |
+| 2.0 | 6.8 | **−78.1 %** | 0 / 10 |
+| 2.5 | 29.4 | −5.6 % | 7 / 10 |
+| **3.0** | **32.9** | **+5.7 %** | **7 / 8 usable** |
+| 3.5 | 33.2 | +6.4 % | 5 / 5 usable |
 
-The cut was re-chosen **on injections, never on the real event**. The same
-injections then settle finding 3: at Newtonian order the injection is biased
+The cut was re-chosen **on injections, never on the real event**, and it
+stays at 3.0. On the calibration set the choice is close: 2.5 and 3.0 are
+biased by about the same amount in opposite directions, 3.0 has the smaller
+scatter (9.1 against 10.4 M☉) and loses 2 of 10 trials to a track too short
+to fit. An earlier version of this table was computed on seeds that included
+the reporting seeds, and there 3.0 looked unbiased. The validation
+injections (the reporting seeds 11/23/42 and five more, none shared with the
+calibration set) recover the 2PN mass at 3.0 to −1.2 %, and they
+settle finding 3: at Newtonian order the injection is biased
 **+25 %** and the real event **+29 %**; at 2PN, **−1.2 %** and **−1.3 %**. The
 Newtonian bias is post-Newtonian truncation, not an artefact of the pipeline.
 

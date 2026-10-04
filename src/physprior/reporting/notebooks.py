@@ -677,10 +677,11 @@ ax.axhline(0, color=P.INK_2, lw=1.4)
 ax.plot(tc.snr_threshold, tc.bias_pct, "o-", color=P.ARM_COLOR["pinn"], markersize=9,
         markeredgecolor=P.SURFACE, markeredgewidth=1.4)
 ax.set_xlabel("envelope SNR a cycle must clear"); ax.set_ylabel("bias in recovered Mc (%)")
-ax.set_title("The a-priori choice of 2.0 biased the answer by -70%")
+b20 = float(tc.loc[tc.snr_threshold == 2.0, "bias_pct"].iloc[0])
+ax.set_title(f"The a-priori choice of 2.0 biased the answer by {b20:+.0f}%")
 plt.show()
-print("the value adopted is the smallest whose injection bias is under 1%,")
-print("chosen on injections and never on the real event")
+print("the value adopted (3.0) was chosen on the calibration injections and")
+print("never on the real event; the validation injections check it")
 """),
             md("""
 ### Mercury: the result is α once it has stopped moving

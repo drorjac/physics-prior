@@ -1,0 +1,14 @@
+{
+  "free": {
+    "depth": 2,
+    "tuned_val_rmse": 2.2967710696562245,
+    "weight_decay": 0.01,
+    "width": 16
+  },
+  "walls": {
+    "depth": 2,
+    "tuned_val_rmse": 2.2969425800670202,
+    "weight_decay": 0.01,
+    "width": 16
+  }
+}

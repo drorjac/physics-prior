@@ -241,15 +241,40 @@ def test_injection_threshold_table(readme):
     path = get_settings().results_dir / "relativity" / "threshold_calibration.csv"
     if not path.exists():
         pytest.skip("threshold calibration not run")
-    df = pd.read_csv(path)
-    row = df.loc[df.snr_threshold == 2.0].iloc[0]
-    assert (
-        f"{abs(row.bias_pct):.0f} %" in readme or f"{abs(row.bias_pct):.0f}%" in readme
-    ), f"the README's quoted bias at threshold 2.0 drifted to {row.bias_pct:.1f}%"
-    best = df.loc[df.snr_threshold == 3.0].iloc[0]
-    assert abs(best.bias_pct) < 5.0, (
-        f"threshold 3.0 is no longer the unbiased choice: {best.bias_pct:+.1f}%"
+    df = pd.read_csv(path).set_index("snr_threshold")
+    plain = readme.replace("**", "")
+
+    def signed(x: float) -> str:
+        return f"{x:+.1f} %".replace("-", "\u2212")
+
+    for th in (2.0, 2.5, 3.0, 3.5):
+        row = df.loc[th]
+        n_within = round(row.frac_within_20pct * row.n_usable)
+        if row.n_usable == row.n_seeds:
+            within = f"{n_within} / {int(row.n_seeds)}"
+        else:
+            within = f"{n_within} / {int(row.n_usable)} usable"
+        line = f"| {th:.1f} | {row.median_Mc:.1f} | {signed(row.bias_pct)} | {within} |"
+        assert line in plain, f"the SNR-cut table row for {th} is now: {line}"
+    # The a-priori cut is badly wrong; the adopted one is the one quoted.
+    from physprior.data.sources.gwosc import SNR_THRESHOLD
+
+    assert abs(df.loc[2.0].bias_pct) > 50, "the a-priori cut is no longer bad"
+    assert SNR_THRESHOLD == 3.0, "the adopted cut changed; rewrite the prose"
+    # "2.5 and 3.0 are biased by about the same amount in opposite directions"
+    b25, b30 = df.loc[2.5].bias_pct, df.loc[3.0].bias_pct
+    assert b25 * b30 < 0 and abs(abs(b25) - abs(b30)) < 1.0
+    for th in (3.0, 2.5):
+        assert f"{df.loc[th].scatter_Msun:.1f}" in plain
+    lost = int(df.loc[3.0].n_failed)
+    assert f"loses {lost} of {int(df.loc[3.0].n_seeds)} trials" in plain
+    # the validation set, which the cut never saw
+    inj = _meta_topic("relativity")["discovery"]["injection"]
+    assert inj["snr_threshold"] == SNR_THRESHOLD
+    assert abs(inj["pn3"]["bias_pct"]) < 5.0, (
+        f"held-out bias at the adopted cut is {inj['pn3']['bias_pct']:+.1f}%"
     )
+    assert f"to {signed(inj['pn3']['bias_pct'])}" in plain
 
 
 def test_injection_and_real_event_agree_on_the_pn_bias(readme):
@@ -316,6 +341,9 @@ def test_algebraic_crossover_numbers(neglected_doc):
             )
     ratio = g[(0.8, "physics")] / g[(0.8, "pinn")]
     assert f"{ratio:.1f}×" in neglected_doc, f"the win at eps=0.8 is now {ratio:.2f}x"
+    cost = g[(0.0, "pinn")] / g[(0.0, "physics")]
+    assert cost > 1, "the PINN no longer pays anything at eps = 0"
+    assert f"pays {cost:.0f}×" in neglected_doc, f"the eps=0 cost is now {cost:.2f}x"
 
 
 def test_noise_crossover_table(neglected_doc):
@@ -326,6 +354,12 @@ def test_noise_crossover_table(neglected_doc):
         "the noise crossover has moved: `pinn` still wins at 10% noise"
     )
     assert g[(0.0, "physics")] > g[(0.0, "pinn")], "no crossover left to describe"
+    # "somewhere between 5 % and 10 %"
+    assert g[(0.05, "physics")] > g[(0.05, "pinn")], "the crossover is below 5 %"
+    win0 = g[(0.0, "physics")] / g[(0.0, "pinn")]
+    win5 = g[(0.05, "physics")] / g[(0.05, "pinn")]
+    assert f"PINN, by {win0:.0f}×" in neglected_doc, f"0% win is now {win0:.1f}x"
+    assert f"PINN, by {win5:.1f}×" in neglected_doc, f"5% win is now {win5:.2f}x"
     for noise in (0.0, 0.05, 0.10):
         for arm in ("physics", "pinn"):
             assert f"{g[(noise, arm)]:.4f}" in neglected_doc, (
@@ -342,10 +376,46 @@ def test_ode_damping_is_the_distinguishable_case(neglected_doc):
     assert f"{ratio:.0f}×" in neglected_doc, (
         f"the quoted ODE win drifted to {ratio:.1f}x"
     )
+    for shape in ("damping", "anharmonic"):
+        for arm in ("physics", "pinn"):
+            assert f"{g[(shape, arm)]:.4f}" in neglected_doc, (
+                f"{shape} {arm} nRMSE drifted to {g[(shape, arm)]:.5f}"
+            )
     # and the degenerate one: `physics` fits BETTER while omega is worse
     assert g[("anharmonic", "physics")] < g[("anharmonic", "pinn")], (
         "the anharmonic case no longer shows a better fit with a worse model"
     )
+
+
+def test_ode_pinn_wins_the_trajectory_and_loses_the_constant(neglected_doc):
+    """Rung 2's second half. Every arm starts at START_FRAC of the true
+    constant; from there the damping PINN fits the trajectory but its omega
+    stays off and its learned force is not the damping force, while the
+    harmonic law returns omega closely."""
+    from physprior.benchmark.neglected import START_FRAC
+
+    d = _neglected("ode")
+    d = d[d.amplitude_deg == 60]
+    om = d.groupby(["shape", "arm"]).omega_error_pct.median()
+    assert om[("damping", "pinn")] > 5 * om[("damping", "physics")], (
+        "the damping PINN now recovers omega; the doc says it does not"
+    )
+    for key in (
+        ("damping", "physics"),
+        ("damping", "pinn"),
+        ("anharmonic", "physics"),
+        ("anharmonic", "pinn"),
+    ):
+        assert f"{om[key]:.2f} %" in neglected_doc, (
+            f"omega error {key} drifted to {om[key]:.3f}%"
+        )
+    pinn = d[(d["shape"] == "damping") & (d.arm == "pinn")]
+    corr = pinn.correction_error.median()
+    assert corr > 1, "the learned damping force is now right; the doc says not"
+    assert f"{corr:.1f} times the spread" in neglected_doc, (
+        f"the learned-force error drifted to {corr:.2f}"
+    )
+    assert f"at {START_FRAC} of the true value" in neglected_doc
 
 
 def test_pde_absorption_table(neglected_doc):
@@ -416,6 +486,14 @@ def test_the_first_derivative_is_the_one_that_is_right(neglected_doc):
         assert f"{value:.4f}" in neglected_doc, (
             f"the quoted product drifted: {value:.4f}"
         )
+    agree = abs(net / exact - 1) * 100
+    assert f"agreement to {agree:.1f} %" in neglected_doc, (
+        f"the u_t agreement drifted to {agree:.2f}%"
+    )
+    excess = (row.mean_abs_uxx / row.mean_abs_uxx_exact - 1) * 100
+    assert f"derivative is {excess:.0f} % too large" in neglected_doc, (
+        f"the excess curvature drifted to {excess:.1f}%"
+    )
     # and the curvature really is the thing that is wrong
     assert row.mean_abs_uxx > 1.3 * row.mean_abs_uxx_exact, (
         "the excess curvature has gone away; the doc's diagnosis no longer holds"

@@ -6,7 +6,7 @@
       "params": {
         "R": 109678.77737030847
       },
-      "seconds": 0.002129793167114258,
+      "seconds": 0.0009829998016357422,
       "sigma": {
         "R": 0.00015337698488376286
       }
@@ -16,7 +16,7 @@
       "params": {
         "R": 109678.8573825054
       },
-      "seconds": 9.406141996383667,
+      "seconds": 3.0898311138153076,
       "sigma": {}
     },
     "sr": {
@@ -39,7 +39,6 @@
   "limit_minus_bohr_icm": 1.1883402970561292,
   "limit_minus_bohr_ppm": 10.834851208310676,
   "n_levels": 40,
-  "pinn_w_phys": 1,
   "provenance": {
     "bytes": 5226,
     "file": "nist_h_levels.tsv",

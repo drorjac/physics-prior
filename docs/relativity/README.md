@@ -56,10 +56,13 @@ identical code showed that threshold to be badly wrong:
 
 | SNR cut | median `Mc` (true 31.17) | bias | trials within 20% |
 |---|---|---|---|
-| 2.0 | 9.3 | **−70 %** | 0 / 10 |
-| 3.0 | **30.9** | **−0.9 %** | **9 / 10** |
+| 2.0 | 6.8 | **−78.1 %** | 0 / 10 |
+| 3.0 | **32.9** | **+5.7 %** | **7 / 8 usable** |
 
-The cut was re-chosen **on injections, never on the real event**.
+These are the calibration injections (tuning seeds and extra noise
+stretches). The cut was re-chosen **on injections, never on the real event**;
+on the separate validation injections it recovers the 2PN chirp mass to
+−1.2 %.
 
 ## The real-data track: `relativity/mercury`
 

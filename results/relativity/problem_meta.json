@@ -34,36 +34,36 @@
     },
     "threshold_calibration": [
       {
-        "bias_pct": -70.11679962379033,
+        "bias_pct": -78.11301039456514,
         "frac_within_20pct": 0.0,
-        "median_Mc": 9.315788885279604,
-        "median_cycles": 10.0,
+        "median_Mc": 6.82305013959826,
+        "median_cycles": 11.5,
         "n_failed": 0,
         "n_seeds": 10,
         "n_usable": 10,
-        "scatter_Msun": 5.549598847660663,
+        "scatter_Msun": 2.0239662713357913,
         "snr_threshold": 2.0
       },
       {
-        "bias_pct": -5.685115829595518,
-        "frac_within_20pct": 0.6,
-        "median_Mc": 29.401721991281896,
-        "median_cycles": 7.0,
+        "bias_pct": -5.570872044129468,
+        "frac_within_20pct": 0.7,
+        "median_Mc": 29.437336348963083,
+        "median_cycles": 6.5,
         "n_failed": 0,
         "n_seeds": 10,
         "n_usable": 10,
-        "scatter_Msun": 10.905653343388284,
+        "scatter_Msun": 10.368431195325545,
         "snr_threshold": 2.5
       },
       {
-        "bias_pct": -0.8708395348376623,
-        "frac_within_20pct": 0.9,
-        "median_Mc": 30.90252448340971,
+        "bias_pct": 5.676856188117374,
+        "frac_within_20pct": 0.875,
+        "median_Mc": 32.94370314808371,
         "median_cycles": 5.0,
-        "n_failed": 0,
+        "n_failed": 2,
         "n_seeds": 10,
-        "n_usable": 10,
-        "scatter_Msun": 3.0130995665066775,
+        "n_usable": 8,
+        "scatter_Msun": 9.118450257590412,
         "snr_threshold": 3.0
       },
       {
@@ -74,7 +74,7 @@
         "n_failed": 5,
         "n_seeds": 10,
         "n_usable": 5,
-        "scatter_Msun": 2.7114572908004098,
+        "scatter_Msun": 0.46789137255856744,
         "snr_threshold": 3.5
       },
       {
@@ -104,7 +104,7 @@
       "nn": {
         "expression": null,
         "params": {},
-        "seconds": 1.261626958847046,
+        "seconds": 1.559194803237915,
         "sigma": {}
       },
       "physics": {
@@ -113,7 +113,7 @@
           "Mc": 30.754713111684552,
           "tc": 0.019414153870475563
         },
-        "seconds": 0.00487518310546875,
+        "seconds": 0.006315946578979492,
         "sigma": {
           "Mc": 2.634609806772891,
           "tc": 0.001690677277652296
@@ -124,7 +124,7 @@
         "params": {
           "Mc": 30.381814161350036
         },
-        "seconds": 7.130206108093262,
+        "seconds": 9.027492046356201,
         "sigma": {}
       },
       "sr": {

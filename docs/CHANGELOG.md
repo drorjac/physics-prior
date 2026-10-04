@@ -6,6 +6,52 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+A code review found defects that changed committed results. The affected
+studies were rerun; the docs and `tests/test_claims.py` now state the new
+numbers.
+
+- **GW SNR cut, seed overlap.** The threshold calibration ran on seeds that
+  included the reporting seeds, which the injection test also uses. It now
+  runs on 3/7/19 plus seven extra noise stretches, and the injection test on
+  11/23/42 plus five more. On the calibration set the a-priori cut of 2.0 is
+  biased by −78 % (was −70 %), and the adopted 3.0 by +5.7 % with 2 of 10
+  trials unusable (was −0.9 %). 2.5 and 3.0 now have biases of similar size
+  and opposite sign; 3.0 is kept for its smaller scatter. The validation
+  injections are unchanged and recover the 2PN chirp mass at 3.0 to −1.2 %.
+- **Neglected terms, starting values.** Every arm used to start its constant
+  at the true value. It now starts at 0.8 of it. On the algebraic rung the
+  PINN's cost at `eps = 0` fell from 5× to 4× and its win at `eps = 0.8` is
+  11.2× (was 10.9×). On the noise sweep the PINN's lead at zero noise is 25×
+  (was 39×); `physics` still wins at 10 %. On the pendulum the PINN's `ω`
+  error went from 3.3 % to 15.9 % with damping and from 3.0 % to 14.3 % with
+  the anharmonic term: started away from the answer, the PINN does not
+  recover `ω`. It still fits the damped trajectory 17× better than the
+  harmonic law (was 16×), which returns `ω` to 1.09 %. The claim that the
+  residual PINN recovers the damping term is withdrawn.
+- **Neglected terms, learned damping force.** It is now scored with the
+  velocity it depends on, not at zero velocity. Its error stays at about 2.5
+  times the spread of the true force, so the learned force is not the
+  damping force.
+- **Neglected terms, derivative reference.** The exact solution the network's
+  derivatives are compared with now has the zero walls (method of images),
+  like the simulated data. The exact mean `|u_xx|` moved from 3.59 to 3.51,
+  so the network's excess curvature is 57 % (was 54 %) and the `u_t` scale
+  agrees to 1.3 % (was 0.8 %). The diagnosis is unchanged.
+- **Noise sweeps.** `sigma` now includes the added noise in quadrature, in
+  the protocol and in `fields/rf`. The quantum and relativity noise sweeps
+  and the weather sweeps moved; no headline table changed.
+- **`fields/rf`, tuning leakage.** The black box was tuned on points it was
+  later scored on. Tuned on the transmitter's room only, its map error
+  fell (free space 1.87 to 0.82 dB).
+- **Optimizer study.** L-BFGS divergence is tested on accepted steps only,
+  Levenberg-Marquardt scores the unclamped loss, and the cache keys include
+  the run's settings. The PINN's L-BFGS failure rate over the learning-rate
+  grid fell from 0.167 to 0.056.
+- **Ensemble seeds.** Members use `seed * 1000 + k`, so they no longer land
+  on tuning or reporting seeds. The tune ablations were rerun.
+
 ## [0.3.0] - 2026-10-01
 
 ### Changed

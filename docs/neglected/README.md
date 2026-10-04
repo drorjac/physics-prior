@@ -50,12 +50,12 @@ The three arms are `physics` (the law, constants fitted), `pinn`
 ![the dial](../../figures/neglected/01_eps.png)
 
 `ε` is how big the missing bump is. At `ε = 0` **the law is exact and
-`physics` wins**, as it must: 0.0010 against the PINN's 0.0051. The PINN pays
-5× for a correction it does not need, and that is the cost of the
+`physics` wins**, as it must: 0.0010 against the PINN's 0.0043. The PINN pays
+4× for a correction it does not need, and that is the cost of the
 prior being *more* flexible than the truth.
 
 From `ε = 0.1` the ordering inverts and never comes back: at `ε = 0.8`,
-`physics` is at 0.1468 and the PINN at 0.0135 (**10.9× better**) while the
+`physics` is at 0.1468 and the PINN at 0.0131 (**11.2× better**) while the
 black box sits at 0.0473 regardless, because it never knew the law and so has
 nothing to lose.
 
@@ -81,14 +81,15 @@ At `ε = 0.3`, against added noise:
 
 | noise | `physics` | `pinn` | who wins |
 |---|---|---|---|
-| 0 % | 0.0548 | 0.0014 | PINN, by 39× |
-| 5 % | 0.0549 | 0.0257 | PINN, by 2.1× |
-| 10 % | 0.0551 | 0.0645 | **`physics`** |
+| 0 % | 0.0548 | 0.0022 | PINN, by 25× |
+| 5 % | 0.0549 | 0.0258 | PINN, by 2.1× |
+| 10 % | 0.0551 | 0.0628 | **`physics`** |
 
 `physics` is **biased but noise-immune**: it cannot fit the bump, and it
 cannot fit the noise either, so it sits flat whatever happens. The PINN's
 correction is flexible enough to represent the missing term, which means it
-is flexible enough to represent noise. Above roughly 7 % it starts doing so.
+is flexible enough to represent noise. Somewhere between 5 % and 10 % noise
+it starts doing so.
 The advantage is real and it is **conditional**, and the crossover is a
 measurable property of the problem rather than a matter of taste.
 
@@ -115,13 +116,23 @@ At a 60° initial amplitude, with damping left out of the law:
 
 | arm | nRMSE | recovered `ω` error |
 |---|---|---|
-| `physics` (harmonic) | 0.2094 | 1.09 % |
-| `pinn` | **0.0130** | 3.33 % |
+| `physics` (harmonic) | 0.2094 | **1.09 %** |
+| `pinn` | **0.0125** | 15.85 % |
 | `nn` | 0.0146 | – |
 
-**16× better.** A harmonic solution cannot decay, so there is no value of `ω`
-that hides the missing term; it is distinguishable, and the residual PINN
-recovers it.
+The PINN's trajectory is **17× better**. A harmonic solution cannot decay, so
+there is no value of `ω` that hides the missing term; it is distinguishable,
+and the residual PINN fits the decay that `physics` cannot.
+
+It does not identify the physics while doing so. Every arm starts its
+constant at 0.8 of the true value, and the PINN's `ω` stays close to that
+start, 15.85 % low. Its learned force is not the damping force either: along
+the true trajectory its RMS error is 2.5 times the spread of the force it
+should have found. With a free correction in the equation `ω` is not
+identified: the correction can carry part of the restoring force, and `ω`
+then has no reason to leave its start. The `physics` arm, whose trajectory is
+the poor one, returns `ω` to 1.09 %. On this rung the prior wins the
+trajectory and loses the constant.
 
 ![the learned force](../../figures/neglected/07_ode_force.png)
 
@@ -134,9 +145,9 @@ which is a mistake worth naming.
 
 And the degenerate counterpart: leave out the anharmonic term and the
 harmonic law absorbs it by **shifting `ω`** (6.79 % off). The trajectory error
-is 0.0071 (better than the PINN's 0.0085), so by fit quality alone you would
-choose the wrong model. The same pattern as rung 1, in a different
-mathematical setting.
+is 0.0071 (better than the PINN's 0.0098), so by fit quality alone you would
+choose the wrong model. The PINN's own `ω` is further off still, 14.26 %.
+The same pattern as rung 1, in a different mathematical setting.
 
 ---
 
@@ -188,17 +199,19 @@ the derivatives off the result
 
 | | mean \|u_xx\| | implied `α` | `α` · \|u_xx\| |
 |---|---|---|---|
-| exact solution | **3.59** | **0.0500** | 0.1793 |
+| exact solution | **3.51** | **0.0500** | 0.1755 |
 | network, data loss 8.4×10⁻⁴ | **5.52** | 0.0322 | 0.1778 |
 
-The field is excellent (a data loss of 8.4×10⁻⁴), and the **second
-derivative is 54 % too large**. Since `α` is exactly the ratio
+The exact column is the Gaussian release with both zero walls, built by the
+method of images, so it is the same boundary-value problem the data were
+simulated from. The field is excellent (a data loss of 8.4×10⁻⁴), and the
+**second derivative is 57 % too large**. Since `α` is exactly the ratio
 `|u_t| / |u_xx|`, it comes out **36 % low** before any physics term has
 spoken.
 
 The third column is the proof that it is the *second* derivative and not the
 first. The product `α·|u_xx|` is the `u_t` scale, and the network's is 0.1778
-against the exact 0.1793: **agreement to 0.8 %**. The first derivative is
+against the exact 0.1755: **agreement to 1.3 %**. The first derivative is
 right; the whole error is in the second, where nothing in the data loss can
 see it.
 
@@ -217,7 +230,7 @@ PINN can report a small residual and a wrong constant simultaneously, and why
 
 Penalise the wiggle one derivative **above** the one the equation reads:
 
-| curvature penalty | mean \|u_xx\| (exact 3.59) | implied `α` | error |
+| curvature penalty | mean \|u_xx\| (exact 3.51) | implied `α` | error |
 |---|---|---|---|
 | 0 | 5.52 | 0.0322 | 36 % low |
 | 0.003 | 3.92 | **0.0466** | **6.8 % low** |
@@ -225,8 +238,8 @@ Penalise the wiggle one derivative **above** the one the equation reads:
 | 0.03 | 4.08 | 0.0652 | 30 % high |
 
 Reading `α` off the field by least squares, the penalty takes it from 36 %
-wrong to under 7 %, and the curvature it targets moves monotonically toward
-the truth. **It does not transfer to the trained arm.** Inside the full
+wrong to under 7 %, and the curvature it targets moves toward the truth up
+to a weight of 0.01 and away from it again at 0.03. **It does not transfer to the trained arm.** Inside the full
 fitter, where `α` is optimised through the residual rather than read off the
 field, the same sweep on the tuning seeds
 (`results/neglected/tune_pde_smooth.csv`) moves the error only from 76 % to
@@ -295,8 +308,11 @@ right constant".
    distinguishable from what it contains.
 2. **A degenerate missing term is the dangerous case**, because it produces a
    good fit and a wrong constant, and the fit is what people look at.
-3. **The prior is a bias–variance trade.** Above ~7 % noise here, the
-   correction starts fitting noise and the rigid model wins.
-4. **Check the constant, not the loss.** Three separate results in this
+3. **The prior is a bias–variance trade.** Between 5 % and 10 % noise here,
+   the correction starts fitting noise and the rigid model wins.
+4. **A better trajectory is not a recovered constant.** On the pendulum the
+   PINN fits the damped motion 17× better than the harmonic law and returns
+   `ω` 15.85 % off, while the harmonic law returns it to 1.09 %.
+5. **Check the constant, not the loss.** Three separate results in this
    repository (the Newtonian chirp-mass bias, the Mercury stencil, and this
    study) are all the same statement in different clothes.

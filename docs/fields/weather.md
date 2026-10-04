@@ -89,7 +89,7 @@ step convergence is tabulated below).
 | oracle (Gamma = -6.5) | 0.172 | 0.265 | 0.265, 0.265, 0.265 | 1.406 | -6.500 |
 | physics | 0.168 | 0.374 | 0.374, 0.374, 0.374 | 1.982 | -5.909 |
 | PINN | 0.168 | 0.375 | 0.374, 0.375, 0.376 | 1.987 | -5.905 |
-| PINN, fixed start | 0.921 | 3.434 | 3.434, 3.438, 3.434 | 18.191 | 5.753 |
+| PINN, fixed start | 0.923 | 3.430 | 3.429, 3.430, 3.431 | 18.165 | 5.749 |
 | SR | 0.181 | 0.356 | 0.356, 0.356, 0.356 | 1.885 | -5.952 |
 | NN | 0.064 | 0.914 | 1.117, 0.914, 0.591 | 4.843 | -5.436 |
 | ordinary kriging | 0.149 | 1.298 | 1.298 | 6.877 | -5.108 |
@@ -108,7 +108,7 @@ Lowest median held-out nRMSE among the arms and kriging (oracle and the fixed-st
 | oracle (Gamma = -6.5) | 0.230 | 0.572 | 0.572, 0.572, 0.572 | 2.472 | -6.500 |
 | physics | 0.229 | 0.479 | 0.479, 0.479, 0.479 | 2.069 | -6.238 |
 | PINN | 0.018 | 1.125 | 1.125, 1.149, 0.793 | 4.865 | -5.213 |
-| PINN, fixed start | 0.263 | 0.291 | 0.291, 0.289, 0.291 | 1.259 | -4.630 |
+| PINN, fixed start | 0.035 | 1.233 | 1.233, 1.524, 1.196 | 5.331 | -4.751 |
 | SR | 0.236 | 1.329 | 1.329, 1.329, 0.816 | 5.745 | -5.288 |
 | NN | 0.163 | 0.865 | 0.688, 0.948, 0.865 | 3.740 | -5.089 |
 | ordinary kriging | 0.152 | 1.903 | 1.903 | 8.229 | -4.362 |
@@ -157,9 +157,9 @@ A length scale within 1% (in log) of its bound is marked not converged. Three fi
 
 | case | arm | l_h km | l_z km | s_f K | s_n K | converged | starts agreeing |
 |---|---|---|---|---|---|---|---|
-| july | ordinary kriging | 1000.000 | 1.826 | 12.947 | 0.813 | no | 3/3 |
+| july | ordinary kriging | 1000.000 | 1.827 | 12.947 | 0.813 | no | 3/3 |
 | july | universal kriging | 34.973 | 0.544 | 0.965 | 0.472 | yes | 3/3 |
-| january | ordinary kriging | 222.379 | 0.692 | 3.797 | 0.709 | yes | 3/3 |
+| january | ordinary kriging | 222.380 | 0.692 | 3.797 | 0.709 | yes | 3/3 |
 | january | universal kriging | 48.920 | 0.111 | 1.015 | 0.431 | yes | 1/3 |
 
 ![lapse rate implied by each arm](../../figures/fields/weather_gamma.png)
@@ -181,18 +181,18 @@ pool's gradient.
 |---|---|---|---|---|---|
 | law | oracle (Gamma = -6.5) | 0.234 | -5.000 | -5.000 | -5.000 |
 | law | physics | 0.226 | -5.167 | -5.000 | -5.000 |
-| law | PINN | 0.226 | -5.167 | -5.000 | -5.000 |
-| law | PINN, fixed start | 0.535 | -3.954 | -5.000 | -5.000 |
+| law | PINN | 0.504 | -5.156 | -5.000 | -5.000 |
+| law | PINN, fixed start | 0.438 | -4.196 | -5.000 | -5.000 |
 | law | SR | 0.289 | -5.158 | -5.000 | -5.000 |
 | law | NN | 0.869 | -4.018 | -5.000 | -5.000 |
 | law | ordinary kriging | 1.629 | -2.599 | -5.000 | -5.000 |
 | law | universal kriging | 0.253 | -5.278 | -5.000 | -5.000 |
 | inversion | oracle (Gamma = -6.5) | 1.004 | -5.000 | -5.000 | -2.997 |
 | inversion | physics | 1.689 | -0.670 | -5.000 | -2.997 |
-| inversion | PINN | 1.689 | -0.670 | -5.000 | -2.997 |
-| inversion | PINN, fixed start | 1.689 | -0.670 | -5.000 | -2.997 |
+| inversion | PINN | 1.486 | -0.262 | -5.000 | -2.997 |
+| inversion | PINN, fixed start | 1.459 | -0.278 | -5.000 | -2.997 |
 | inversion | SR | 2.126 | 0 | -5.000 | -2.997 |
-| inversion | NN | 1.375 | -0.456 | -5.000 | -2.997 |
+| inversion | NN | 1.375 | -0.457 | -5.000 | -2.997 |
 | inversion | ordinary kriging | 1.854 | -0.066 | -5.000 | -2.997 |
 | inversion | universal kriging | 1.384 | -0.610 | -5.000 | -2.997 |
 
@@ -239,7 +239,7 @@ Mean dT/dz by central differences with step h, for models fitted on the elevatio
 |---|---|---|---|---|---|
 | july | physics | -5.9093 | -5.9093 | -5.9093 | -5.9093 |
 | july | NN | -5.3700 | -5.4215 | -5.4356 | -5.4392 |
-| july | ordinary kriging | -5.0833 | -5.1030 | -5.1080 | -5.1092 |
+| july | ordinary kriging | -5.0833 | -5.1031 | -5.1081 | -5.1093 |
 | january | physics | -6.2377 | -6.2377 | -6.2377 | -6.2377 |
 | january | NN | -5.6010 | -5.6688 | -5.6867 | -5.6912 |
 | january | ordinary kriging | -4.2836 | -4.3465 | -4.3624 | -4.3664 |

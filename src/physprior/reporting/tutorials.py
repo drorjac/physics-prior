@@ -642,8 +642,10 @@ cal = load_table("relativity", "threshold_calibration")
 print(cal.to_string(index=False, float_format=lambda v: f"{v:.4g}"))
 """),
             md("""
-At a threshold of 2.0 the pipeline recovers 9.3 M☉ for an injected 31.2, a
-**−70% bias**. The cut was re-chosen on injections, never on the real event.
+At a threshold of 2.0 the pipeline recovers 6.8 M☉ for an injected 31.2, a
+**−78% bias**. The cut was re-chosen on injections, never on the real event.
+These are the calibration injections; at the adopted 3.0 they are +5.7 %
+off, and the separate validation injections recover the mass to −1.2 %.
 
 > A pipeline you have not injected into has no error budget, and a constant it
 > returns is a number with no uncertainty attached to the method that produced
@@ -1222,7 +1224,7 @@ print(eps.groupby(["eps","arm"]).nrmse_in.median().unstack("arm")
 """),
             md("""
 **At `eps = 0` the law is exact and `physics` wins**, as it must: the PINN
-pays 5× for a correction it does not need, and the black box pays 44×.
+pays 4× for a correction it does not need, and the black box pays 44×.
 
 **From `eps = 0.1` onwards the PINN wins decisively**, and its error is
 almost flat while `physics` degrades eight-fold. That is the crossover, and
@@ -1244,8 +1246,8 @@ print(f"recovered GM = {gm:.4f}   (true 1.0)")
 """),
             md("""
 It learned it. And because the correction carries the missing term, `GM`
-comes back at **1.012** instead of being dragged off by physics it cannot
-represent.
+comes back within about 1 % of the truth from a start of 0.8, instead of
+being dragged off by physics it cannot represent.
 
 ### What the loss was trading while that happened
 """),
@@ -1255,10 +1257,11 @@ P.fig_learning_curves(hist, published=1.0,
 plt.show()
 """),
             md("""
-The data term falls thirtyfold. The physics term **rises** and plateaus;
-that is the correction growing to the size of the missing bump and stopping
-there, which is exactly what `w_phys` is negotiating. And the constant
-overshoots to 1.038 before settling: *the loss going down and the constant
+The data term falls by more than two orders of magnitude. The physics term
+starts at its largest, because `GM` starts 20 % low and the correction has to
+carry the difference, and it falls as `GM` climbs, down to what the missing
+bump needs; that trade is exactly what `w_phys` is negotiating. And the constant
+overshoots the truth before settling: *the loss going down and the constant
 converging are different events.*
 """),
             md(f"""
@@ -1277,7 +1280,7 @@ A clean bias–variance crossover:
   cannot fit the noise either, so it sits flat at 0.055 whatever happens.
 * `pinn` is **unbiased but not noise-immune**. Its correction is flexible
   enough to represent the missing term, which means it is flexible enough to
-  represent noise, and above about 7% noise it starts doing so.
+  represent noise, and somewhere between 5% and 10% noise it starts doing so.
 
 So the prior's advantage is **not unconditional**. It is a bias–variance
 trade, and the crossover point is a measurable property of the problem rather
@@ -1352,7 +1355,8 @@ print(ode[ode["shape"]=="damping"].groupby(["amplitude_deg","arm"]).nrmse_in.med
 `physics` is pinned at **0.209 at every amplitude**. That is not a fit going
 wrong: a conservative harmonic model *cannot produce decay at all*, at any
 value of `ω`, so its error is a property of the model rather than of the
-data. The PINN is 16–18× better as soon as there is enough amplitude to see.
+data. The PINN's trajectory is 14–17× better as soon as there is enough
+amplitude to see.
 
 ### Did it learn the force itself?
 """),
@@ -1366,10 +1370,15 @@ P.fig_learned_force(s_damp, force, pr, physics=ph); plt.show()
 print(f"omega: physics {om_ph:.4f}, pinn {om:.4f}  (true 1.0)")
 """),
             md("""
-It did: the learned force has the right sign and slope against **velocity**,
-which is the variable it actually depends on. Plotting it against *angle*
-would have drawn a flat line and told you nothing, which is the differential
-version of asking the wrong question of the data.
+Only in part. Against **velocity**, the variable the damping depends on, the
+learned force has the right sign but not the right size, and its `ω` (printed
+above) stays far closer to its start of 0.8 than to the truth, while the
+harmonic fit returns about 0.99.
+With a free correction in the equation, `ω` is not identified: the
+correction can carry part of the restoring force, and then `ω` has no reason
+to move. The PINN wins the trajectory and loses the constant. Plotting the
+force against *angle* alone would have hidden all of this, which is the
+differential version of asking the wrong question of the data.
 
 ### And now the degenerate case, again
 
@@ -1397,7 +1406,7 @@ governs both forms of PINN:**
 |---|---|---|
 | **degenerate** missing piece | `1/r³`, absorbed into `GM` | anharmonic, absorbed into `ω` |
 | **distinguishable** missing piece | a localised bump | damping (depends on velocity) |
-| result | prior wins by ~10× | prior wins by ~16× |
+| result | prior wins by ~11× | prior wins the trajectory by ~17×, not `ω` |
 
 > A physics prior helps when the missing piece is **distinguishable from the
 > law**, not merely when the law is incomplete. Which variable the missing
@@ -1522,7 +1531,7 @@ So the arc closes, and the same principle governs all three rungs:
 Over a finite range of `r`, `1/r³` is **nearly degenerate with `1/r²`**:
 raising `GM` mimics most of it. So the fit absorbs the missing physics into
 the constant, the correction learns nothing identifiable, and `GM` comes back
-**27% wrong** instead of 1%.
+**about 26% wrong** instead of about 1%.
 
 > **A physics prior does not help because the law is incomplete. It helps
 > when the missing piece is *distinguishable from the law*.**

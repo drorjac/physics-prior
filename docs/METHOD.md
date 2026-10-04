@@ -158,19 +158,28 @@ threshold. It was set to **2.0** a priori. It looked fine, the real track
 looked fine, and the chirp mass it produced agreed with GWTC-1 at 2PN.
 
 Injecting a waveform with a **known** chirp mass into the **real detector
-noise** and running the identical code:
+noise** and running the identical code, on the calibration injections (the
+tuning seeds 3/7/19 and seven more noise stretches):
 
 | SNR cut | median recovered `Mc` (true 31.17) | bias | trials within 20% |
 |---|---|---|---|
-| 2.0 | 9.3 | −70 % | 0 / 10 |
-| 2.5 | 29.4 | −5.7 % | 6 / 10 |
-| 3.0 | 30.9 | −0.9 % | 9 / 10 |
-| 3.5 | 33.2 | +6.4 % | 5 / 10 usable |
+| 2.0 | 6.8 | −78.1 % | 0 / 10 |
+| 2.5 | 29.4 | −5.6 % | 7 / 10 |
+| 3.0 | 32.9 | +5.7 % | 7 / 8 usable |
+| 3.5 | 33.2 | +6.4 % | 5 / 5 usable |
 
 At 2.0 the extraction admits noise-induced extra zero crossings that read as
 200 Hz where the truth is 40 Hz; a handful of those wreck the fit. The
 threshold was re-chosen **on injections only**, and the real event
-re-measured with it. The real conclusions survived (0PN still biased by about
+re-measured with it.
+
+The first version of this table was computed on ten seeds that included the
+reporting seeds 11/23/42, which are also the seeds of the injection test that
+checks the cut. There 3.0 came back at −0.9 %. With the calibration and
+validation seeds separated, 3.0 is +5.7 % on calibration, about the same size
+as 2.5 in the other direction, and it was kept for its smaller scatter. On
+the validation injections, which it never saw, it recovers the 2PN chirp mass
+to −1.2 %. The real conclusions survived (0PN still biased by about
 +9 M☉, 2PN still consistent with GWTC-1), but they survived *as a result*
 rather than as luck.
 

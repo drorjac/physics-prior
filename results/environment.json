@@ -1,0 +1,20 @@
+{
+  "git_commit": "6fe55abf95a77fa136161f8f46f66f113a75f7f0",
+  "git_dirty": true,
+  "machine": "arm64",
+  "packages": {
+    "h5py": "3.16.0",
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "pysr": "2.5.0",
+    "scipy": "1.18.1",
+    "sympy": "1.14.0",
+    "torch": "2.11.0"
+  },
+  "physprior": "0.3.0",
+  "platform": "macOS-13.4-arm64-arm-64bit-Mach-O",
+  "python": "3.13.1",
+  "recorded_at": "2026-10-02T23:52:33+00:00",
+  "requirements_lock_sha256": "71cc42f3e803f3e36609ffbc848f9669ea8c07bc356c8758a41dd7d7773ac68d",
+  "torch_device": "device=cpu dtype=float64 (cuda=False mps=False threads=2)"
+}

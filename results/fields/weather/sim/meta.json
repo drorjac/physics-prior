@@ -5,44 +5,44 @@
       "case": "inversion",
       "coverage_1sigma": 0.43333333333333335,
       "draws": 30,
-      "gamma_mean": -3.024055104722634,
+      "gamma_mean": -3.024055104471012,
       "gamma_ref": -2.9973330446299693,
-      "gamma_sd_over_draws": 0.2259565289083202,
-      "pull_sd": 1.821081169332354,
-      "sigma_quoted_median": 0.12948917333543059
+      "gamma_sd_over_draws": 0.22595652907646968,
+      "pull_sd": 1.8210811714080102,
+      "sigma_quoted_median": 0.12948917273454447
     },
     {
       "arm": "uk",
       "case": "inversion",
       "coverage_1sigma": 0.36666666666666664,
       "draws": 30,
-      "gamma_mean": -3.2721063319193773,
+      "gamma_mean": -3.272106329573732,
       "gamma_ref": -2.9973330446299693,
-      "gamma_sd_over_draws": 0.1467073166803653,
-      "pull_sd": 0.6888547088108813,
-      "sigma_quoted_median": 0.23388780747563637
+      "gamma_sd_over_draws": 0.14670732138951584,
+      "pull_sd": 0.6888546986389465,
+      "sigma_quoted_median": 0.2338878482650994
     },
     {
       "arm": "physics",
       "case": "law",
       "coverage_1sigma": 0.23333333333333334,
       "draws": 30,
-      "gamma_mean": -5.026722059520964,
+      "gamma_mean": -5.02672205891464,
       "gamma_ref": -4.999999999999997,
-      "gamma_sd_over_draws": 0.225956529724776,
-      "pull_sd": 2.5371988973563444,
-      "sigma_quoted_median": 0.0910774746636112
+      "gamma_sd_over_draws": 0.22595652828548576,
+      "pull_sd": 2.537198879522673,
+      "sigma_quoted_median": 0.09107747449542661
     },
     {
       "arm": "uk",
       "case": "law",
       "coverage_1sigma": 0.7666666666666667,
       "draws": 30,
-      "gamma_mean": -5.028709172587818,
+      "gamma_mean": -5.0287091791873015,
       "gamma_ref": -4.999999999999997,
-      "gamma_sd_over_draws": 0.1486996129175605,
-      "pull_sd": 0.9749386887773783,
-      "sigma_quoted_median": 0.15272830220027112
+      "gamma_sd_over_draws": 0.14869962048958849,
+      "pull_sd": 0.9749387950852296,
+      "sigma_quoted_median": 0.15272827122159865
     }
   ],
   "gamma_best_linear": {

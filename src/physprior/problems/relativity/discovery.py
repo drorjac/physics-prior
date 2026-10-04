@@ -229,8 +229,9 @@ def threshold_calibration(
     comes back unbiased, and only then is the real event re-measured with it.
 
     At 2.0 -- the value originally picked a priori -- the recovered mass is
-    biased by about -70%, because noise adds spurious zero crossings at low
-    envelope SNR. At 3.0 the bias is under 1%.
+    far too low, because noise adds spurious zero crossings at low envelope
+    SNR. Run on CALIBRATION_SEEDS only; the adopted cut is then checked on
+    VALIDATION_SEEDS by `injection_test`.
     """
     law = make_law(pn_order)
     rows = []

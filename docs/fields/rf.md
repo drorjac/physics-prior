@@ -30,22 +30,22 @@ Against the analytic free-space field (i/4)H₀⁽¹⁾(kr), power error in dB:
 
 | ppw | rms_db_error | max_abs_db_error | seconds |
 |---|---|---|---|
-| 8 | 0.404 | 0.72 | 7.87 |
-| 12 | 0.174 | 0.304 | 32 |
-| 16 | 0.0974 | 0.168 | 71.5 |
-| 24 | 0.043 | 0.074 | 175 |
+| 8 | 0.404 | 0.72 | 0.545 |
+| 12 | 0.174 | 0.304 | 1.82 |
+| 16 | 0.0974 | 0.168 | 4.04 |
+| 24 | 0.043 | 0.074 | 15.4 |
 
 Walls scene, change against the finest grid, in dB:
 
 | ppw | n_unknowns | seconds | local_mean_p99_db | local_mean_max_db | local_mean_rms_db | raw_rms_db |
 |---|---|---|---|---|---|---|
-| 8 | 3.98e+04 | 7.27 | 16.1 | 17.5 | 6.64 | 8.18 |
-| 10 | 6.21e+04 | 17 | 5.94 | 8.94 | 2.32 | 3.94 |
-| 12 | 8.93e+04 | 19.8 | 4.04 | 5.14 | 1.19 | 2.71 |
-| 16 | 1.58e+05 | 49.8 | 1.99 | 3.01 | 0.506 | 1.47 |
-| 20 | 2.47e+05 | 108 | 1 | 1.65 | 0.251 | 0.888 |
-| 24 | 3.56e+05 | 271 | 0.498 | 0.817 | 0.123 | 0.474 |
-| 32 | 6.32e+05 | 726 | 0 | 0 | 0 | 0 |
+| 8 | 3.98e+04 | 1.69 | 16.1 | 17.5 | 6.64 | 8.18 |
+| 10 | 6.21e+04 | 3.62 | 5.94 | 8.94 | 2.32 | 3.94 |
+| 12 | 8.93e+04 | 7.65 | 4.04 | 5.14 | 1.19 | 2.71 |
+| 16 | 1.58e+05 | 16.4 | 1.99 | 3.01 | 0.506 | 1.47 |
+| 20 | 2.47e+05 | 30.7 | 1 | 1.65 | 0.251 | 0.888 |
+| 24 | 3.56e+05 | 57.3 | 0.498 | 0.817 | 0.123 | 0.474 |
+| 32 | 6.32e+05 | 133 | 0 | 0 | 0 | 0 |
 
 Resolution used: **24 points per wavelength**, the coarsest grid whose
 local-mean map is within 0.5 dB of the finest at 99% of points. The raw
@@ -78,14 +78,14 @@ Median over reporting seeds of the RMSE against the true map, dB:
 |---|---|---|---|---|---|---|
 | free | gp | 1.66 | 1.18 | 0.91 | 0.70 | 0.55 |
 | free | kriging | 1.44 | 0.73 | 0.54 | 0.43 | 0.34 |
-| free | nn | 3.62 | 4.51 | 3.74 | 2.07 | 1.24 |
+| free | nn | 2.41 | 1.82 | 1.16 | 0.79 | 0.62 |
 | free | oracle | 0.07 | 0.07 | 0.07 | 0.07 | 0.07 |
 | free | physics | 1.41 | 0.73 | 0.54 | 0.43 | 0.34 |
 | free | pinn | 1.41 | 0.73 | 0.54 | 0.43 | 0.34 |
 | free | pinn_free | 2.27 | 4.06 | 2.04 | 1.78 | 1.04 |
 | walls | gp | 3.62 | 2.75 | 2.62 | 2.02 | 1.60 |
 | walls | kriging | 5.60 | 4.90 | 2.58 | 1.94 | 1.52 |
-| walls | nn | 7.90 | 4.89 | 3.02 | 2.13 | 1.36 |
+| walls | nn | 3.43 | 2.94 | 2.76 | 2.65 | 2.59 |
 | walls | oracle | 11.58 | 11.58 | 11.58 | 11.58 | 11.58 |
 | walls | physics | 5.99 | 5.93 | 4.96 | 4.71 | 4.61 |
 | walls | pinn | 5.99 | 5.93 | 4.96 | 4.65 | 4.61 |
@@ -145,14 +145,14 @@ exponent and P0:
 |---|---|---|---|---|
 | free | gp | 0.45 | 4.10 | – |
 | free | kriging | 0.45 | 0.15 | 0.48 |
-| free | nn | 1.46 | 7.89 | – |
+| free | nn | 0.52 | 3.27 | – |
 | free | oracle | 0.09 | 0.05 | 0.00 |
 | free | physics | 0.37 | 0.15 | 0.48 |
 | free | pinn | 0.37 | 0.15 | 0.48 |
 | free | pinn_free | 0.94 | 5.73 | 0.48 |
 | walls | gp | 0.60 | 18.94 | – |
 | walls | kriging | 0.62 | 15.44 | 0.43 |
-| walls | nn | 2.94 | 14.64 | – |
+| walls | nn | 0.66 | 12.67 | – |
 | walls | oracle | 0.64 | 14.97 | 0.00 |
 | walls | physics | 0.57 | 15.44 | 0.43 |
 | walls | pinn | 0.57 | 15.43 | 0.43 |
@@ -166,14 +166,14 @@ exponent and P0:
 |---|---|---|---|---|---|
 | free | gp | 0.18 | 0.76 | 1.14 | 1.73 |
 | free | kriging | 0.01 | 0.53 | 1.08 | 2.41 |
-| free | nn | 0.12 | 2.12 | 6.25 | 12.51 |
+| free | nn | 0.38 | 0.90 | 1.44 | 2.55 |
 | free | oracle | 0.07 | 0.07 | 0.07 | 0.07 |
 | free | physics | 0.03 | 0.29 | 0.61 | 1.17 |
 | free | pinn | 0.03 | 0.29 | 0.61 | 1.17 |
 | free | pinn_free | 0.02 | 1.63 | 4.16 | 8.10 |
 | walls | gp | 1.46 | 2.18 | 2.51 | 2.95 |
 | walls | kriging | 1.44 | 1.97 | 2.66 | 3.99 |
-| walls | nn | 1.20 | 2.05 | 4.50 | 10.90 |
+| walls | nn | 2.65 | 2.79 | 2.90 | 3.66 |
 | walls | oracle | 11.58 | 11.58 | 11.58 | 11.58 |
 | walls | physics | 4.70 | 4.67 | 4.67 | 4.79 |
 | walls | pinn | 4.58 | 4.57 | 4.59 | 4.79 |
@@ -188,13 +188,13 @@ untuned.
 | scene | arm | window_rmse_db | seconds |
 |---|---|---|---|
 | free | gp | 0.55 | 0.00 |
-| free | nn | 3.90 | 19.07 |
-| free | physics | 0.50 | 0.32 |
-| free | pinn_helmholtz | 1.53 | 525.69 |
+| free | nn | 0.80 | 1.40 |
+| free | physics | 0.50 | 0.04 |
+| free | pinn_helmholtz | 1.53 | 59.50 |
 | walls | gp | 1.23 | 0.00 |
-| walls | nn | 2.50 | 4.57 |
-| walls | physics | 2.86 | 0.10 |
-| walls | pinn_helmholtz | 2.96 | 334.45 |
+| walls | nn | 1.21 | 1.39 |
+| walls | physics | 2.86 | 0.04 |
+| walls | pinn_helmholtz | 2.96 | 60.42 |
 
 ![window](../../figures/fields/rf_helmholtz_window.png)
 

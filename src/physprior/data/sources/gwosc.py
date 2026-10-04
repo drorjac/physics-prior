@@ -46,11 +46,13 @@ PSD_SEGMENT_S = 4.0
 # Envelope SNR a cycle must clear to be kept. This was originally set to 2.0
 # a priori, which turned out to be badly wrong: at 2.0 the extraction admits
 # noise-induced extra zero crossings that read as 200 Hz where the true
-# frequency is 40 Hz, and an injected chirp mass of 31.2 comes back as 9.3 --
-# a 70% bias. The value below was calibrated on SIMULATED signals injected
-# into this same real detector noise (physprior/problems/relativity/discovery.py,
-# `threshold_calibration`), never on the real event, and is the smallest
-# threshold whose injection bias is under 1% .
+# frequency is 40 Hz, and an injected chirp mass of 31.2 comes back far too
+# low (results/relativity/threshold_calibration.csv). The value below was
+# calibrated on SIMULATED signals injected into this same real detector noise
+# (physprior/problems/relativity/discovery.py, `threshold_calibration`, on the
+# calibration seeds), never on the real event. There 2.5 and 3.0 have biases
+# of similar size and opposite sign; 3.0 has the smaller scatter. It is then
+# checked on the validation seeds by `injection_test`.
 SNR_THRESHOLD = 3.0
 ENVELOPE_WINDOW_S = 0.02
 
