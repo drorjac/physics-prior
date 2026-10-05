@@ -104,7 +104,7 @@ on first use and its checksum recorded; see [docs/DATA.md](docs/DATA.md).
 |---|---|
 | [docs/MISSIONS.md](docs/MISSIONS.md) | every task, its goal and its conclusion |
 | [docs/gravity](docs/gravity) · [relativity](docs/relativity) · [quantum](docs/quantum) · [fields](docs/fields) | the physics topics: simulations, real-data tracks, caveats |
-| [docs/lorenz](docs/lorenz) · [neglected](docs/neglected) · [reconstruction](docs/reconstruction) · [dynamics](docs/dynamics) · [optimization](docs/optimization) | the studies across problems |
+| [docs/lorenz](docs/lorenz) · [neglected](docs/neglected) · [reconstruction](docs/reconstruction) · [dynamics](docs/dynamics) · [optimization](docs/optimization) · [cml](docs/cml) · [hybrid_tracks](docs/hybrid_tracks) | the studies across problems |
 | [docs/METHOD.md](docs/METHOD.md) · [DECISIONS.md](docs/DECISIONS.md) · [HYPOTHESES.md](docs/HYPOTHESES.md) | how it was done and why |
 | [docs/RELATED_WORK.md](docs/RELATED_WORK.md) · [CONTRIBUTIONS.md](docs/CONTRIBUTIONS.md) | prior work, and what is new here |
 
