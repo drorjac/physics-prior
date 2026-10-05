@@ -110,6 +110,10 @@ on first use and its checksum recorded; see [docs/DATA.md](docs/DATA.md).
 
 A related project, [qphys](https://github.com/drorjac/qphys), applies the same
 protocol to quantum-formalism models of time series.
+[hybrid-network](https://github.com/drorjac/hybrid-network) is the
+standalone version of the microwave-link study in [docs/cml](docs/cml): a
+power-law branch and a GRU fused by a learned gate, with block diagrams of
+the whole pipeline.
 
 ## Citation
 
